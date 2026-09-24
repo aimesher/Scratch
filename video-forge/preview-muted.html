@@ -1,8 +1,9 @@
 <title>VideoForge Muted</title>
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 
 <style>
+/* ── Dark theme (default) ── */
 :root {
   --bg-0: #101214;
   --bg-1: #161819;
@@ -24,9 +25,92 @@
   --rose: #a8525a;
   --radius: 8px;
   --radius-lg: 12px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,.25);
   color-scheme: dark;
   padding: 0 !important;
 }
+
+/* ── Light theme ── */
+:root[data-theme="light"] {
+  --bg-0: #f3f4f6;
+  --bg-1: #ffffff;
+  --bg-2: #f9fafb;
+  --bg-3: #f0f1f3;
+  --bg-input: #ffffff;
+  --border: #dfe1e5;
+  --border-hover: #c4c7cc;
+  --text-1: #1a1d22;
+  --text-2: #5f636a;
+  --text-3: #8c9099;
+  --amber: #a07830;
+  --amber-light: #8a6828;
+  --amber-dim: rgba(160, 120, 48, 0.08);
+  --emerald: #3d8a50;
+  --emerald-dim: rgba(61, 138, 80, 0.08);
+  --coral: #a85840;
+  --coral-dim: rgba(168, 88, 64, 0.08);
+  --rose: #983848;
+  --shadow-card: 0 1px 4px rgba(0,0,0,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg-0: #f3f4f6;
+    --bg-1: #ffffff;
+    --bg-2: #f9fafb;
+    --bg-3: #f0f1f3;
+    --bg-input: #ffffff;
+    --border: #dfe1e5;
+    --border-hover: #c4c7cc;
+    --text-1: #1a1d22;
+    --text-2: #5f636a;
+    --text-3: #8c9099;
+    --amber: #a07830;
+    --amber-light: #8a6828;
+    --amber-dim: rgba(160, 120, 48, 0.08);
+    --emerald: #3d8a50;
+    --emerald-dim: rgba(61, 138, 80, 0.08);
+    --coral: #a85840;
+    --coral-dim: rgba(168, 88, 64, 0.08);
+    --rose: #983848;
+    --shadow-card: 0 1px 4px rgba(0,0,0,.06);
+    color-scheme: light;
+  }
+}
+:root[data-theme="dark"] {
+  --bg-0: #101214;
+  --bg-1: #161819;
+  --bg-2: #1c1e20;
+  --bg-3: #232527;
+  --bg-input: #131516;
+  --border: #2a2c2e;
+  --border-hover: #3a3c3e;
+  --text-1: #d4d6d8;
+  --text-2: #7a7e84;
+  --text-3: #4e5258;
+  --amber: #c49a40;
+  --amber-light: #d4af5e;
+  --amber-dim: rgba(196, 154, 64, 0.09);
+  --emerald: #5a9a6a;
+  --emerald-dim: rgba(90, 154, 106, 0.09);
+  --coral: #b86e58;
+  --coral-dim: rgba(184, 110, 88, 0.09);
+  --rose: #a8525a;
+  --shadow-card: 0 1px 3px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+/* ── Accent overrides (applied via data-accent on :root) ── */
+:root[data-accent="amber"]  { --amber:#c49a40; --amber-light:#d4af5e; --amber-dim:rgba(196,154,64,.09); }
+:root[data-accent="copper"] { --amber:#b87848; --amber-light:#c88e62; --amber-dim:rgba(184,120,72,.09); }
+:root[data-accent="sage"]   { --amber:#5a9a6a; --amber-light:#6aaa7a; --amber-dim:rgba(90,154,106,.09); }
+:root[data-accent="slate"]  { --amber:#7088a0; --amber-light:#8098b0; --amber-dim:rgba(112,136,160,.09); }
+:root[data-accent="rose"]   { --amber:#b06878; --amber-light:#c07888; --amber-dim:rgba(176,104,120,.09); }
+:root[data-theme="light"][data-accent="amber"]  { --amber:#a07830; --amber-light:#8a6828; --amber-dim:rgba(160,120,48,.08); }
+:root[data-theme="light"][data-accent="copper"] { --amber:#96603a; --amber-light:#805030; --amber-dim:rgba(150,96,58,.08); }
+:root[data-theme="light"][data-accent="sage"]   { --amber:#3d8a50; --amber-light:#307040; --amber-dim:rgba(61,138,80,.08); }
+:root[data-theme="light"][data-accent="slate"]  { --amber:#506880; --amber-light:#405870; --amber-dim:rgba(80,104,128,.08); }
+:root[data-theme="light"][data-accent="rose"]   { --amber:#984858; --amber-light:#883848; --amber-dim:rgba(152,72,88,.08); }
 body {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   background: var(--bg-0);
@@ -167,7 +251,7 @@ body {
 /* ── Cards ── */
 .card {
   background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  overflow: hidden; animation: fade-in .3s ease;
+  overflow: hidden; animation: fade-in .3s ease; box-shadow: var(--shadow-card);
 }
 .card + .card { margin-top: 20px; }
 .card-head {
@@ -440,6 +524,12 @@ const state = {
   completed: new Set(),
   apiKey: null,
   apiModel: 'gemini-2.5-pro',
+  theme: 'dark',          // 'dark', 'light', 'system'
+  accent: 'amber',        // 'amber', 'copper', 'sage', 'slate', 'rose'
+  researchModel: 'gemini', // 'gemini', 'claude', 'chatgpt'
+  geminiKey: null,
+  claudeKey: null,
+  openaiKey: null,
   stats: {
     reqToday: 0,
     reqDayLimit: 14400,   // AI Studio Pro: Gemini 2.5 Pro RPD
@@ -586,11 +676,191 @@ function connectApiKey() {
   render()
 }
 
-// Restore key from session if available
+// Restore settings from session
 try {
   const k = sessionStorage.getItem('vf_api_key')
   if (k) { state.apiKey = k; state.apiModel = sessionStorage.getItem('vf_api_model') || 'gemini-2.5-pro' }
+  const t = sessionStorage.getItem('vf_theme'); if (t) state.theme = t
+  const a = sessionStorage.getItem('vf_accent'); if (a) state.accent = a
+  const rm = sessionStorage.getItem('vf_research_model'); if (rm) state.researchModel = rm
+  const gk = sessionStorage.getItem('vf_gemini_key'); if (gk) state.geminiKey = gk
+  const ck = sessionStorage.getItem('vf_claude_key'); if (ck) state.claudeKey = ck
+  const ok = sessionStorage.getItem('vf_openai_key'); if (ok) state.openaiKey = ok
+  // also sync apiKey with the selected research model's key
+  if (state.researchModel === 'gemini' && state.geminiKey) state.apiKey = state.geminiKey
 } catch(e) {}
+
+function applyTheme() {
+  const root = document.documentElement
+  if (state.theme === 'system') {
+    root.removeAttribute('data-theme')
+  } else {
+    root.setAttribute('data-theme', state.theme)
+  }
+  root.setAttribute('data-accent', state.accent)
+  try {
+    sessionStorage.setItem('vf_theme', state.theme)
+    sessionStorage.setItem('vf_accent', state.accent)
+  } catch(e) {}
+}
+
+function setTheme(t) { state.theme = t; applyTheme(); render() }
+function setAccent(a) { state.accent = a; applyTheme(); render() }
+
+function setResearchModel(m) {
+  state.researchModel = m
+  try { sessionStorage.setItem('vf_research_model', m) } catch(e) {}
+  render()
+}
+
+function saveModelKey(provider, val) {
+  const keyMap = { gemini:'vf_gemini_key', claude:'vf_claude_key', chatgpt:'vf_openai_key' }
+  const stateMap = { gemini:'geminiKey', claude:'claudeKey', chatgpt:'openaiKey' }
+  state[stateMap[provider]] = val
+  try { sessionStorage.setItem(keyMap[provider], val) } catch(e) {}
+  // If this is the active research model, also set as primary apiKey
+  if (state.researchModel === provider && provider === 'gemini') {
+    state.apiKey = val
+    try { sessionStorage.setItem('vf_api_key', val) } catch(e) {}
+  }
+  addLog('success', `${provider.charAt(0).toUpperCase()+provider.slice(1)} API key saved`)
+  render()
+}
+
+function settingsHTML() {
+  const themeOpts = [
+    { id:'dark', label:'Dark', desc:'Dark background' },
+    { id:'light', label:'Light', desc:'Light background' },
+    { id:'system', label:'System', desc:'Match OS' },
+  ]
+  const accentOpts = [
+    { id:'amber', label:'Sand', hex:'#c49a40', hexL:'#a07830' },
+    { id:'copper', label:'Copper', hex:'#b87848', hexL:'#96603a' },
+    { id:'sage', label:'Sage', hex:'#5a9a6a', hexL:'#3d8a50' },
+    { id:'slate', label:'Slate', hex:'#7088a0', hexL:'#506880' },
+    { id:'rose', label:'Rose', hex:'#b06878', hexL:'#984858' },
+  ]
+  const modelOpts = [
+    { id:'gemini', label:'Gemini', desc:'Google AI Studio', models:'2.5 Pro · 2.5 Flash · 2.0 Flash', icon:'◈', keyField:'geminiKey' },
+    { id:'claude', label:'Claude', desc:'Anthropic API', models:'Opus 5.5 · Sonnet 5 · Haiku 4.5', icon:'◉', keyField:'claudeKey' },
+    { id:'chatgpt', label:'ChatGPT', desc:'OpenAI API', models:'GPT-4o · o3 · o4-mini', icon:'◐', keyField:'openaiKey' },
+  ]
+  const isDark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+  return \`
+    <div style="max-width:720px">
+      <!-- Theme -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head"><h3>◑ Appearance</h3></div>
+        <div class="card-body">
+          <div class="fg"><label>Theme</label>
+            <div style="display:flex;gap:8px;margin-top:2px">
+              \${themeOpts.map(t => \`
+                <button onclick="setTheme('\${t.id}')" style="
+                  flex:1; padding:14px 12px; border-radius:var(--radius); cursor:pointer; text-align:center;
+                  border:2px solid \${state.theme===t.id?'var(--amber)':'var(--border)'};
+                  background:\${state.theme===t.id?'var(--amber-dim)':'var(--bg-input)'};
+                  color:var(--text-1); font-family:inherit; transition:all .15s;
+                ">
+                  <div style="font-size:20px;margin-bottom:6px">\${t.id==='dark'?'🌙':t.id==='light'?'☀️':'💻'}</div>
+                  <div style="font-size:12.5px;font-weight:600">\${t.label}</div>
+                  <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">\${t.desc}</div>
+                </button>
+              \`).join('')}
+            </div>
+          </div>
+
+          <div class="fg" style="margin-top:20px"><label>Accent Color</label>
+            <div style="display:flex;gap:8px;margin-top:2px">
+              \${accentOpts.map(a => \`
+                <button onclick="setAccent('\${a.id}')" style="
+                  flex:1; padding:12px 8px; border-radius:var(--radius); cursor:pointer; text-align:center;
+                  border:2px solid \${state.accent===a.id?'var(--amber)':'var(--border)'};
+                  background:\${state.accent===a.id?'var(--amber-dim)':'var(--bg-input)'};
+                  color:var(--text-1); font-family:inherit; transition:all .15s;
+                ">
+                  <div style="width:28px;height:28px;border-radius:50%;background:\${isDark?a.hex:a.hexL};margin:0 auto 6px"></div>
+                  <div style="font-size:11.5px;font-weight:600">\${a.label}</div>
+                </button>
+              \`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Research Model -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head"><h3>◈ Research Model</h3><span class="badge badge-a">\${state.researchModel}</span></div>
+        <div class="card-body">
+          <p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.55">Choose which AI model handles topic research and storyboard generation. Image generation always uses Nano Banana Pro via Imagen 3.</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            \${modelOpts.map(m => {
+              const isActive = state.researchModel === m.id
+              const hasKey = !!state[m.keyField]
+              return \`
+                <div style="
+                  border:2px solid \${isActive?'var(--amber)':'var(--border)'};
+                  background:\${isActive?'var(--amber-dim)':'var(--bg-input)'};
+                  border-radius:var(--radius-lg); padding:16px 18px; transition:all .15s;
+                ">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span style="font-size:18px">\${m.icon}</span>
+                      <div>
+                        <div style="font-size:13.5px;font-weight:600">\${m.label}</div>
+                        <div style="font-size:11px;color:var(--text-3)">\${m.desc}</div>
+                      </div>
+                    </div>
+                    <button onclick="setResearchModel('\${m.id}')" class="btn-next" style="
+                      \${isActive?'background:var(--amber);color:#0a0c0f':'background:var(--bg-3);color:var(--text-2);border:1px solid var(--border)'};
+                      font-size:11px; padding:5px 12px;
+                    ">\${isActive?'Active':'Select'}</button>
+                  </div>
+                  <div style="font-size:10.5px;color:var(--text-3);margin-bottom:10px">Models: \${m.models}</div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input
+                      type="password"
+                      placeholder="\${m.id==='gemini'?'AIza...':m.id==='claude'?'sk-ant-...':'sk-...'}"
+                      value="\${state[m.keyField]||''}"
+                      onchange="saveModelKey('\${m.id}', this.value)"
+                      style="flex:1;background:var(--bg-0);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text-1);font-size:12px;font-family:'JetBrains Mono',monospace;outline:none"
+                    >
+                    <div style="width:8px;height:8px;border-radius:50%;background:\${hasKey?'var(--emerald)':'var(--text-3)'};flex-shrink:0"></div>
+                  </div>
+                </div>
+              \`
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Model -->
+      <div class="card">
+        <div class="card-head"><h3>◐ Image Generation</h3></div>
+        <div class="card-body">
+          <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.55">Image generation for storyboards and character sheets uses your Gemini API key.</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">
+              <div><div style="font-size:12.5px;font-weight:600">Nano Banana Pro</div><div style="font-size:10.5px;color:var(--text-3)">Fast, stylized output via Imagen 3</div></div>
+              <span class="badge badge-a">Default</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">
+              <div><div style="font-size:12.5px;font-weight:600">Imagen 3</div><div style="font-size:10.5px;color:var(--text-3)">Google highest quality generation</div></div>
+              <span class="badge" style="background:var(--bg-3);color:var(--text-3)">Available</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">
+              <div><div style="font-size:12.5px;font-weight:600">Gemini Native</div><div style="font-size:10.5px;color:var(--text-3)">Built-in image generation</div></div>
+              <span class="badge" style="background:var(--bg-3);color:var(--text-3)">Available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  \`
+}
+
+// Apply theme on load
+applyTheme()
 
 // ── Pipeline HTML ──
 function pipeHTML() {
@@ -674,7 +944,8 @@ async function startResearch() {
   if (!state.topic.trim() || state.generating) return
   state.generating = true; state.step = 'research'; state.completed.add('topic'); render()
   addLog('info','Starting research on "'+state.topic+'"...'); render()
-  await delay(1200); bumpStats(1, 32000); addLog('info',`Querying ${state.apiModel || 'Gemini 2.5 Pro'} for topic analysis...`); render()
+  const rName = state.researchModel==='claude'?'Claude':state.researchModel==='chatgpt'?'ChatGPT':(state.apiModel||'Gemini 2.5 Pro')
+  await delay(1200); bumpStats(1, 32000); addLog('info',`Querying ${rName} for topic analysis...`); render()
   await delay(1800); bumpStats(1, 28000); addLog('success','Topic analysis complete'); render()
   await delay(800); addLog('info','Gathering audience insights...'); render()
   await delay(1500); bumpStats(1, 41000); addLog('success','Audience research compiled')
@@ -783,6 +1054,11 @@ function render() {
         </div>
       </div></div>
     `
+    buildNav(); return
+  }
+
+  if (state.page === 'settings') {
+    el.innerHTML = settingsHTML()
     buildNav(); return
   }
 
