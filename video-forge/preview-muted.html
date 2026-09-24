@@ -728,135 +728,118 @@ function saveModelKey(provider, val) {
 }
 
 function settingsHTML() {
-  const themeOpts = [
-    { id:'dark', label:'Dark', desc:'Dark background' },
-    { id:'light', label:'Light', desc:'Light background' },
-    { id:'system', label:'System', desc:'Match OS' },
+  var themeOpts = [
+    { id:'dark', label:'Dark', desc:'Dark background', emoji:'🌙' },
+    { id:'light', label:'Light', desc:'Light background', emoji:'☀️' },
+    { id:'system', label:'System', desc:'Match OS', emoji:'💻' },
   ]
-  const accentOpts = [
+  var accentOpts = [
     { id:'amber', label:'Sand', hex:'#c49a40', hexL:'#a07830' },
     { id:'copper', label:'Copper', hex:'#b87848', hexL:'#96603a' },
     { id:'sage', label:'Sage', hex:'#5a9a6a', hexL:'#3d8a50' },
     { id:'slate', label:'Slate', hex:'#7088a0', hexL:'#506880' },
     { id:'rose', label:'Rose', hex:'#b06878', hexL:'#984858' },
   ]
-  const modelOpts = [
-    { id:'gemini', label:'Gemini', desc:'Google AI Studio', models:'2.5 Pro · 2.5 Flash · 2.0 Flash', icon:'◈', keyField:'geminiKey' },
-    { id:'claude', label:'Claude', desc:'Anthropic API', models:'Opus 5.5 · Sonnet 5 · Haiku 4.5', icon:'◉', keyField:'claudeKey' },
-    { id:'chatgpt', label:'ChatGPT', desc:'OpenAI API', models:'GPT-4o · o3 · o4-mini', icon:'◐', keyField:'openaiKey' },
+  var modelOpts = [
+    { id:'gemini', label:'Gemini', desc:'Google AI Studio', models:'2.5 Pro, 2.5 Flash, 2.0 Flash', icon:'◈', keyField:'geminiKey', ph:'AIza...' },
+    { id:'claude', label:'Claude', desc:'Anthropic API', models:'Opus 5.5, Sonnet 5, Haiku 4.5', icon:'◉', keyField:'claudeKey', ph:'sk-ant-...' },
+    { id:'chatgpt', label:'ChatGPT', desc:'OpenAI API', models:'GPT-4o, o3, o4-mini', icon:'◐', keyField:'openaiKey', ph:'sk-...' },
   ]
-  const isDark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  var isDark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
-  return \`
-    <div style="max-width:720px">
-      <!-- Theme -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-head"><h3>◑ Appearance</h3></div>
-        <div class="card-body">
-          <div class="fg"><label>Theme</label>
-            <div style="display:flex;gap:8px;margin-top:2px">
-              \${themeOpts.map(t => \`
-                <button onclick="setTheme('\${t.id}')" style="
-                  flex:1; padding:14px 12px; border-radius:var(--radius); cursor:pointer; text-align:center;
-                  border:2px solid \${state.theme===t.id?'var(--amber)':'var(--border)'};
-                  background:\${state.theme===t.id?'var(--amber-dim)':'var(--bg-input)'};
-                  color:var(--text-1); font-family:inherit; transition:all .15s;
-                ">
-                  <div style="font-size:20px;margin-bottom:6px">\${t.id==='dark'?'🌙':t.id==='light'?'☀️':'💻'}</div>
-                  <div style="font-size:12.5px;font-weight:600">\${t.label}</div>
-                  <div style="font-size:10.5px;color:var(--text-3);margin-top:2px">\${t.desc}</div>
-                </button>
-              \`).join('')}
-            </div>
-          </div>
+  var h = '<div style="max-width:720px">'
 
-          <div class="fg" style="margin-top:20px"><label>Accent Color</label>
-            <div style="display:flex;gap:8px;margin-top:2px">
-              \${accentOpts.map(a => \`
-                <button onclick="setAccent('\${a.id}')" style="
-                  flex:1; padding:12px 8px; border-radius:var(--radius); cursor:pointer; text-align:center;
-                  border:2px solid \${state.accent===a.id?'var(--amber)':'var(--border)'};
-                  background:\${state.accent===a.id?'var(--amber-dim)':'var(--bg-input)'};
-                  color:var(--text-1); font-family:inherit; transition:all .15s;
-                ">
-                  <div style="width:28px;height:28px;border-radius:50%;background:\${isDark?a.hex:a.hexL};margin:0 auto 6px"></div>
-                  <div style="font-size:11.5px;font-weight:600">\${a.label}</div>
-                </button>
-              \`).join('')}
-            </div>
-          </div>
-        </div>
-      </div>
+  // Appearance card
+  h += '<div class="card" style="margin-bottom:20px">'
+  h += '<div class="card-head"><h3>◑ Appearance</h3></div>'
+  h += '<div class="card-body">'
 
-      <!-- Research Model -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-head"><h3>◈ Research Model</h3><span class="badge badge-a">\${state.researchModel}</span></div>
-        <div class="card-body">
-          <p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.55">Choose which AI model handles topic research and storyboard generation. Image generation always uses Nano Banana Pro via Imagen 3.</p>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            \${modelOpts.map(m => {
-              const isActive = state.researchModel === m.id
-              const hasKey = !!state[m.keyField]
-              return \`
-                <div style="
-                  border:2px solid \${isActive?'var(--amber)':'var(--border)'};
-                  background:\${isActive?'var(--amber-dim)':'var(--bg-input)'};
-                  border-radius:var(--radius-lg); padding:16px 18px; transition:all .15s;
-                ">
-                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                    <div style="display:flex;align-items:center;gap:10px">
-                      <span style="font-size:18px">\${m.icon}</span>
-                      <div>
-                        <div style="font-size:13.5px;font-weight:600">\${m.label}</div>
-                        <div style="font-size:11px;color:var(--text-3)">\${m.desc}</div>
-                      </div>
-                    </div>
-                    <button onclick="setResearchModel('\${m.id}')" class="btn-next" style="
-                      \${isActive?'background:var(--amber);color:#0a0c0f':'background:var(--bg-3);color:var(--text-2);border:1px solid var(--border)'};
-                      font-size:11px; padding:5px 12px;
-                    ">\${isActive?'Active':'Select'}</button>
-                  </div>
-                  <div style="font-size:10.5px;color:var(--text-3);margin-bottom:10px">Models: \${m.models}</div>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <input
-                      type="password"
-                      placeholder="\${m.id==='gemini'?'AIza...':m.id==='claude'?'sk-ant-...':'sk-...'}"
-                      value="\${state[m.keyField]||''}"
-                      onchange="saveModelKey('\${m.id}', this.value)"
-                      style="flex:1;background:var(--bg-0);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text-1);font-size:12px;font-family:'JetBrains Mono',monospace;outline:none"
-                    >
-                    <div style="width:8px;height:8px;border-radius:50%;background:\${hasKey?'var(--emerald)':'var(--text-3)'};flex-shrink:0"></div>
-                  </div>
-                </div>
-              \`
-            }).join('')}
-          </div>
-        </div>
-      </div>
+  // Theme buttons
+  h += '<div class="fg"><label>Theme</label><div style="display:flex;gap:8px;margin-top:2px">'
+  themeOpts.forEach(function(t) {
+    var sel = state.theme === t.id
+    h += '<button onclick="setTheme(\'' + t.id + '\')" style="'
+    h += 'flex:1;padding:14px 12px;border-radius:var(--radius);cursor:pointer;text-align:center;'
+    h += 'border:2px solid ' + (sel ? 'var(--amber)' : 'var(--border)') + ';'
+    h += 'background:' + (sel ? 'var(--amber-dim)' : 'var(--bg-input)') + ';'
+    h += 'color:var(--text-1);font-family:inherit;transition:all .15s">'
+    h += '<div style="font-size:20px;margin-bottom:6px">' + t.emoji + '</div>'
+    h += '<div style="font-size:12.5px;font-weight:600">' + t.label + '</div>'
+    h += '<div style="font-size:10.5px;color:var(--text-3);margin-top:2px">' + t.desc + '</div>'
+    h += '</button>'
+  })
+  h += '</div></div>'
 
-      <!-- Image Model -->
-      <div class="card">
-        <div class="card-head"><h3>◐ Image Generation</h3></div>
-        <div class="card-body">
-          <p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.55">Image generation for storyboards and character sheets uses your Gemini API key.</p>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">
-              <div><div style="font-size:12.5px;font-weight:600">Nano Banana Pro</div><div style="font-size:10.5px;color:var(--text-3)">Fast, stylized output via Imagen 3</div></div>
-              <span class="badge badge-a">Default</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">
-              <div><div style="font-size:12.5px;font-weight:600">Imagen 3</div><div style="font-size:10.5px;color:var(--text-3)">Google highest quality generation</div></div>
-              <span class="badge" style="background:var(--bg-3);color:var(--text-3)">Available</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">
-              <div><div style="font-size:12.5px;font-weight:600">Gemini Native</div><div style="font-size:10.5px;color:var(--text-3)">Built-in image generation</div></div>
-              <span class="badge" style="background:var(--bg-3);color:var(--text-3)">Available</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  \`
+  // Accent buttons
+  h += '<div class="fg" style="margin-top:20px"><label>Accent Color</label><div style="display:flex;gap:8px;margin-top:2px">'
+  accentOpts.forEach(function(a) {
+    var sel = state.accent === a.id
+    h += '<button onclick="setAccent(\'' + a.id + '\')" style="'
+    h += 'flex:1;padding:12px 8px;border-radius:var(--radius);cursor:pointer;text-align:center;'
+    h += 'border:2px solid ' + (sel ? 'var(--amber)' : 'var(--border)') + ';'
+    h += 'background:' + (sel ? 'var(--amber-dim)' : 'var(--bg-input)') + ';'
+    h += 'color:var(--text-1);font-family:inherit;transition:all .15s">'
+    h += '<div style="width:28px;height:28px;border-radius:50%;background:' + (isDark ? a.hex : a.hexL) + ';margin:0 auto 6px"></div>'
+    h += '<div style="font-size:11.5px;font-weight:600">' + a.label + '</div>'
+    h += '</button>'
+  })
+  h += '</div></div>'
+  h += '</div></div>' // close card-body, card
+
+  // Research Model card
+  h += '<div class="card" style="margin-bottom:20px">'
+  h += '<div class="card-head"><h3>◈ Research Model</h3><span class="badge badge-a">' + state.researchModel + '</span></div>'
+  h += '<div class="card-body">'
+  h += '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.55">Choose which AI model handles topic research and storyboard generation. Image generation always uses Nano Banana Pro via Imagen 3.</p>'
+  h += '<div style="display:flex;flex-direction:column;gap:10px">'
+  modelOpts.forEach(function(m) {
+    var isActive = state.researchModel === m.id
+    var hasKey = !!state[m.keyField]
+    h += '<div style="border:2px solid ' + (isActive ? 'var(--amber)' : 'var(--border)') + ';'
+    h += 'background:' + (isActive ? 'var(--amber-dim)' : 'var(--bg-input)') + ';'
+    h += 'border-radius:var(--radius-lg);padding:16px 18px;transition:all .15s">'
+    // Header row
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+    h += '<div style="display:flex;align-items:center;gap:10px">'
+    h += '<span style="font-size:18px">' + m.icon + '</span>'
+    h += '<div><div style="font-size:13.5px;font-weight:600">' + m.label + '</div>'
+    h += '<div style="font-size:11px;color:var(--text-3)">' + m.desc + '</div></div></div>'
+    var btnStyle = isActive
+      ? 'background:var(--amber);color:#0a0c0f;font-size:11px;padding:5px 12px'
+      : 'background:var(--bg-3);color:var(--text-2);border:1px solid var(--border);font-size:11px;padding:5px 12px'
+    h += '<button onclick="setResearchModel(\'' + m.id + '\')" class="btn-next" style="' + btnStyle + '">' + (isActive ? 'Active' : 'Select') + '</button>'
+    h += '</div>'
+    // Models list
+    h += '<div style="font-size:10.5px;color:var(--text-3);margin-bottom:10px">Models: ' + m.models + '</div>'
+    // Key input
+    h += '<div style="display:flex;gap:8px;align-items:center">'
+    h += '<input type="password" placeholder="' + m.ph + '" value="' + (state[m.keyField] || '') + '"'
+    h += ' onchange="saveModelKey(\'' + m.id + '\', this.value)"'
+    h += ' style="flex:1;background:var(--bg-0);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text-1);font-size:12px;font-family:JetBrains Mono,monospace;outline:none">'
+    h += '<div style="width:8px;height:8px;border-radius:50%;background:' + (hasKey ? 'var(--emerald)' : 'var(--text-3)') + ';flex-shrink:0"></div>'
+    h += '</div></div>'
+  })
+  h += '</div></div></div>' // close gap div, card-body, card
+
+  // Image Generation card
+  h += '<div class="card"><div class="card-head"><h3>◐ Image Generation</h3></div><div class="card-body">'
+  h += '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.55">Image generation for storyboards and character sheets uses your Gemini API key.</p>'
+  h += '<div style="display:flex;flex-direction:column;gap:8px">'
+  var imgModels = [
+    { name:'Nano Banana Pro', desc:'Fast, stylized output via Imagen 3', badge:'Default', badgeCls:'badge badge-a' },
+    { name:'Imagen 3', desc:'Google highest quality generation', badge:'Available', badgeCls:'badge', badgeStyle:'background:var(--bg-3);color:var(--text-3)' },
+    { name:'Gemini Native', desc:'Built-in image generation', badge:'Available', badgeCls:'badge', badgeStyle:'background:var(--bg-3);color:var(--text-3)' },
+  ]
+  imgModels.forEach(function(im) {
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius)">'
+    h += '<div><div style="font-size:12.5px;font-weight:600">' + im.name + '</div><div style="font-size:10.5px;color:var(--text-3)">' + im.desc + '</div></div>'
+    h += '<span class="' + im.badgeCls + '"' + (im.badgeStyle ? ' style="' + im.badgeStyle + '"' : '') + '>' + im.badge + '</span>'
+    h += '</div>'
+  })
+  h += '</div></div></div>' // close gap div, card-body, card
+
+  h += '</div>' // close max-width wrapper
+  return h
 }
 
 // Apply theme on load
