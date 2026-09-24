@@ -766,6 +766,9 @@ function settingsHTML() {
   h += '<input id="settings-api-key" type="password" placeholder="AIza..." value="' + (state.apiKey || '') + '"'
   h += ' style="flex:1;font-family:JetBrains Mono,monospace;font-size:12px">'
   h += '<button onclick="var v=document.getElementById(\'settings-api-key\').value.trim();if(v){state.apiKey=v;try{sessionStorage.setItem(\'vf_api_key\',v)}catch(e){}addLog(\'success\',\'API key saved\');render()}" class="btn-next" style="white-space:nowrap">Save Key</button>'
+  if (state.apiKey) {
+    h += '<button onclick="state.apiKey=null;try{sessionStorage.removeItem(\'vf_api_key\')}catch(e){}addLog(\'info\',\'API key removed\');render()" class="btn-next" style="white-space:nowrap;background:var(--bg-3);color:var(--coral);border:1px solid var(--border)">Remove</button>'
+  }
   h += '</div></div>'
   // Model selector
   h += '<div class="fg"><label>Default Model</label>'
@@ -1072,7 +1075,7 @@ function render() {
   // Update sidebar account
   const sEmail = document.getElementById('s-email')
   const sPlan = document.getElementById('s-plan')
-  if (sEmail) sEmail.textContent = state.apiKey ? 'Key: •••'+state.apiKey.slice(-4) : 'No API key connected'
+  if (sEmail) sEmail.innerHTML = state.apiKey ? 'Key: •••'+state.apiKey.slice(-4)+' <span onclick="navigate(\'settings\')" style="color:var(--amber);cursor:pointer;margin-left:4px;font-size:10px;text-decoration:underline">change</span>' : '<span onclick="showApiKeyModal()" style="cursor:pointer;text-decoration:underline;color:var(--amber)">Connect API key</span>'
   if (sPlan) sPlan.innerHTML = (state.apiKey?'<span class="s-dot"></span>':'') + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ' + (state.apiKey?'Gemini API Connected':'Gemini API')
 
   if (state.page === 'dashboard') {
