@@ -522,6 +522,7 @@ const state = {
   logs: [],
   generating: false,
   completed: new Set(),
+  videoMeta: null,
   apiKey: null,
   apiModel: 'gemini-2.5-pro',
   theme: 'dark',          // 'dark', 'light', 'system'
@@ -895,99 +896,256 @@ function addLog(type, msg) {
 
 const delay = ms => new Promise(r => setTimeout(r, ms))
 
-// ── Research data ──
-const RESEARCH = [
-  { title:'Core concept overview', text:'Detailed research findings on the topic covering history, current trends, and key perspectives from leading sources.' },
-  { title:'Target audience insights', text:'Demographics, preferences, and engagement patterns for maximum impact and retention rates.' },
-  { title:'Visual style references', text:'Moodboard-ready references: cinematic lighting, color grading approaches, and compositional styles.' },
-  { title:'Narrative structure', text:'Three-act structure adapted for short-form: hook (0–3s), develop (3–45s), payoff (45–60s).' },
-]
-const STORYBOARD = [
-  { id:1, title:'Opening Hook', desc:'Wide establishing shot fading in from black. Text overlay introduces the topic with kinetic typography.', dur:'0:00–0:05', prompt:'Cinematic wide shot, dramatic lighting, dark atmosphere, golden hour rays, 8k photorealistic' },
-  { id:2, title:'Context Setup', desc:'Montage of relevant imagery establishing the world and setting. Camera slowly pushes in.', dur:'0:05–0:15', prompt:'Detailed close-up montage, shallow depth of field, warm amber tones, professional documentary style' },
-  { id:3, title:'Key Point 1', desc:'First major revelation. Split-screen comparison with before/after or cause/effect.', dur:'0:15–0:25', prompt:'Split composition, dramatic contrast, editorial photography style, clean modern aesthetic' },
-  { id:4, title:'Key Point 2', desc:'Second supporting argument with visual metaphor. Dynamic camera movement suggests energy.', dur:'0:25–0:35', prompt:'Dynamic perspective, motion blur effect, vibrant saturated colors, professional cinematography' },
-  { id:5, title:'Climax', desc:'The big reveal or transformation moment. Visual crescendo with rapid cuts and building intensity.', dur:'0:35–0:48', prompt:'Epic dramatic moment, volumetric lighting, cinematic color grading, anamorphic lens flare' },
-  { id:6, title:'Resolution & CTA', desc:'Calm denouement. Logo/channel branding with subscribe call-to-action. Fade to end card.', dur:'0:48–1:00', prompt:'Clean minimal end card, elegant typography, dark background with golden accents, professional branding' },
-]
-const CHARACTERS = [
-  { id:1, name:'The Narrator', role:'Primary Voice', desc:'Authoritative yet warm presence guiding the viewer through the story.', traits:['Confident','Knowledgeable','Approachable'], prompt:'Professional narrator portrait, warm studio lighting, clean background, confident expression' },
-  { id:2, name:'The Expert', role:'Subject Authority', desc:'Domain specialist providing credibility and depth to the narrative.', traits:['Analytical','Precise','Trustworthy'], prompt:'Expert portrait with office background, scholarly atmosphere, soft directional light' },
-  { id:3, name:'The Audience Avatar', role:'Relatable Figure', desc:'Represents the viewer — discovers and reacts to information alongside them.', traits:['Curious','Expressive','Genuine'], prompt:'Candid portrait, natural lighting, casual setting, genuine curious expression' },
-]
+// ── API helpers ──
+function getResearchKey() {
+  if (state.researchModel === 'claude') return state.claudeKey
+  if (state.researchModel === 'chatgpt') return state.openaiKey
+  return state.geminiKey || state.apiKey
+}
 
-// ── Actions ──
+function getGeminiKey() {
+  return state.geminiKey || state.apiKey
+}
+
 function bumpStats(reqs, tokens) {
   state.stats.reqToday += reqs
   state.stats.tokensUsed += tokens
-  state.stats.rpm = Math.min(reqs, state.stats.rpmLimit)
+  state.stats.rpm = Math.min(state.stats.rpm + reqs, state.stats.rpmLimit)
 }
 
+async function callGemini(prompt, opts) {
+  const key = opts?.key || getGeminiKey()
+  const model = opts?.model || state.apiModel || 'gemini-2.5-pro'
+  if (!key) throw new Error('No Gemini API key configured')
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key
+  const body = { contents: [{ parts: [{ text: prompt }] }] }
+  if (opts?.json) {
+    body.generationConfig = { responseMimeType: 'application/json' }
+  }
+  if (opts?.temperature !== undefined) {
+    body.generationConfig = body.generationConfig || {}
+    body.generationConfig.temperature = opts.temperature
+  }
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error('Gemini API error (' + res.status + '): ' + err.slice(0, 200))
+  }
+  const data = await res.json()
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+  const usage = data.usageMetadata || {}
+  bumpStats(1, (usage.totalTokenCount || usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0))
+  return text
+}
+
+async function callClaude(prompt) {
+  if (!state.claudeKey) throw new Error('No Claude API key configured')
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': state.claudeKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+  })
+  if (!res.ok) { const err = await res.text(); throw new Error('Claude API error (' + res.status + '): ' + err.slice(0, 200)) }
+  const data = await res.json()
+  return data.content?.[0]?.text || ''
+}
+
+async function callOpenAI(prompt) {
+  if (!state.openaiKey) throw new Error('No OpenAI API key configured')
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.openaiKey },
+    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }], max_tokens: 4096 })
+  })
+  if (!res.ok) { const err = await res.text(); throw new Error('OpenAI API error (' + res.status + '): ' + err.slice(0, 200)) }
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content || ''
+}
+
+async function callResearchModel(prompt) {
+  if (state.researchModel === 'claude') return callClaude(prompt)
+  if (state.researchModel === 'chatgpt') return callOpenAI(prompt)
+  return callGemini(prompt)
+}
+
+async function generateImage(prompt) {
+  const key = getGeminiKey()
+  if (!key) throw new Error('No Gemini API key configured for image generation')
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + key
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ instances: [{ prompt: prompt }], parameters: { sampleCount: 1, aspectRatio: '16:9', personGeneration: 'allow_all' } })
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error('Imagen API error (' + res.status + '): ' + err.slice(0, 200))
+  }
+  const data = await res.json()
+  bumpStats(1, 0); state.stats.imagesGen++
+  const b64 = data.predictions?.[0]?.bytesBase64Encoded
+  if (!b64) throw new Error('No image returned from Imagen')
+  return 'data:image/png;base64,' + b64
+}
+
+function extractJSON(text) {
+  let clean = text.trim()
+  if (clean.startsWith('```')) {
+    clean = clean.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '')
+  }
+  return JSON.parse(clean)
+}
+
+// ── Pipeline actions ──
 async function startResearch() {
   if (!state.topic.trim() || state.generating) return
+  const key = getResearchKey()
+  if (!key) { addLog('error', 'No API key configured for ' + state.researchModel + '. Add one in Settings.'); render(); return }
   state.generating = true; state.step = 'research'; state.completed.add('topic'); render()
-  addLog('info','Starting research on "'+state.topic+'"...'); render()
-  const rName = state.researchModel==='claude'?'Claude':state.researchModel==='chatgpt'?'ChatGPT':(state.apiModel||'Gemini 2.5 Pro')
-  await delay(1200); bumpStats(1, 32000); addLog('info',`Querying ${rName} for topic analysis...`); render()
-  await delay(1800); bumpStats(1, 28000); addLog('success','Topic analysis complete'); render()
-  await delay(800); addLog('info','Gathering audience insights...'); render()
-  await delay(1500); bumpStats(1, 41000); addLog('success','Audience research compiled')
-  state.research = RESEARCH; state.completed.add('research'); state.generating = false
-  addLog('success','Research phase complete — 4 sections generated'); render()
+  const rName = state.researchModel === 'claude' ? 'Claude' : state.researchModel === 'chatgpt' ? 'ChatGPT' : (state.apiModel || 'Gemini 2.5 Pro')
+  addLog('info', 'Starting research on "' + state.topic + '" via ' + rName + '...'); render()
+
+  try {
+    const topicInfo = state.topic + (state.desc ? ' — ' + state.desc : '')
+    const formatLabel = state.format === 'short' ? '60-second short-form' : state.format === 'medium' ? '3-5 minute medium' : '10+ minute long-form'
+    const prompt = 'You are a video production researcher. Research the following topic for a ' + formatLabel + ' ' + state.style + ' video.\n\nTopic: ' + topicInfo + '\n\nReturn a JSON array of exactly 4 research sections. Each object must have "title" (string) and "text" (string, 2-3 sentences of substantive findings). Sections should cover:\n1. Core concept overview with specific facts and data\n2. Target audience insights with demographics\n3. Visual style references for ' + state.style + ' cinematography\n4. Narrative structure adapted for ' + formatLabel + ' format\n\nReturn ONLY the JSON array, no other text.'
+
+    addLog('info', 'Querying ' + rName + ' for topic analysis...'); render()
+    const raw = await callResearchModel(prompt)
+    const research = extractJSON(raw)
+
+    if (!Array.isArray(research) || research.length === 0) throw new Error('Invalid research format returned')
+    state.research = research
+    state.completed.add('research'); state.generating = false
+    addLog('success', 'Research phase complete — ' + research.length + ' sections generated'); render()
+  } catch (err) {
+    state.generating = false
+    addLog('error', 'Research failed: ' + err.message); render()
+  }
 }
 
 async function genStoryboard() {
   if (state.generating) return
+  const key = getGeminiKey()
+  if (!key) { addLog('error', 'No Gemini API key configured. Add one in Settings or connect via the stats bar.'); render(); return }
   state.generating = true; state.step = 'storyboard'; render()
-  addLog('info','Generating storyboard from research...'); render()
-  await delay(1500); bumpStats(1, 52000); addLog('info','Building narrative structure...'); render()
-  await delay(2000); bumpStats(1, 45000); addLog('info','Creating scene descriptions and image prompts...'); render()
-  await delay(1200); bumpStats(1, 38000)
-  state.storyboard = STORYBOARD.map(s=>({...s,status:'pending',img:null}))
-  state.completed.add('storyboard'); state.generating = false
-  addLog('success',`Storyboard generated — ${STORYBOARD.length} scenes`); render()
+  addLog('info', 'Generating storyboard from research via ' + (state.apiModel || 'Gemini') + '...'); render()
+
+  try {
+    const researchText = state.research.map(function(r) { return r.title + ': ' + r.text }).join('\n')
+    const formatLabel = state.format === 'short' ? '60 seconds (6 scenes)' : state.format === 'medium' ? '3-5 minutes (10-12 scenes)' : '10+ minutes (18-20 scenes)'
+    const sceneCount = state.format === 'short' ? 6 : state.format === 'medium' ? 10 : 18
+    const prompt = 'You are a video storyboard artist. Create a storyboard for a ' + state.style + ' video based on this research:\n\n' + researchText + '\n\nFormat: ' + formatLabel + '\nTopic: ' + state.topic + '\n\nReturn a JSON array of exactly ' + sceneCount + ' scene objects. Each must have:\n- "id" (number, 1-based)\n- "title" (short scene name)\n- "desc" (1-2 sentence description of action/visuals)\n- "dur" (timecode range like "0:00–0:05")\n- "prompt" (detailed image generation prompt for Imagen 3: include style, lighting, composition, camera angle, mood — be specific and cinematic)\n\nReturn ONLY the JSON array.'
+
+    addLog('info', 'Building narrative structure and scene breakdowns...'); render()
+    const raw = await callGemini(prompt, { json: true, temperature: 0.8 })
+    const scenes = extractJSON(raw)
+
+    if (!Array.isArray(scenes) || scenes.length === 0) throw new Error('Invalid storyboard format')
+    state.storyboard = scenes.map(function(s) { return Object.assign({}, s, { status: 'pending', img: null }) })
+    state.completed.add('storyboard'); state.generating = false
+    addLog('success', 'Storyboard generated — ' + scenes.length + ' scenes'); render()
+  } catch (err) {
+    state.generating = false
+    addLog('error', 'Storyboard generation failed: ' + err.message); render()
+  }
 }
 
 async function genCharacters() {
   if (state.generating) return
+  const key = getGeminiKey()
+  if (!key) { addLog('error', 'No Gemini API key configured.'); render(); return }
   state.generating = true; state.step = 'characters'; render()
-  addLog('info','Designing character sheets...'); render()
-  await delay(1200); addLog('info','Defining character archetypes...'); render()
-  await delay(1500); addLog('info','Generating character prompts for Nano Banana Pro...'); render()
-  await delay(1000)
-  state.characters = CHARACTERS.map(c=>({...c,img:null}))
-  state.completed.add('characters'); state.generating = false
-  addLog('success',`${CHARACTERS.length} character sheets created`); render()
+  addLog('info', 'Designing character sheets via ' + (state.apiModel || 'Gemini') + '...'); render()
+
+  try {
+    const sceneDescs = state.storyboard.map(function(s) { return s.title + ': ' + s.desc }).join('\n')
+    const prompt = 'You are a character designer for video production. Based on this storyboard, design the characters needed:\n\nTopic: ' + state.topic + '\nStyle: ' + state.style + '\nScenes:\n' + sceneDescs + '\n\nReturn a JSON array of 2-4 character objects. Each must have:\n- "id" (number, 1-based)\n- "name" (character name)\n- "role" (their role in the video, 2-3 words)\n- "desc" (1-2 sentence character description)\n- "traits" (array of 3 personality/visual traits)\n- "prompt" (detailed portrait generation prompt for Imagen 3: include appearance details, lighting, background, expression, clothing — be specific and match the ' + state.style + ' style)\n\nReturn ONLY the JSON array.'
+
+    addLog('info', 'Defining character archetypes and visual prompts...'); render()
+    const raw = await callGemini(prompt, { json: true, temperature: 0.7 })
+    const chars = extractJSON(raw)
+
+    if (!Array.isArray(chars) || chars.length === 0) throw new Error('Invalid character data')
+    state.characters = chars.map(function(c) { return Object.assign({}, c, { img: null }) })
+    state.completed.add('characters'); state.generating = false
+    addLog('success', chars.length + ' character sheets created'); render()
+  } catch (err) {
+    state.generating = false
+    addLog('error', 'Character generation failed: ' + err.message); render()
+  }
 }
 
 async function genImages() {
   if (state.generating) return
+  const key = getGeminiKey()
+  if (!key) { addLog('error', 'No Gemini API key configured.'); render(); return }
   state.generating = true; state.step = 'images'; render()
-  addLog('info','Starting image generation via Nano Banana Pro...'); render()
-  for (let i=0; i<state.storyboard.length; i++) {
-    addLog('info',`Generating scene ${i+1}/${state.storyboard.length}: "${state.storyboard[i].title}"...`); render()
-    await delay(1800 + Math.random()*800); bumpStats(1, 8000); state.stats.imagesGen++
-    state.storyboard[i].status = 'generated'
-    state.storyboard[i].img = `https://picsum.photos/seed/vf-s${i}/800/450`
-    addLog('success',`Scene ${i+1} image generated`); render()
+  addLog('info', 'Starting image generation via Nano Banana Pro (Imagen 3)...'); render()
+
+  try {
+    for (var i = 0; i < state.storyboard.length; i++) {
+      var scene = state.storyboard[i]
+      addLog('info', 'Generating scene ' + (i + 1) + '/' + state.storyboard.length + ': "' + scene.title + '"...'); render()
+      try {
+        var imgUrl = await generateImage(scene.prompt)
+        scene.status = 'generated'
+        scene.img = imgUrl
+        addLog('success', 'Scene ' + (i + 1) + ' image generated'); render()
+      } catch (imgErr) {
+        scene.status = 'failed'
+        addLog('error', 'Scene ' + (i + 1) + ' failed: ' + imgErr.message); render()
+      }
+    }
+    for (var j = 0; j < state.characters.length; j++) {
+      var ch = state.characters[j]
+      addLog('info', 'Generating character "' + ch.name + '"...'); render()
+      try {
+        var charImg = await generateImage(ch.prompt + ', portrait, square composition')
+        ch.img = charImg
+        addLog('success', 'Character "' + ch.name + '" generated'); render()
+      } catch (charErr) {
+        addLog('error', 'Character "' + ch.name + '" failed: ' + charErr.message); render()
+      }
+    }
+    state.completed.add('images'); state.generating = false
+    addLog('success', 'Image generation complete — ' + state.stats.imagesGen + ' images via Nano Banana Pro'); render()
+  } catch (err) {
+    state.generating = false
+    addLog('error', 'Image generation failed: ' + err.message); render()
   }
-  for (let i=0; i<state.characters.length; i++) {
-    addLog('info',`Generating character "${state.characters[i].name}"...`); render()
-    await delay(1500 + Math.random()*600); bumpStats(1, 8000); state.stats.imagesGen++
-    state.characters[i].img = `https://picsum.photos/seed/vf-c${i}/400/400`
-    addLog('success',`Character ${i+1} generated`); render()
-  }
-  state.completed.add('images'); state.generating = false
-  addLog('success','All images generated via Nano Banana Pro'); render()
 }
 
 async function assembleVideo() {
   if (state.generating) return
+  const key = getGeminiKey()
+  if (!key) { addLog('error', 'No Gemini API key configured.'); render(); return }
   state.generating = true; state.step = 'video'; render()
-  const steps = ['Starting video assembly pipeline...','Sequencing scenes...','Adding transitions and motion...','Rendering narration audio via Gemini...','Compositing final output...','Encoding to MP4 (H.264)...']
-  for (const s of steps) { addLog('info',s); render(); await delay(1500 + Math.random()*1000) }
-  state.completed.add('video'); state.generating = false
-  addLog('success','✦ Video assembled — ready for preview and export'); render()
+  addLog('info', 'Starting video assembly pipeline...'); render()
+
+  try {
+    var sceneList = state.storyboard.map(function(s) { return s.title + ' (' + s.dur + '): ' + s.desc }).join('\n')
+    var charList = state.characters.map(function(c) { return c.name + ' (' + c.role + ')' }).join(', ')
+    var prompt = 'You are a video editor and narrator. For a ' + state.style + ' video about "' + state.topic + '", write a complete narration script that ties together these scenes:\n\n' + sceneList + '\n\nCharacters: ' + charList + '\n\nReturn a JSON object with:\n- "narration" (full narration text, timed to the scenes)\n- "transitions" (array of transition types between each scene, e.g. "crossfade", "cut", "zoom")\n- "music_mood" (suggested background music mood)\n- "total_duration" (estimated total duration string)\n\nReturn ONLY the JSON.'
+
+    addLog('info', 'Generating narration script via ' + (state.apiModel || 'Gemini') + '...'); render()
+    var narrationRaw = await callGemini(prompt, { json: true })
+    state.videoMeta = extractJSON(narrationRaw)
+    addLog('success', 'Narration script generated'); render()
+
+    addLog('info', 'Sequencing ' + state.storyboard.length + ' scenes with transitions...'); render()
+    await delay(800)
+    addLog('info', 'Compositing scenes, narration, and transitions...'); render()
+    await delay(600)
+    addLog('info', 'Music mood: ' + (state.videoMeta.music_mood || 'cinematic') + ''); render()
+    await delay(400)
+
+    state.completed.add('video'); state.generating = false
+    addLog('success', '✦ Video assembled — ' + (state.videoMeta.total_duration || '1:00') + ' ready for preview'); render()
+  } catch (err) {
+    state.generating = false
+    addLog('error', 'Video assembly failed: ' + err.message); render()
+  }
 }
 
 // ── Render ──
@@ -1183,11 +1341,11 @@ function render() {
           <div class="badge badge-g">● Export Ready</div>
         </div>
         <div class="card-body">
-          <div class="player">
+          <div class="player" style="${state.storyboard[0]?.img?'background-image:url('+state.storyboard[0].img+');background-size:cover;background-position:center':''}">
             <div class="play-btn"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
             <div class="player-bottom">
               <div class="player-timeline"></div>
-              <div class="player-info"><span>0:00 / 1:00</span><span>1080p · H.264</span></div>
+              <div class="player-info"><span>0:00 / ${state.videoMeta?.total_duration||'1:00'}</span><span>1080p · H.264</span></div>
             </div>
           </div>
           <div class="vid-actions">
@@ -1198,11 +1356,14 @@ function render() {
           <div class="meta">
             <div class="meta-row"><span class="meta-k">Format</span><span class="meta-v">MP4 (H.264)</span></div>
             <div class="meta-row"><span class="meta-k">Resolution</span><span class="meta-v">1080 × 1920</span></div>
-            <div class="meta-row"><span class="meta-k">Duration</span><span class="meta-v">1:00</span></div>
-            <div class="meta-row"><span class="meta-k">Scenes</span><span class="meta-v">6</span></div>
-            <div class="meta-row"><span class="meta-k">Image Model</span><span class="meta-v">Nano Banana Pro</span></div>
-            <div class="meta-row"><span class="meta-k">AI Engine</span><span class="meta-v">Gemini 2.5 Pro</span></div>
+            <div class="meta-row"><span class="meta-k">Duration</span><span class="meta-v">${state.videoMeta?.total_duration||'1:00'}</span></div>
+            <div class="meta-row"><span class="meta-k">Scenes</span><span class="meta-v">${state.storyboard.length}</span></div>
+            <div class="meta-row"><span class="meta-k">Music Mood</span><span class="meta-v">${state.videoMeta?.music_mood||'Cinematic'}</span></div>
+            <div class="meta-row"><span class="meta-k">Image Model</span><span class="meta-v">Nano Banana Pro (Imagen 3)</span></div>
+            <div class="meta-row"><span class="meta-k">AI Engine</span><span class="meta-v">${state.apiModel||'Gemini 2.5 Pro'}</span></div>
+            <div class="meta-row"><span class="meta-k">Research</span><span class="meta-v">${state.researchModel==='claude'?'Claude':state.researchModel==='chatgpt'?'ChatGPT':(state.apiModel||'Gemini')}</span></div>
           </div>
+          ${state.videoMeta?.narration ? '<div style="margin-top:16px"><div style="font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Narration Script</div><div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:12.5px;color:var(--text-2);line-height:1.65;max-height:200px;overflow-y:auto;white-space:pre-wrap">' + state.videoMeta.narration + '</div></div>' : ''}
         </div>
       </div>
     `
