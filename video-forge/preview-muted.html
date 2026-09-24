@@ -527,10 +527,6 @@ const state = {
   apiModel: 'gemini-2.5-pro',
   theme: 'dark',          // 'dark', 'light', 'system'
   accent: 'amber',        // 'amber', 'copper', 'sage', 'slate', 'rose'
-  researchModel: 'gemini', // 'gemini', 'claude', 'chatgpt'
-  geminiKey: null,
-  claudeKey: null,
-  openaiKey: null,
   stats: {
     reqToday: 0,
     reqDayLimit: 14400,   // AI Studio Pro: Gemini 2.5 Pro RPD
@@ -683,12 +679,6 @@ try {
   if (k) { state.apiKey = k; state.apiModel = sessionStorage.getItem('vf_api_model') || 'gemini-2.5-pro' }
   const t = sessionStorage.getItem('vf_theme'); if (t) state.theme = t
   const a = sessionStorage.getItem('vf_accent'); if (a) state.accent = a
-  const rm = sessionStorage.getItem('vf_research_model'); if (rm) state.researchModel = rm
-  const gk = sessionStorage.getItem('vf_gemini_key'); if (gk) state.geminiKey = gk
-  const ck = sessionStorage.getItem('vf_claude_key'); if (ck) state.claudeKey = ck
-  const ok = sessionStorage.getItem('vf_openai_key'); if (ok) state.openaiKey = ok
-  // also sync apiKey with the selected research model's key
-  if (state.researchModel === 'gemini' && state.geminiKey) state.apiKey = state.geminiKey
 } catch(e) {}
 
 function applyTheme() {
@@ -708,25 +698,6 @@ function applyTheme() {
 function setTheme(t) { state.theme = t; applyTheme(); render() }
 function setAccent(a) { state.accent = a; applyTheme(); render() }
 
-function setResearchModel(m) {
-  state.researchModel = m
-  try { sessionStorage.setItem('vf_research_model', m) } catch(e) {}
-  render()
-}
-
-function saveModelKey(provider, val) {
-  const keyMap = { gemini:'vf_gemini_key', claude:'vf_claude_key', chatgpt:'vf_openai_key' }
-  const stateMap = { gemini:'geminiKey', claude:'claudeKey', chatgpt:'openaiKey' }
-  state[stateMap[provider]] = val
-  try { sessionStorage.setItem(keyMap[provider], val) } catch(e) {}
-  // If this is the active research model, also set as primary apiKey
-  if (state.researchModel === provider && provider === 'gemini') {
-    state.apiKey = val
-    try { sessionStorage.setItem('vf_api_key', val) } catch(e) {}
-  }
-  addLog('success', `${provider.charAt(0).toUpperCase()+provider.slice(1)} API key saved`)
-  render()
-}
 
 function settingsHTML() {
   var themeOpts = [
@@ -740,11 +711,6 @@ function settingsHTML() {
     { id:'sage', label:'Sage', hex:'#5a9a6a', hexL:'#3d8a50' },
     { id:'slate', label:'Slate', hex:'#7088a0', hexL:'#506880' },
     { id:'rose', label:'Rose', hex:'#b06878', hexL:'#984858' },
-  ]
-  var modelOpts = [
-    { id:'gemini', label:'Gemini', desc:'Google AI Studio', models:'2.5 Pro, 2.5 Flash, 2.0 Flash', icon:'◈', keyField:'geminiKey', ph:'AIza...' },
-    { id:'claude', label:'Claude', desc:'Anthropic API', models:'Opus 5.5, Sonnet 5, Haiku 4.5', icon:'◉', keyField:'claudeKey', ph:'sk-ant-...' },
-    { id:'chatgpt', label:'ChatGPT', desc:'OpenAI API', models:'GPT-4o, o3, o4-mini', icon:'◐', keyField:'openaiKey', ph:'sk-...' },
   ]
   var isDark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
@@ -787,40 +753,28 @@ function settingsHTML() {
   h += '</div></div>'
   h += '</div></div>' // close card-body, card
 
-  // Research Model card
+  // Gemini API card
   h += '<div class="card" style="margin-bottom:20px">'
-  h += '<div class="card-head"><h3>◈ Research Model</h3><span class="badge badge-a">' + state.researchModel + '</span></div>'
+  h += '<div class="card-head"><h3>◈ Gemini API</h3>'
+  h += '<div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:' + (state.apiKey ? 'var(--emerald)' : 'var(--text-3)') + '"></div>'
+  h += '<span style="font-size:11px;color:' + (state.apiKey ? 'var(--emerald)' : 'var(--text-3)') + '">' + (state.apiKey ? 'Connected' : 'Not connected') + '</span></div></div>'
   h += '<div class="card-body">'
-  h += '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.55">Choose which AI model handles topic research and storyboard generation. Image generation always uses Nano Banana Pro via Imagen 3.</p>'
-  h += '<div style="display:flex;flex-direction:column;gap:10px">'
-  modelOpts.forEach(function(m) {
-    var isActive = state.researchModel === m.id
-    var hasKey = !!state[m.keyField]
-    h += '<div style="border:2px solid ' + (isActive ? 'var(--amber)' : 'var(--border)') + ';'
-    h += 'background:' + (isActive ? 'var(--amber-dim)' : 'var(--bg-input)') + ';'
-    h += 'border-radius:var(--radius-lg);padding:16px 18px;transition:all .15s">'
-    // Header row
-    h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
-    h += '<div style="display:flex;align-items:center;gap:10px">'
-    h += '<span style="font-size:18px">' + m.icon + '</span>'
-    h += '<div><div style="font-size:13.5px;font-weight:600">' + m.label + '</div>'
-    h += '<div style="font-size:11px;color:var(--text-3)">' + m.desc + '</div></div></div>'
-    var btnStyle = isActive
-      ? 'background:var(--amber);color:#0a0c0f;font-size:11px;padding:5px 12px'
-      : 'background:var(--bg-3);color:var(--text-2);border:1px solid var(--border);font-size:11px;padding:5px 12px'
-    h += '<button onclick="setResearchModel(\'' + m.id + '\')" class="btn-next" style="' + btnStyle + '">' + (isActive ? 'Active' : 'Select') + '</button>'
-    h += '</div>'
-    // Models list
-    h += '<div style="font-size:10.5px;color:var(--text-3);margin-bottom:10px">Models: ' + m.models + '</div>'
-    // Key input
-    h += '<div style="display:flex;gap:8px;align-items:center">'
-    h += '<input type="password" placeholder="' + m.ph + '" value="' + (state[m.keyField] || '') + '"'
-    h += ' onchange="saveModelKey(\'' + m.id + '\', this.value)"'
-    h += ' style="flex:1;background:var(--bg-0);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text-1);font-size:12px;font-family:JetBrains Mono,monospace;outline:none">'
-    h += '<div style="width:8px;height:8px;border-radius:50%;background:' + (hasKey ? 'var(--emerald)' : 'var(--text-3)') + ';flex-shrink:0"></div>'
-    h += '</div></div>'
-  })
-  h += '</div></div></div>' // close gap div, card-body, card
+  h += '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px;line-height:1.55">Your AI Studio API key powers everything: research, storyboard, characters, narration, and image generation (Imagen 3).</p>'
+  // API key input
+  h += '<div class="fg" style="margin-bottom:14px"><label>API Key</label>'
+  h += '<div style="display:flex;gap:8px">'
+  h += '<input id="settings-api-key" type="password" placeholder="AIza..." value="' + (state.apiKey || '') + '"'
+  h += ' style="flex:1;font-family:JetBrains Mono,monospace;font-size:12px">'
+  h += '<button onclick="var v=document.getElementById(\'settings-api-key\').value.trim();if(v){state.apiKey=v;try{sessionStorage.setItem(\'vf_api_key\',v)}catch(e){}addLog(\'success\',\'API key saved\');render()}" class="btn-next" style="white-space:nowrap">Save Key</button>'
+  h += '</div></div>'
+  // Model selector
+  h += '<div class="fg"><label>Default Model</label>'
+  h += '<select onchange="state.apiModel=this.value;try{sessionStorage.setItem(\'vf_api_model\',this.value)}catch(e){};render()">'
+  h += '<option value="gemini-2.5-pro"' + (state.apiModel === 'gemini-2.5-pro' ? ' selected' : '') + '>Gemini 2.5 Pro</option>'
+  h += '<option value="gemini-2.5-flash"' + (state.apiModel === 'gemini-2.5-flash' ? ' selected' : '') + '>Gemini 2.5 Flash</option>'
+  h += '<option value="gemini-2.0-flash"' + (state.apiModel === 'gemini-2.0-flash' ? ' selected' : '') + '>Gemini 2.0 Flash</option>'
+  h += '</select></div>'
+  h += '</div></div>'
 
   // Image Generation card
   h += '<div class="card"><div class="card-head"><h3>◐ Image Generation</h3></div><div class="card-body">'
@@ -897,16 +851,6 @@ function addLog(type, msg) {
 const delay = ms => new Promise(r => setTimeout(r, ms))
 
 // ── API helpers ──
-function getResearchKey() {
-  if (state.researchModel === 'claude') return state.claudeKey
-  if (state.researchModel === 'chatgpt') return state.openaiKey
-  return state.geminiKey || state.apiKey
-}
-
-function getGeminiKey() {
-  return state.geminiKey || state.apiKey
-}
-
 function bumpStats(reqs, tokens) {
   state.stats.reqToday += reqs
   state.stats.tokensUsed += tokens
@@ -914,7 +858,7 @@ function bumpStats(reqs, tokens) {
 }
 
 async function callGemini(prompt, opts) {
-  const key = opts?.key || getGeminiKey()
+  const key = opts?.key || state.apiKey
   const model = opts?.model || state.apiModel || 'gemini-2.5-pro'
   if (!key) throw new Error('No Gemini API key configured')
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key
@@ -938,38 +882,8 @@ async function callGemini(prompt, opts) {
   return text
 }
 
-async function callClaude(prompt) {
-  if (!state.claudeKey) throw new Error('No Claude API key configured')
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': state.claudeKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
-  })
-  if (!res.ok) { const err = await res.text(); throw new Error('Claude API error (' + res.status + '): ' + err.slice(0, 200)) }
-  const data = await res.json()
-  return data.content?.[0]?.text || ''
-}
-
-async function callOpenAI(prompt) {
-  if (!state.openaiKey) throw new Error('No OpenAI API key configured')
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.openaiKey },
-    body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }], max_tokens: 4096 })
-  })
-  if (!res.ok) { const err = await res.text(); throw new Error('OpenAI API error (' + res.status + '): ' + err.slice(0, 200)) }
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content || ''
-}
-
-async function callResearchModel(prompt) {
-  if (state.researchModel === 'claude') return callClaude(prompt)
-  if (state.researchModel === 'chatgpt') return callOpenAI(prompt)
-  return callGemini(prompt)
-}
-
 async function generateImage(prompt) {
-  const key = getGeminiKey()
+  const key = state.apiKey
   if (!key) throw new Error('No Gemini API key configured for image generation')
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + key
   const res = await fetch(url, {
@@ -999,10 +913,9 @@ function extractJSON(text) {
 // ── Pipeline actions ──
 async function startResearch() {
   if (!state.topic.trim() || state.generating) return
-  const key = getResearchKey()
-  if (!key) { addLog('error', 'No API key configured for ' + state.researchModel + '. Add one in Settings.'); render(); return }
+  if (!state.apiKey) { addLog('error', 'No API key configured. Connect your AI Studio key first.'); render(); return }
   state.generating = true; state.step = 'research'; state.completed.add('topic'); render()
-  const rName = state.researchModel === 'claude' ? 'Claude' : state.researchModel === 'chatgpt' ? 'ChatGPT' : (state.apiModel || 'Gemini 2.5 Pro')
+  const rName = state.apiModel || 'Gemini 2.5 Pro'
   addLog('info', 'Starting research on "' + state.topic + '" via ' + rName + '...'); render()
 
   try {
@@ -1011,7 +924,7 @@ async function startResearch() {
     const prompt = 'You are a video production researcher. Research the following topic for a ' + formatLabel + ' ' + state.style + ' video.\n\nTopic: ' + topicInfo + '\n\nReturn a JSON array of exactly 4 research sections. Each object must have "title" (string) and "text" (string, 2-3 sentences of substantive findings). Sections should cover:\n1. Core concept overview with specific facts and data\n2. Target audience insights with demographics\n3. Visual style references for ' + state.style + ' cinematography\n4. Narrative structure adapted for ' + formatLabel + ' format\n\nReturn ONLY the JSON array, no other text.'
 
     addLog('info', 'Querying ' + rName + ' for topic analysis...'); render()
-    const raw = await callResearchModel(prompt)
+    const raw = await callGemini(prompt, { json: true })
     const research = extractJSON(raw)
 
     if (!Array.isArray(research) || research.length === 0) throw new Error('Invalid research format returned')
@@ -1026,7 +939,7 @@ async function startResearch() {
 
 async function genStoryboard() {
   if (state.generating) return
-  const key = getGeminiKey()
+  const key = state.apiKey
   if (!key) { addLog('error', 'No Gemini API key configured. Add one in Settings or connect via the stats bar.'); render(); return }
   state.generating = true; state.step = 'storyboard'; render()
   addLog('info', 'Generating storyboard from research via ' + (state.apiModel || 'Gemini') + '...'); render()
@@ -1053,7 +966,7 @@ async function genStoryboard() {
 
 async function genCharacters() {
   if (state.generating) return
-  const key = getGeminiKey()
+  const key = state.apiKey
   if (!key) { addLog('error', 'No Gemini API key configured.'); render(); return }
   state.generating = true; state.step = 'characters'; render()
   addLog('info', 'Designing character sheets via ' + (state.apiModel || 'Gemini') + '...'); render()
@@ -1078,7 +991,7 @@ async function genCharacters() {
 
 async function genImages() {
   if (state.generating) return
-  const key = getGeminiKey()
+  const key = state.apiKey
   if (!key) { addLog('error', 'No Gemini API key configured.'); render(); return }
   state.generating = true; state.step = 'images'; render()
   addLog('info', 'Starting image generation via Nano Banana Pro (Imagen 3)...'); render()
@@ -1118,7 +1031,7 @@ async function genImages() {
 
 async function assembleVideo() {
   if (state.generating) return
-  const key = getGeminiKey()
+  const key = state.apiKey
   if (!key) { addLog('error', 'No Gemini API key configured.'); render(); return }
   state.generating = true; state.step = 'video'; render()
   addLog('info', 'Starting video assembly pipeline...'); render()
@@ -1361,7 +1274,7 @@ function render() {
             <div class="meta-row"><span class="meta-k">Music Mood</span><span class="meta-v">${state.videoMeta?.music_mood||'Cinematic'}</span></div>
             <div class="meta-row"><span class="meta-k">Image Model</span><span class="meta-v">Nano Banana Pro (Imagen 3)</span></div>
             <div class="meta-row"><span class="meta-k">AI Engine</span><span class="meta-v">${state.apiModel||'Gemini 2.5 Pro'}</span></div>
-            <div class="meta-row"><span class="meta-k">Research</span><span class="meta-v">${state.researchModel==='claude'?'Claude':state.researchModel==='chatgpt'?'ChatGPT':(state.apiModel||'Gemini')}</span></div>
+            <div class="meta-row"><span class="meta-k">Research Model</span><span class="meta-v">${state.apiModel||'Gemini 2.5 Pro'}</span></div>
           </div>
           ${state.videoMeta?.narration ? '<div style="margin-top:16px"><div style="font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Narration Script</div><div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:12.5px;color:var(--text-2);line-height:1.65;max-height:200px;overflow-y:auto;white-space:pre-wrap">' + state.videoMeta.narration + '</div></div>' : ''}
         </div>
