@@ -402,8 +402,8 @@ body {
     <nav class="s-nav" id="nav"></nav>
     <div class="s-footer">
       <div class="s-account">
-        <div class="s-email">user@studio.ai</div>
-        <div class="s-plan"><span class="s-dot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Google AI Pro</div>
+        <div class="s-email" id="s-email">No API key connected</div>
+        <div class="s-plan" id="s-plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gemini API</div>
       </div>
     </div>
   </aside>
@@ -438,6 +438,18 @@ const state = {
   logs: [],
   generating: false,
   completed: new Set(),
+  apiKey: null,
+  apiModel: 'gemini-2.5-pro',
+  stats: {
+    reqToday: 0,
+    reqDayLimit: 1500,    // Gemini 2.5 Pro RPD on paid tier
+    tokensUsed: 0,
+    tpmLimit: 4_000_000,  // 4M TPM
+    imagesGen: 0,
+    imagesDayLimit: 50,   // Imagen 3 daily limit
+    rpm: 0,
+    rpmLimit: 360,        // Gemini 2.5 Pro RPM
+  },
 }
 
 const STEPS = [
@@ -503,23 +515,82 @@ function navigate(page) {
 
 // ── Stats HTML ──
 function statsHTML() {
+  if (!state.apiKey) {
+    return `<div class="stats" style="grid-template-columns:1fr">
+      <div class="stat accent" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="stat-label">⚡ Gemini API</div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:4px">Connect your API key to see live usage stats</div>
+        </div>
+        <button class="btn-next" onclick="showApiKeyModal()">Connect API Key</button>
+      </div>
+    </div>`
+  }
   const stats = [
-    { label:'API Calls', icon:'⚡', val:'1,847', pct:37, used:'1,847', lim:'5,000', color:'var(--amber)', cls:'a', accent:true },
-    { label:'Tokens Used', icon:'◈', val:'2.3M', pct:23, used:'2.3M', lim:'10M', color:'var(--emerald)', cls:'g' },
-    { label:'Image Credits', icon:'◐', val:'312', pct:31, used:'312', lim:'1,000', color:'var(--coral)', cls:'c' },
-    { label:'Video Minutes', icon:'▶', val:'42', pct:35, used:'42', lim:'120', color:'var(--amber)', cls:'a' },
+    { label:'Requests Today', icon:'⚡', val: state.stats.reqToday.toLocaleString(), pct: Math.round(state.stats.reqToday/state.stats.reqDayLimit*100), used:state.stats.reqToday.toLocaleString(), lim:state.stats.reqDayLimit.toLocaleString()+' RPD', color:'var(--amber)', cls:'a', accent:true },
+    { label:'Tokens (this session)', icon:'◈', val: (state.stats.tokensUsed/1e6).toFixed(2)+'M', pct: Math.min(Math.round(state.stats.tokensUsed/state.stats.tpmLimit*100),100), used:(state.stats.tokensUsed/1e6).toFixed(2)+'M', lim:(state.stats.tpmLimit/1e6)+'M TPM', color:'var(--emerald)', cls:'g' },
+    { label:'Images Generated', icon:'◐', val: state.stats.imagesGen.toString(), pct: Math.round(state.stats.imagesGen/state.stats.imagesDayLimit*100), used:state.stats.imagesGen.toString(), lim:state.stats.imagesDayLimit+' /day', color:'var(--coral)', cls:'c' },
+    { label:'Rate (RPM)', icon:'▶', val: state.stats.rpm+' / '+state.stats.rpmLimit, pct: Math.round(state.stats.rpm/state.stats.rpmLimit*100), used:state.stats.rpm+' current', lim:state.stats.rpmLimit+' RPM limit', color:'var(--amber)', cls:'a' },
   ]
   return `<div class="stats">${stats.map(s => `
     <div class="stat ${s.accent?'accent':''}">
       <div class="stat-label">${s.icon} ${s.label}</div>
       <div class="stat-val ${s.cls}">${s.val}</div>
       <div class="bar-wrap">
-        <div class="bar-labels"><span>${s.used} used</span><span>${s.lim} limit</span></div>
-        <div class="bar"><div class="bar-fill" style="width:${s.pct}%;background:${s.color}"></div></div>
+        <div class="bar-labels"><span>${s.used}</span><span>${s.lim}</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${Math.min(s.pct,100)}%;background:${s.color}"></div></div>
       </div>
     </div>
   `).join('')}</div>`
 }
+
+function showApiKeyModal() {
+  const overlay = document.createElement('div')
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:300'
+  overlay.innerHTML = `
+    <div style="background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-lg);width:90%;max-width:480px;padding:28px">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">Connect Gemini API</h3>
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:18px;line-height:1.55">Enter your API key from <span style="color:var(--amber)">ai.google.dev</span> to enable live usage tracking and AI generation.</p>
+      <div class="fg" style="margin-bottom:14px">
+        <label>API Key</label>
+        <input id="api-key-input" type="password" placeholder="AIza..." style="font-family:'JetBrains Mono',monospace;font-size:12.5px">
+      </div>
+      <div class="fg" style="margin-bottom:18px">
+        <label>Default Model</label>
+        <select id="api-model-select">
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-next" style="background:var(--bg-3);color:var(--text-2);border:1px solid var(--border)" onclick="this.closest('div[style*=fixed]').remove()">Cancel</button>
+        <button class="btn-next" onclick="connectApiKey()">Connect</button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(overlay)
+  document.getElementById('api-key-input').focus()
+}
+
+function connectApiKey() {
+  const key = document.getElementById('api-key-input')?.value?.trim()
+  const model = document.getElementById('api-model-select')?.value
+  if (!key) return
+  state.apiKey = key
+  state.apiModel = model || 'gemini-2.5-pro'
+  // Store key in sessionStorage (this browser tab only)
+  try { sessionStorage.setItem('vf_api_key', key); sessionStorage.setItem('vf_api_model', model) } catch(e) {}
+  document.querySelector('div[style*="fixed"]')?.remove()
+  addLog('success', `Gemini API connected (${state.apiModel})`)
+  render()
+}
+
+// Restore key from session if available
+try {
+  const k = sessionStorage.getItem('vf_api_key')
+  if (k) { state.apiKey = k; state.apiModel = sessionStorage.getItem('vf_api_model') || 'gemini-2.5-pro' }
+} catch(e) {}
 
 // ── Pipeline HTML ──
 function pipeHTML() {
@@ -555,9 +626,10 @@ function logHTML() {
     <div class="card model-card" style="margin-top:14px">
       <div class="card-body">
         <h4 style="font-size:12.5px;font-weight:600;margin-bottom:10px">Active Models</h4>
-        <div class="model-row"><div class="model-dot" style="background:var(--amber)"></div><div><div class="model-name">Gemini 2.5 Pro</div><div class="model-role">Research & Storyboard</div></div></div>
-        <div class="model-row"><div class="model-dot" style="background:var(--coral)"></div><div><div class="model-name">Nano Banana Pro</div><div class="model-role">Image Generation</div></div></div>
-        <div class="model-row"><div class="model-dot" style="background:var(--emerald)"></div><div><div class="model-name">Gemini Audio</div><div class="model-role">Narration & Voice</div></div></div>
+        <div class="model-row"><div class="model-dot" style="background:${state.apiKey?'var(--emerald)':'var(--text-3)'}"></div><div><div class="model-name">${state.apiModel||'Gemini 2.5 Pro'}</div><div class="model-role">Research & Storyboard</div></div></div>
+        <div class="model-row"><div class="model-dot" style="background:${state.apiKey?'var(--emerald)':'var(--text-3)'}"></div><div><div class="model-name">Nano Banana Pro</div><div class="model-role">Image Generation (Imagen 3)</div></div></div>
+        <div class="model-row"><div class="model-dot" style="background:${state.apiKey?'var(--emerald)':'var(--text-3)'}"></div><div><div class="model-name">Gemini Audio</div><div class="model-role">Narration & Voice</div></div></div>
+        ${!state.apiKey?'<div style="margin-top:10px;font-size:11px;color:var(--text-3)">Connect API key to activate</div>':''}
       </div>
     </div>
   `
@@ -592,14 +664,20 @@ const CHARACTERS = [
 ]
 
 // ── Actions ──
+function bumpStats(reqs, tokens) {
+  state.stats.reqToday += reqs
+  state.stats.tokensUsed += tokens
+  state.stats.rpm = Math.min(reqs, state.stats.rpmLimit)
+}
+
 async function startResearch() {
   if (!state.topic.trim() || state.generating) return
   state.generating = true; state.step = 'research'; state.completed.add('topic'); render()
   addLog('info','Starting research on "'+state.topic+'"...'); render()
-  await delay(1200); addLog('info','Querying Gemini 2.5 Pro for topic analysis...'); render()
-  await delay(1800); addLog('success','Topic analysis complete'); render()
+  await delay(1200); bumpStats(1, 32000); addLog('info',`Querying ${state.apiModel || 'Gemini 2.5 Pro'} for topic analysis...`); render()
+  await delay(1800); bumpStats(1, 28000); addLog('success','Topic analysis complete'); render()
   await delay(800); addLog('info','Gathering audience insights...'); render()
-  await delay(1500); addLog('success','Audience research compiled')
+  await delay(1500); bumpStats(1, 41000); addLog('success','Audience research compiled')
   state.research = RESEARCH; state.completed.add('research'); state.generating = false
   addLog('success','Research phase complete — 4 sections generated'); render()
 }
@@ -608,9 +686,9 @@ async function genStoryboard() {
   if (state.generating) return
   state.generating = true; state.step = 'storyboard'; render()
   addLog('info','Generating storyboard from research...'); render()
-  await delay(1500); addLog('info','Building narrative structure...'); render()
-  await delay(2000); addLog('info','Creating scene descriptions and image prompts...'); render()
-  await delay(1200)
+  await delay(1500); bumpStats(1, 52000); addLog('info','Building narrative structure...'); render()
+  await delay(2000); bumpStats(1, 45000); addLog('info','Creating scene descriptions and image prompts...'); render()
+  await delay(1200); bumpStats(1, 38000)
   state.storyboard = STORYBOARD.map(s=>({...s,status:'pending',img:null}))
   state.completed.add('storyboard'); state.generating = false
   addLog('success',`Storyboard generated — ${STORYBOARD.length} scenes`); render()
@@ -634,14 +712,14 @@ async function genImages() {
   addLog('info','Starting image generation via Nano Banana Pro...'); render()
   for (let i=0; i<state.storyboard.length; i++) {
     addLog('info',`Generating scene ${i+1}/${state.storyboard.length}: "${state.storyboard[i].title}"...`); render()
-    await delay(1800 + Math.random()*800)
+    await delay(1800 + Math.random()*800); bumpStats(1, 8000); state.stats.imagesGen++
     state.storyboard[i].status = 'generated'
     state.storyboard[i].img = `https://picsum.photos/seed/vf-s${i}/800/450`
     addLog('success',`Scene ${i+1} image generated`); render()
   }
   for (let i=0; i<state.characters.length; i++) {
     addLog('info',`Generating character "${state.characters[i].name}"...`); render()
-    await delay(1500 + Math.random()*600)
+    await delay(1500 + Math.random()*600); bumpStats(1, 8000); state.stats.imagesGen++
     state.characters[i].img = `https://picsum.photos/seed/vf-c${i}/400/400`
     addLog('success',`Character ${i+1} generated`); render()
   }
@@ -665,6 +743,12 @@ function render() {
 
   const titles = { project:'✦ New Video Project', dashboard:'Dashboard', usage:'Usage & Statistics', projects:'My Projects', 'images-lib':'Generated Images', 'chars-lib':'Character Library', settings:'Settings' }
   title.textContent = titles[state.page] || 'VideoForge'
+
+  // Update sidebar account
+  const sEmail = document.getElementById('s-email')
+  const sPlan = document.getElementById('s-plan')
+  if (sEmail) sEmail.textContent = state.apiKey ? 'Key: •••'+state.apiKey.slice(-4) : 'No API key connected'
+  if (sPlan) sPlan.innerHTML = (state.apiKey?'<span class="s-dot"></span>':'') + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ' + (state.apiKey?'Gemini API Connected':'Gemini API')
 
   if (state.page === 'dashboard') {
     el.innerHTML = statsHTML() + `
