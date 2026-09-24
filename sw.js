@@ -1,4 +1,4 @@
-const CACHE = 'videoforge-v2';
+const CACHE = 'videoforge-v3';
 const PRECACHE = [
   './',
   './index.html',
