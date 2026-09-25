@@ -498,12 +498,13 @@ input,textarea,select{font:inherit;color:var(--text-1)}
     grid-template-rows:var(--header-h) 1fr;
     height:100dvh;overflow:hidden;
   }
-  .app-header{grid-column:1/-1;position:relative}
+  .app-header{grid-row:1;grid-column:1/-1;position:relative;z-index:100}
   .bottom-nav{
     grid-row:2;grid-column:1;
-    position:static;flex-direction:column;width:auto;height:auto;
+    position:static;flex-direction:column;width:auto;height:100%;
     border-top:none;border-right:1px solid var(--border);padding-bottom:0;
     overflow-y:auto;justify-content:flex-start;padding-top:12px;gap:4px;
+    z-index:auto;
   }
   .nav-btn{flex:none;padding:10px 0;border-radius:var(--radius-md);margin:0 6px}
   .nav-btn.active::before{top:auto;bottom:auto;left:0;right:auto;width:2px;height:60%;top:20%;border-radius:0 2px 2px 0}
