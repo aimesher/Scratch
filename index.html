@@ -1176,13 +1176,25 @@ async function generate(cardId){
     renderJobsBadge();
     resultArea.innerHTML=`<span class="job-badge pending"><span class="job-dot"></span>Processing...</span><p style="font-size:0.72rem;color:var(--text-3);margin-top:4px">ID: ${reqId}</p>`;
     pollJob(job);
-  }else if(res.output||res.url||res.image_url||res.video_url||res.audio_url){
-    const url=res.output||res.url||res.image_url||res.video_url||res.audio_url;
-    showResult(cardId,payload.type,Array.isArray(url)?url:[url],payload);
   }else{
-    resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2)">Response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
+    const urls=extractUrls(res);
+    if(urls.length) showResult(cardId,payload.type,urls,payload);
+    else resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2)">Response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
   }
   btn.classList.remove('loading');btn.disabled=false;
+}
+
+function extractUrls(res){
+  if(!res)return[];
+  const raw=res.output||res.result||res.url||res.image_url||res.video_url||res.audio_url||res.data||res.images||res.videos||res.music_url||res.song_url;
+  if(!raw)return[];
+  if(Array.isArray(raw))return raw.flat().filter(Boolean);
+  if(typeof raw==='string')return[raw];
+  if(typeof raw==='object'){
+    const u=raw.url||raw.output||raw.image_url||raw.video_url||raw.audio_url;
+    if(u)return Array.isArray(u)?u:[u];
+  }
+  return[];
 }
 
 async function pollJob(job){
@@ -1196,11 +1208,16 @@ async function pollJob(job){
     }
     const res=await apiFetch('/api/v1/predictions/'+job.id+'/result');
     if(!res||res._fetchError)return;
-    if(res.status==='succeeded'||res.status==='completed'||res.output){
+    if(res.status==='succeeded'||res.status==='completed'||res.output||res.result){
       job.status='done';renderJobsBadge();
-      const urls=res.output??(res.url?[res.url]:[]);
+      const urls=extractUrls(res);
       const payload=getPayload(job.cardId);
-      showResult(job.cardId,job.type,Array.isArray(urls)?urls:[urls],payload||{type:job.type,body:{model:job.model,prompt:job.prompt}});
+      if(urls.length){
+        showResult(job.cardId,job.type,urls,payload||{type:job.type,body:{model:job.model,prompt:job.prompt}});
+      }else{
+        const ra=document.getElementById('result-'+job.cardId);
+        if(ra)ra.innerHTML=`<span class="job-badge" style="background:var(--accent);color:#fff">Completed</span><p style="font-size:0.75rem;color:var(--text-2);margin-top:8px">Raw response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
+      }
       const btn=document.querySelector(`#card-${job.cardId} .btn-generate`);
       if(btn){btn.classList.remove('loading');btn.disabled=false}
     }else if(res.status==='failed'||res.error){
