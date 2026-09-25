@@ -1190,9 +1190,9 @@ async function generate(cardId){
 
 function extractUrls(res){
   if(!res)return[];
-  const raw=res.output||res.result||res.url||res.image_url||res.video_url||res.audio_url||res.data||res.images||res.videos||res.music_url||res.song_url;
+  const raw=res.outputs||res.output||res.result||res.url||res.image_url||res.video_url||res.audio_url||res.data||res.images||res.videos||res.music_url||res.song_url;
   if(!raw)return[];
-  if(Array.isArray(raw))return raw.flat().filter(Boolean);
+  if(Array.isArray(raw))return raw.flat().map(u=>typeof u==='string'?u:u?.url||u?.output).filter(Boolean);
   if(typeof raw==='string')return[raw];
   if(typeof raw==='object'){
     const u=raw.url||raw.output||raw.image_url||raw.video_url||raw.audio_url;
@@ -1203,11 +1203,16 @@ function extractUrls(res){
 
 function extractCost(res){
   if(!res)return null;
+  if(res.cost&&typeof res.cost==='object'){
+    const v=res.cost.amount_usd??res.cost.amount??res.cost.total;
+    if(typeof v==='number')return v;
+    if(typeof v==='string'){const n=parseFloat(v);if(!isNaN(n))return n}
+  }
   const c=res.cost??res.charge??res.credits_used??res.credit_cost??res.credits??res.price??res.total_cost??res.amount_charged;
   if(typeof c==='number')return c;
   if(typeof c==='string'){const n=parseFloat(c);if(!isNaN(n))return n}
-  if(res.meta&&typeof res.meta.cost==='number')return res.meta.cost;
-  if(res.usage&&typeof res.usage.cost==='number')return res.usage.cost;
+  if(res.meta){const mc=res.meta.cost;if(typeof mc==='number')return mc;if(mc&&typeof mc==='object'&&typeof mc.amount_usd==='number')return mc.amount_usd}
+  if(res.usage){const uc=res.usage.cost;if(typeof uc==='number')return uc;if(uc&&typeof uc==='object'&&typeof uc.amount_usd==='number')return uc.amount_usd}
   return null;
 }
 
