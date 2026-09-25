@@ -1,0 +1,1156 @@
+<title>Synthesis Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap">
+<style>
+:root {
+  color-scheme: dark;
+  --bg-0: #060a12;
+  --bg-1: #0b1120;
+  --bg-2: #131d30;
+  --bg-3: #1a2744;
+  --bg-hover: #1e2d4a;
+  --border: #1c2a42;
+  --border-focus: #00d4aa;
+  --accent: #00d4aa;
+  --accent-rgb: 0,212,170;
+  --accent-dim: rgba(0,212,170,0.12);
+  --accent-2: #8b5cf6;
+  --accent-2-rgb: 139,92,246;
+  --accent-2-dim: rgba(139,92,246,0.12);
+  --gradient: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --gradient-hover: linear-gradient(135deg, #7c3aed, #db2777);
+  --text-1: #e8edf5;
+  --text-2: #7d8da6;
+  --text-3: #4a5a73;
+  --tag-bg: rgba(0,212,170,0.1);
+  --tag-text: #00d4aa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+  --nav-h: 62px;
+  --header-h: 54px;
+  --gutter: 16px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg-0:#f5f7fa;--bg-1:#ffffff;--bg-2:#edf1f7;--bg-3:#dce3ed;
+    --bg-hover:#d0d8e6;--border:#c8d2e0;--border-focus:#009e82;
+    --accent:#009e82;--accent-rgb:0,158,130;--accent-dim:rgba(0,158,130,0.1);
+    --accent-2:#7c3aed;--accent-2-rgb:124,58,237;--accent-2-dim:rgba(124,58,237,0.08);
+    --gradient:linear-gradient(135deg,#7c3aed,#db2777);
+    --text-1:#131b2e;--text-2:#4a5a73;--text-3:#8898aa;
+    --tag-bg:rgba(0,158,130,0.08);--tag-text:#007a66;
+    --shadow:0 2px 12px rgba(0,0,0,0.06);--shadow-lg:0 4px 24px rgba(0,0,0,0.08);
+  }
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg-0:#f5f7fa;--bg-1:#ffffff;--bg-2:#edf1f7;--bg-3:#dce3ed;
+  --bg-hover:#d0d8e6;--border:#c8d2e0;--border-focus:#009e82;
+  --accent:#009e82;--accent-rgb:0,158,130;--accent-dim:rgba(0,158,130,0.1);
+  --accent-2:#7c3aed;--accent-2-rgb:124,58,237;--accent-2-dim:rgba(124,58,237,0.08);
+  --gradient:linear-gradient(135deg,#7c3aed,#db2777);
+  --text-1:#131b2e;--text-2:#4a5a73;--text-3:#8898aa;
+  --tag-bg:rgba(0,158,130,0.08);--tag-text:#007a66;
+  --shadow:0 2px 12px rgba(0,0,0,0.06);--shadow-lg:0 4px 24px rgba(0,0,0,0.08);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-0:#060a12;--bg-1:#0b1120;--bg-2:#131d30;--bg-3:#1a2744;
+  --bg-hover:#1e2d4a;--border:#1c2a42;--border-focus:#00d4aa;
+  --accent:#00d4aa;--accent-rgb:0,212,170;--accent-dim:rgba(0,212,170,0.12);
+  --accent-2:#8b5cf6;--accent-2-rgb:139,92,246;--accent-2-dim:rgba(139,92,246,0.12);
+  --gradient:linear-gradient(135deg,#8b5cf6,#ec4899);
+  --text-1:#e8edf5;--text-2:#7d8da6;--text-3:#4a5a73;
+  --tag-bg:rgba(0,212,170,0.1);--tag-text:#00d4aa;
+  --shadow:0 4px 20px rgba(0,0,0,0.3);--shadow-lg:0 8px 40px rgba(0,0,0,0.5);
+}
+body{
+  background:var(--bg-0);color:var(--text-1);
+  font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+  min-height:100dvh;overflow-x:hidden;
+}
+*,*::before,*::after{box-sizing:border-box}
+h1,h2,h3,h4{font-family:'Outfit',system-ui,sans-serif;margin:0;font-weight:600;line-height:1.2}
+p{margin:0}
+button{cursor:pointer;font:inherit;border:none;background:none;color:inherit}
+input,textarea,select{font:inherit;color:var(--text-1)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+
+#app{
+  display:flex;flex-direction:column;
+  height:100dvh;overflow:hidden;
+}
+.app-header{
+  position:sticky;top:env(safe-area-inset-top,0);z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px var(--gutter);height:var(--header-h);
+  background:var(--bg-1);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:8px}
+.brand svg{width:28px;height:28px}
+.brand-name{font-family:'Outfit';font-weight:700;font-size:1.1rem;letter-spacing:-0.02em}
+.brand-tag{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);background:var(--accent-dim);padding:2px 6px;border-radius:var(--radius-sm);font-weight:600}
+.header-actions{display:flex;align-items:center;gap:8px}
+.balance-chip{
+  font-size:0.75rem;font-weight:600;color:var(--accent);
+  background:var(--accent-dim);padding:4px 10px;border-radius:var(--radius-pill);
+  white-space:nowrap;
+}
+.icon-btn{
+  width:34px;height:34px;border-radius:var(--radius-md);
+  display:grid;place-items:center;color:var(--text-2);
+  transition:background .15s,color .15s;
+}
+.icon-btn:hover{background:var(--bg-3);color:var(--text-1)}
+.icon-btn svg{width:18px;height:18px}
+
+#main{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  scroll-behavior:smooth;
+}
+.view{display:none;padding:var(--gutter);padding-bottom:calc(var(--nav-h) + 20px)}
+.view.active{display:block}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-around;align-items:stretch;
+  height:var(--nav-h);
+  padding-bottom:env(safe-area-inset-bottom,0);
+  background:var(--bg-1);border-top:1px solid var(--border);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font-size:0.65rem;font-weight:500;color:var(--text-3);
+  transition:color .15s;position:relative;letter-spacing:0.03em;
+}
+.nav-btn svg{width:22px;height:22px;transition:color .15s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn.active::before{
+  content:'';position:absolute;top:0;left:25%;right:25%;height:2px;
+  background:var(--accent);border-radius:0 0 2px 2px;
+}
+.nav-btn:hover{color:var(--text-1)}
+
+.section-title{font-size:1.25rem;margin-bottom:12px;font-weight:700;letter-spacing:-0.01em}
+.section-sub{font-size:0.8rem;color:var(--text-2);margin-bottom:16px}
+
+.pill-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pill-row::-webkit-scrollbar{display:none}
+.pill{
+  padding:6px 14px;border-radius:var(--radius-pill);font-size:0.78rem;font-weight:500;
+  white-space:nowrap;background:var(--bg-2);color:var(--text-2);
+  border:1px solid transparent;transition:all .15s;flex-shrink:0;
+}
+.pill:hover{background:var(--bg-3);color:var(--text-1)}
+.pill.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(var(--accent-rgb),0.3)}
+
+.search-box{
+  width:100%;padding:10px 14px 10px 38px;border-radius:var(--radius-md);
+  border:1px solid var(--border);background:var(--bg-2);font-size:0.85rem;
+  color:var(--text-1);transition:border-color .15s;
+}
+.search-box:focus{border-color:var(--border-focus)}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-3)}
+
+.model-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:600px){.model-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.model-grid{grid-template-columns:repeat(3,1fr)}}
+.model-tile{
+  padding:14px;border-radius:var(--radius-lg);border:1px solid var(--border);
+  background:var(--bg-2);transition:all .2s;cursor:pointer;
+}
+.model-tile:hover{border-color:rgba(var(--accent-rgb),0.4);background:var(--bg-3);transform:translateY(-1px)}
+.model-tile-name{font-family:'Outfit';font-weight:600;font-size:0.9rem;margin-bottom:4px}
+.model-tile-endpoint{font-size:0.7rem;color:var(--text-3);font-family:monospace;word-break:break-all}
+.model-tile-cat{
+  display:inline-block;font-size:0.65rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:0.06em;padding:2px 8px;border-radius:var(--radius-sm);margin-top:8px;
+  background:var(--tag-bg);color:var(--tag-text);
+}
+.model-count{font-size:0.8rem;color:var(--text-3);margin-bottom:12px}
+
+.studio-tabs{
+  display:flex;gap:4px;margin-bottom:16px;padding:3px;
+  background:var(--bg-2);border-radius:var(--radius-lg);overflow-x:auto;
+  scrollbar-width:none;
+}
+.studio-tabs::-webkit-scrollbar{display:none}
+.studio-tab{
+  flex:1;min-width:0;padding:8px 6px;border-radius:var(--radius-md);font-size:0.78rem;
+  font-weight:500;text-align:center;color:var(--text-2);transition:all .15s;white-space:nowrap;
+}
+.studio-tab.active{background:var(--bg-3);color:var(--text-1);font-weight:600}
+.studio-tab:hover:not(.active){color:var(--text-1)}
+
+.studio-panel{display:none}
+.studio-panel.active{display:block}
+
+.studio-stack{display:flex;flex-direction:column;gap:10px}
+@media(min-width:900px){
+  .studio-stack{display:grid;grid-template-columns:repeat(2,1fr);align-items:start}
+}
+
+.s-card{
+  border:1px solid var(--border);border-radius:var(--radius-lg);
+  background:var(--bg-1);overflow:hidden;transition:border-color .2s;
+}
+.s-card:hover{border-color:rgba(var(--accent-rgb),0.25)}
+.s-card-head{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;
+  transition:background .15s;user-select:none;
+}
+.s-card-head:hover{background:var(--bg-2)}
+.s-card-icon{
+  width:32px;height:32px;border-radius:var(--radius-md);
+  display:grid;place-items:center;flex-shrink:0;font-size:0.85rem;
+}
+.s-card-icon.img{background:rgba(var(--accent-rgb),0.15);color:var(--accent)}
+.s-card-icon.vid{background:rgba(var(--accent-2-rgb),0.15);color:var(--accent-2)}
+.s-card-icon.aud{background:rgba(245,158,11,0.12);color:#f59e0b}
+.s-card-icon.enh{background:rgba(16,185,129,0.12);color:#10b981}
+.s-card-icon.edt{background:rgba(236,72,153,0.12);color:#ec4899}
+.s-card-title{font-family:'Outfit';font-weight:600;font-size:0.88rem;flex:1}
+.s-card-chevron{
+  width:20px;height:20px;color:var(--text-3);transition:transform .2s;
+}
+.s-card.open .s-card-chevron{transform:rotate(180deg)}
+.s-card-body{
+  max-height:0;overflow:hidden;transition:max-height .3s ease;
+}
+.s-card.open .s-card-body{max-height:2000px}
+.s-card-inner{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+
+.field{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-2)}
+.field-row{display:flex;gap:8px}
+.field-row>*{flex:1;min-width:0}
+
+.input,.textarea,.select{
+  width:100%;padding:9px 12px;border-radius:var(--radius-md);
+  border:1px solid var(--border);background:var(--bg-2);
+  font-size:0.84rem;transition:border-color .15s;
+}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--border-focus)}
+.textarea{resize:vertical;min-height:80px;line-height:1.5}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237d8da6'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+.btn-generate{
+  width:100%;padding:12px;border-radius:var(--radius-md);
+  font-weight:600;font-size:0.88rem;color:#fff;
+  background:var(--gradient);transition:opacity .15s;
+  letter-spacing:0.01em;
+}
+.btn-generate:hover{opacity:0.9}
+.btn-generate:disabled{opacity:0.5;cursor:not-allowed}
+.btn-generate.loading{
+  position:relative;color:transparent;
+}
+.btn-generate.loading::after{
+  content:'';position:absolute;inset:0;margin:auto;
+  width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.result-area{
+  border:1px dashed var(--border);border-radius:var(--radius-md);
+  padding:16px;text-align:center;color:var(--text-3);font-size:0.8rem;
+  min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:var(--bg-0);
+}
+.result-area img,.result-area video{max-width:100%;border-radius:var(--radius-md);max-height:400px;object-fit:contain}
+.result-area audio{width:100%;max-width:300px}
+.result-url{
+  font-size:0.72rem;font-family:monospace;color:var(--accent);
+  word-break:break-all;cursor:pointer;padding:4px 8px;
+  background:var(--accent-dim);border-radius:var(--radius-sm);
+}
+.result-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.btn-small{
+  padding:5px 12px;border-radius:var(--radius-pill);font-size:0.72rem;font-weight:500;
+  border:1px solid var(--border);background:var(--bg-2);color:var(--text-2);
+  transition:all .15s;
+}
+.btn-small:hover{background:var(--bg-3);color:var(--text-1);border-color:var(--border-focus)}
+
+.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:768px){.gallery-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1200px){.gallery-grid{grid-template-columns:repeat(4,1fr)}}
+.gallery-item{
+  border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);
+  background:var(--bg-2);cursor:pointer;transition:all .2s;
+}
+.gallery-item:hover{border-color:rgba(var(--accent-rgb),0.4);transform:translateY(-2px);box-shadow:var(--shadow)}
+.gallery-thumb{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--bg-3)}
+.gallery-info{padding:8px 10px}
+.gallery-model{font-size:0.7rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em}
+.gallery-prompt{font-size:0.72rem;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px;line-height:1.4}
+
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text-3);
+}
+.empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:0.4}
+.empty-state p{font-size:0.85rem}
+
+.settings-section{
+  padding:16px;border-radius:var(--radius-lg);border:1px solid var(--border);
+  background:var(--bg-1);margin-bottom:12px;
+}
+.settings-section h3{font-size:0.9rem;margin-bottom:10px;font-family:'Outfit';font-weight:600}
+.settings-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.key-masked{
+  font-family:monospace;font-size:0.82rem;color:var(--text-2);
+  background:var(--bg-2);padding:6px 12px;border-radius:var(--radius-md);
+  flex:1;min-width:0;
+}
+.btn-outline{
+  padding:7px 14px;border-radius:var(--radius-md);font-size:0.78rem;font-weight:500;
+  border:1px solid var(--border);color:var(--text-2);transition:all .15s;
+}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{color:var(--error);border-color:rgba(239,68,68,0.3)}
+.btn-danger:hover{border-color:var(--error);color:var(--error)}
+.balance-big{font-size:1.8rem;font-family:'Outfit';font-weight:700;color:var(--accent);margin:8px 0}
+.keys-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:0.78rem}
+.keys-table th{text-align:left;padding:6px 8px;color:var(--text-3);font-weight:500;border-bottom:1px solid var(--border);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em}
+.keys-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text-2)}
+.keys-table td:first-child{color:var(--text-1);font-weight:500}
+
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);
+  display:flex;align-items:center;justify-content:center;padding:var(--gutter);
+  backdrop-filter:blur(4px);
+}
+.modal-overlay[hidden]{display:none!important}
+.modal-box{
+  width:100%;max-width:420px;background:var(--bg-1);border-radius:var(--radius-lg);
+  border:1px solid var(--border);padding:24px;box-shadow:var(--shadow-lg);
+}
+.modal-box h2{font-size:1.1rem;margin-bottom:4px}
+.modal-box .sub{font-size:0.8rem;color:var(--text-2);margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-primary{
+  padding:9px 20px;border-radius:var(--radius-md);font-weight:600;font-size:0.82rem;
+  color:#fff;background:var(--gradient);transition:opacity .15s;
+}
+.btn-primary:hover{opacity:0.9}
+.btn-cancel{padding:9px 20px;border-radius:var(--radius-md);font-size:0.82rem;color:var(--text-2)}
+.btn-cancel:hover{color:var(--text-1)}
+
+.detail-overlay{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);
+  display:flex;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.detail-overlay[hidden]{display:none!important}
+.detail-panel{
+  width:100%;max-width:600px;max-height:85dvh;overflow-y:auto;
+  background:var(--bg-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  border:1px solid var(--border);border-bottom:none;padding:24px var(--gutter) 40px;
+}
+@media(min-width:768px){
+  .detail-overlay{align-items:center}
+  .detail-panel{border-radius:var(--radius-lg);border-bottom:1px solid var(--border);max-height:80dvh}
+}
+.detail-close{float:right;margin:-4px -4px 0 0}
+.detail-media{width:100%;border-radius:var(--radius-md);margin:12px 0;max-height:400px;object-fit:contain}
+.detail-meta{font-size:0.78rem;color:var(--text-2);margin-top:8px;line-height:1.5}
+.detail-meta strong{color:var(--text-1)}
+.detail-prompt{
+  font-size:0.82rem;line-height:1.6;color:var(--text-1);
+  margin:12px 0;padding:12px;background:var(--bg-2);border-radius:var(--radius-md);
+}
+
+#toast-box{position:fixed;top:calc(env(safe-area-inset-top,0px) + 60px);right:var(--gutter);z-index:300;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{
+  padding:10px 16px;border-radius:var(--radius-md);font-size:0.78rem;font-weight:500;
+  background:var(--bg-3);color:var(--text-1);border:1px solid var(--border);
+  box-shadow:var(--shadow);pointer-events:auto;max-width:320px;
+  animation:toast-in .25s ease;
+}
+.toast.success{border-left:3px solid var(--success)}
+.toast.error{border-left:3px solid var(--error)}
+.toast.info{border-left:3px solid var(--info)}
+@keyframes toast-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+.curl-box{
+  background:var(--bg-0);border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:10px;font-family:monospace;font-size:0.7rem;color:var(--text-2);
+  word-break:break-all;line-height:1.5;max-height:120px;overflow-y:auto;
+  cursor:pointer;position:relative;
+}
+.curl-box::after{
+  content:'Click to copy';position:absolute;top:4px;right:8px;
+  font-size:0.6rem;color:var(--text-3);font-family:'DM Sans',sans-serif;
+}
+
+.job-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:var(--radius-pill);font-size:0.65rem;font-weight:600;
+}
+.job-badge.pending{background:rgba(245,158,11,0.12);color:#f59e0b}
+.job-badge.done{background:rgba(16,185,129,0.12);color:#10b981}
+.job-badge.fail{background:rgba(239,68,68,0.12);color:#ef4444}
+.job-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.toggle-wrap{display:flex;align-items:center;gap:8px}
+.toggle{
+  position:relative;width:40px;height:22px;background:var(--bg-3);border-radius:11px;
+  cursor:pointer;transition:background .2s;border:1px solid var(--border);
+}
+.toggle.on{background:var(--accent);border-color:var(--accent)}
+.toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:transform .2s;
+}
+.toggle.on::after{transform:translateX(18px)}
+
+.status-bar{
+  display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;
+}
+.stat-chip{
+  font-size:0.7rem;padding:4px 10px;border-radius:var(--radius-pill);
+  background:var(--bg-2);color:var(--text-2);border:1px solid var(--border);
+}
+.stat-chip strong{color:var(--text-1)}
+
+@media(min-width:768px){
+  :root{--gutter:24px}
+  .app-header{padding:10px 24px}
+  .brand-name{font-size:1.2rem}
+}
+@media(min-width:1200px){
+  :root{--gutter:32px}
+  .bottom-nav{
+    position:static;flex-direction:column;width:72px;height:auto;
+    border-top:none;border-right:1px solid var(--border);padding-bottom:0;
+  }
+  #app{flex-direction:row;flex-wrap:wrap}
+  .app-header{width:100%;position:sticky;top:0}
+  .bottom-nav{order:-1;position:sticky;top:var(--header-h);height:calc(100dvh - var(--header-h));justify-content:flex-start;padding-top:12px;gap:4px}
+  .nav-btn{flex:none;padding:10px 0;border-radius:var(--radius-md);margin:0 6px}
+  .nav-btn.active::before{top:auto;bottom:auto;left:0;right:auto;width:2px;height:60%;top:20%;border-radius:0 2px 2px 0}
+  #main{flex:1;min-width:0;height:calc(100dvh - var(--header-h));overflow-y:auto}
+  .view{padding-bottom:var(--gutter)}
+}
+</style>
+
+<div id="toast-box"></div>
+
+<div id="key-modal" class="modal-overlay" hidden>
+  <div class="modal-box">
+    <h2>API Configuration</h2>
+    <p class="sub">Your key is stored locally in this browser and never sent anywhere except MUAPI servers.</p>
+    <div class="field" style="margin-bottom:12px">
+      <label class="field-label" for="key-input">API Key</label>
+      <input type="password" id="key-input" class="input" placeholder="Enter your MUAPI API key" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="field-label" for="base-url-input">API Base URL</label>
+      <input type="url" id="base-url-input" class="input" placeholder="https://api.muapi.ai" value="https://api.muapi.ai">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeKeyModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveApiKey()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="detail-modal" class="detail-overlay" hidden>
+  <div class="detail-panel" id="detail-content"></div>
+</div>
+
+<div id="app">
+  <header class="app-header">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="var(--accent)" stroke-width="1.5"/><path d="M10 16h12M16 10v12" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="16" r="4" fill="var(--accent)" opacity="0.3"/><circle cx="16" cy="16" r="2" fill="var(--accent)"/></svg>
+      <span class="brand-name">Synthesis Lab</span>
+      <span class="brand-tag">MUAPI</span>
+    </div>
+    <div class="header-actions">
+      <span class="balance-chip" id="header-balance" hidden>0 cr</span>
+      <button class="icon-btn" onclick="openKeyModal()" title="API Key">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- EXPLORE -->
+    <section id="view-explore" class="view">
+      <h2 class="section-title">Model Ecosystem</h2>
+      <p class="section-sub" id="model-count-label">Loading models...</p>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" class="search-box" id="model-search" placeholder="Search models...">
+      </div>
+      <div class="pill-row" id="cat-pills" style="margin-bottom:14px"></div>
+      <div class="model-grid" id="model-grid"></div>
+    </section>
+
+    <!-- STUDIO -->
+    <section id="view-studio" class="view active">
+      <h2 class="section-title">Studio</h2>
+      <div class="status-bar" id="jobs-bar" hidden></div>
+      <div class="studio-tabs" id="studio-tabs"></div>
+      <div id="studio-panels"></div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="view-gallery" class="view">
+      <h2 class="section-title">Gallery</h2>
+      <div class="pill-row" style="margin-bottom:14px">
+        <button class="pill active" data-gf="all">All</button>
+        <button class="pill" data-gf="image">Images</button>
+        <button class="pill" data-gf="video">Videos</button>
+        <button class="pill" data-gf="audio">Audio</button>
+      </div>
+      <div id="gallery-container"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view">
+      <h2 class="section-title">Settings</h2>
+      <div class="settings-section">
+        <h3>API Key</h3>
+        <div class="settings-row">
+          <span class="key-masked" id="key-display">Not configured</span>
+          <button class="btn-outline" onclick="openKeyModal()">Change</button>
+          <button class="btn-outline btn-danger" onclick="clearApiKey()">Remove</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Account Balance</h3>
+        <div class="balance-big" id="balance-amount">--</div>
+        <button class="btn-outline" onclick="fetchBalance()">Refresh Balance</button>
+      </div>
+      <div class="settings-section">
+        <h3>API Keys</h3>
+        <div id="keys-list-container"><p style="font-size:0.8rem;color:var(--text-3)">Configure API key to view</p></div>
+        <button class="btn-outline" style="margin-top:10px" onclick="createNewKey()">Create New Key</button>
+      </div>
+      <div class="settings-section">
+        <h3>Theme</h3>
+        <div class="settings-row">
+          <button class="btn-outline" onclick="setTheme('light')">Light</button>
+          <button class="btn-outline" onclick="setTheme('dark')">Dark</button>
+          <button class="btn-outline" onclick="setTheme('system')">System</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Data</h3>
+        <button class="btn-outline btn-danger" onclick="clearGallery()">Clear Gallery</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script>
+const CATEGORIES = [
+  {id:'all',label:'All'},
+  {id:'text-to-image',label:'Text → Image'},
+  {id:'image-to-image',label:'Image → Image'},
+  {id:'text-to-video',label:'Text → Video'},
+  {id:'image-to-video',label:'Image → Video'},
+  {id:'audio',label:'Audio'},
+  {id:'enhance',label:'Enhance'},
+  {id:'edit',label:'Edit'}
+];
+
+const MODELS = {
+  'text-to-image':[
+    'flux-dev','flux-schnell','flux-2-pro','flux-kontext-pro-t2i','midjourney','midjourney-v8',
+    'midjourney-niji','gpt4o','gpt-image-2','seedream','seedream-v5','seedream-5-pro',
+    'google-imagen4','google-imagen4-fast','google-imagen4-ultra','qwen','qwen-image-2',
+    'hidream-fast','hidream-dev','hidream-full','wan2.1','wan2.7','reve','sdxl-image',
+    'nano-banana-pro','nano-banana-2-lite','z-image-turbo','kling-o3-image','chroma-image',
+    'hunyuan-image-2.1','hunyuan-image-3.0','ideogram-v3-t2i','leonardoai-phoenix-1.0',
+    'neta-lumina','vidu-q2-text-to-image','krea-v2-turbo','gpt-image-1.5',
+    'grok-imagine-image-2','flux-2-dev','flux-2-flex','flux-2-klein-4b-turbo',
+    'ai-anime-generator','tiktok-carousel','muse-image-text-to-image',
+    'qwen3-pro-text-to-image','qwen3-text-to-image'
+  ],
+  'image-to-image':[
+    'flux-kontext-dev','flux-kontext-pro','flux-kontext-max','flux-kontext-effects',
+    'gpt4o','gpt-image-2','midjourney','midjourney-v8-edit','midjourney-omni',
+    'reve','seededit','qwen','qwen-image-2','nano-banana-pro','seedream-v5',
+    'seedream-5-pro','wan2.7','grok-imagine-image-2-edit','flux-2-pro-edit',
+    'flux-2-dev-edit','flux-pulid','flux-redux','ideogram-v3-reframe',
+    'image-effects','kling-o1-edit-image','kling-o3-image-edit',
+    'midjourney-v7-edit','nano-banana-2-edit','qwen3-image-to-image',
+    'gemini-omni-character','face-expression-change'
+  ],
+  'text-to-video':[
+    'veo3','veo3.1','veo3-fast','veo3.1-fast','kling-master','seedance-2',
+    'seedance-2-fast','seedance-pro','seedance-lite','seedance-2.5-text-to-video',
+    'wan2.1','wan2.2','wan3.0-text-to-video','hunyuan','runway','pixverse',
+    'vidu','minimax-std','minimax-pro','minimax-h3-text-to-video',
+    'openai-sora','flux-3-text-to-video','kling-v3.0-pro-text-to-video',
+    'kling-v3.0-standard-text-to-video','ltx-2.5-text-to-video',
+    'grok-imagine-text-to-video','motion-graphics',
+    'gemini-omni-text-to-video','veo3.1-4k-video'
+  ],
+  'image-to-video':[
+    'kling-std','kling-pro','kling-master','seedance-2','seedance-2-fast',
+    'seedance-pro','seedance-lite','seedance-2.5-image-to-video',
+    'wan2.1','wan2.2','wan3.0-image-to-video','runway','veo3','veo3.1',
+    'veo3-fast','pixverse','vidu','minimax-std','minimax-pro',
+    'minimax-h3-image-to-video','midjourney','hunyuan',
+    'kling-v3.0-pro-image-to-video','kling-v3.0-standard-image-to-video',
+    'flux-3-image-to-video','grok-imagine-image-to-video',
+    'gemini-omni-image-to-video'
+  ],
+  'audio':['suno','mmaudio'],
+  'enhance':['upscale','bg-remove','face-swap','ghibli'],
+  'edit':['lipsync','clipping']
+};
+
+const STUDIO_TABS = [
+  {id:'image',label:'Image',icon:'img'},
+  {id:'video',label:'Video',icon:'vid'},
+  {id:'audio',label:'Audio',icon:'aud'},
+  {id:'enhance',label:'Enhance',icon:'enh'},
+  {id:'edit',label:'Edit',icon:'edt'}
+];
+
+const STUDIO_CARDS = {
+  image:[
+    {id:'t2i',title:'Text to Image',icon:'img',fields:['model-t2i','prompt','dimensions','num-images','aspect-t2i']},
+    {id:'i2i',title:'Image Edit',icon:'img',fields:['model-i2i','image-url','prompt','num-images-i2i']}
+  ],
+  video:[
+    {id:'t2v',title:'Text to Video',icon:'vid',fields:['model-t2v','prompt','duration','aspect-v']},
+    {id:'i2v',title:'Image to Video',icon:'vid',fields:['model-i2v','image-url','prompt','duration','aspect-v']}
+  ],
+  audio:[
+    {id:'music',title:'Music Generation',icon:'aud',fields:['prompt-music','title-music','tags','instrumental']},
+    {id:'sfx',title:'Sound Effects',icon:'aud',fields:['prompt-sfx','duration-sfx']}
+  ],
+  enhance:[
+    {id:'upscale',title:'Upscale',icon:'enh',fields:['image-url']},
+    {id:'bgremove',title:'Background Remove',icon:'enh',fields:['image-url']},
+    {id:'faceswap',title:'Face Swap',icon:'enh',fields:['source-url','target-url','swap-mode']},
+    {id:'ghibli',title:'Ghibli Style',icon:'enh',fields:['image-url']}
+  ],
+  edit:[
+    {id:'clip',title:'Video Clipping',icon:'edt',fields:['video-url','num-highlights','aspect-clip']},
+    {id:'lipsync',title:'Lip Sync',icon:'edt',fields:['video-url-ls','audio-url-ls','model-ls']}
+  ]
+};
+
+const ASPECT_RATIOS = ['1:1','16:9','9:16','4:3','3:4','21:9'];
+const LIPSYNC_MODELS = ['sync','latentsync','creatify','veed'];
+
+let state = {
+  view:'studio',
+  studioTab:'image',
+  apiKey:null,
+  apiBase:'https://api.muapi.ai',
+  gallery:[],
+  jobs:[],
+  catFilter:'all',
+  galleryFilter:'all',
+  modelSearch:''
+};
+
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}}
+
+function loadState(){
+  const k=ls('mu_key');if(k)state.apiKey=k;
+  const b=ls('mu_base');if(b)state.apiBase=b;
+  const g=ls('mu_gallery');if(g)try{state.gallery=JSON.parse(g)}catch(e){}
+  const t=ls('mu_theme');if(t)setTheme(t,true);
+}
+
+function saveGallery(){ls('mu_gallery',JSON.stringify(state.gallery.slice(-200)))}
+
+function toast(msg,type='info'){
+  const box=document.getElementById('toast-box');
+  const el=document.createElement('div');
+  el.className='toast '+type;el.textContent=msg;
+  box.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},3500);
+}
+
+function setTheme(t,silent){
+  if(t==='system'){document.documentElement.removeAttribute('data-theme');ls('mu_theme',null)}
+  else{document.documentElement.setAttribute('data-theme',t);ls('mu_theme',t)}
+  if(!silent)toast('Theme updated','success');
+}
+
+function maskKey(k){if(!k)return'Not configured';return'•'.repeat(Math.max(0,k.length-4))+k.slice(-4)}
+
+function openKeyModal(){
+  document.getElementById('key-modal').hidden=false;
+  const inp=document.getElementById('key-input');
+  inp.value=state.apiKey||'';
+  document.getElementById('base-url-input').value=state.apiBase;
+  inp.focus();
+}
+function closeKeyModal(){document.getElementById('key-modal').hidden=true}
+
+function saveApiKey(){
+  const k=document.getElementById('key-input').value.trim();
+  const b=document.getElementById('base-url-input').value.trim()||'https://api.muapi.ai';
+  if(!k){toast('Please enter an API key','error');return}
+  state.apiKey=k;state.apiBase=b;
+  ls('mu_key',k);ls('mu_base',b);
+  closeKeyModal();
+  document.getElementById('key-display').textContent=maskKey(k);
+  toast('API key saved','success');
+  fetchBalance();
+}
+
+function clearApiKey(){
+  state.apiKey=null;ls('mu_key',null);
+  document.getElementById('key-display').textContent='Not configured';
+  document.getElementById('header-balance').hidden=true;
+  document.getElementById('balance-amount').textContent='--';
+  toast('API key removed','success');
+}
+
+async function apiFetch(path,opts={}){
+  if(!state.apiKey){toast('Set your API key first','error');openKeyModal();return null}
+  try{
+    const r=await fetch(state.apiBase+path,{
+      ...opts,
+      headers:{'Authorization':'Bearer '+state.apiKey,'Content-Type':'application/json',...(opts.headers||{})}
+    });
+    if(!r.ok){const e=await r.text().catch(()=>'');toast('API error: '+r.status+' '+(e||r.statusText),'error');return null}
+    return await r.json();
+  }catch(e){
+    return {_fetchError:true,message:e.message};
+  }
+}
+
+function buildCurl(path,body){
+  let cmd='curl -X POST "'+state.apiBase+path+'" \\\n  -H "Authorization: Bearer YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \''+JSON.stringify(body,null,2)+"'";
+  return cmd;
+}
+
+async function fetchBalance(){
+  const d=await apiFetch('/v1/account/balance');
+  if(d&&!d._fetchError){
+    const bal=d.balance||d.credits||d.amount||JSON.stringify(d);
+    document.getElementById('balance-amount').textContent=bal;
+    const hb=document.getElementById('header-balance');
+    hb.textContent=(typeof bal==='number'?bal.toLocaleString():bal)+' cr';
+    hb.hidden=false;
+  }else if(d&&d._fetchError){
+    document.getElementById('balance-amount').textContent='Use via Claude MCP';
+  }
+}
+
+function switchView(v){
+  state.view=v;
+  document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id==='view-'+v));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.toggle('active',el.dataset.view===v));
+  if(v==='gallery')renderGallery();
+  if(v==='explore')renderModels();
+}
+
+function switchStudioTab(t){
+  state.studioTab=t;
+  document.querySelectorAll('.studio-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===t));
+  document.querySelectorAll('.studio-panel').forEach(el=>el.classList.toggle('active',el.dataset.panel===t));
+}
+
+function toggleCard(id){
+  const card=document.getElementById('card-'+id);
+  if(card)card.classList.toggle('open');
+}
+
+function buildNav(){
+  const nav=document.getElementById('bottom-nav');
+  const items=[
+    {id:'explore',label:'Explore',svg:'<circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36z"/>'},
+    {id:'studio',label:'Studio',svg:'<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>'},
+    {id:'gallery',label:'Gallery',svg:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'},
+    {id:'settings',label:'Settings',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'}
+  ];
+  nav.innerHTML=items.map(it=>`<button class="nav-btn${it.id===state.view?' active':''}" data-view="${it.id}" onclick="switchView('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg><span>${it.label}</span></button>`).join('');
+}
+
+function buildCatPills(){
+  const wrap=document.getElementById('cat-pills');
+  wrap.innerHTML=CATEGORIES.map(c=>`<button class="pill${c.id===state.catFilter?' active':''}" data-cat="${c.id}">${c.label}</button>`).join('');
+  wrap.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-cat]');if(!btn)return;
+    state.catFilter=btn.dataset.cat;
+    wrap.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active',p.dataset.cat===state.catFilter));
+    renderModels();
+  });
+}
+
+function renderModels(){
+  const grid=document.getElementById('model-grid');
+  const q=state.modelSearch.toLowerCase();
+  let all=[];
+  for(const[cat,models]of Object.entries(MODELS)){
+    for(const m of models){
+      if(state.catFilter!=='all'&&cat!==state.catFilter)continue;
+      if(q&&!m.toLowerCase().includes(q))continue;
+      all.push({name:m,category:cat});
+    }
+  }
+  document.getElementById('model-count-label').textContent=all.length+' models found';
+  grid.innerHTML=all.length?all.map(m=>`<div class="model-tile" onclick="selectModelFromExplore('${m.name}','${m.category}')"><div class="model-tile-name">${m.name}</div><div class="model-tile-cat">${m.category}</div></div>`).join(''):'<div class="empty-state"><p>No models match your search</p></div>';
+}
+
+function selectModelFromExplore(name,cat){
+  let studioTab='image',cardId='t2i';
+  if(cat==='text-to-image'){studioTab='image';cardId='t2i'}
+  else if(cat==='image-to-image'){studioTab='image';cardId='i2i'}
+  else if(cat==='text-to-video'){studioTab='video';cardId='t2v'}
+  else if(cat==='image-to-video'){studioTab='video';cardId='i2v'}
+  else if(cat==='audio'){studioTab='audio';cardId=name==='suno'?'music':'sfx'}
+  else if(cat==='enhance'){studioTab='enhance';cardId={upscale:'upscale','bg-remove':'bgremove','face-swap':'faceswap',ghibli:'ghibli'}[name]||'upscale'}
+  else if(cat==='edit'){studioTab='edit';cardId=name==='lipsync'?'lipsync':'clip'}
+  switchView('studio');
+  switchStudioTab(studioTab);
+  const card=document.getElementById('card-'+cardId);
+  if(card&&!card.classList.contains('open'))card.classList.add('open');
+  const sel=card?.querySelector('select');
+  if(sel){
+    for(let o of sel.options){if(o.value===name){sel.value=name;break}}
+  }
+  toast('Selected '+name,'info');
+}
+
+function modelOpts(list,defaultVal){
+  return list.map(m=>`<option value="${m}"${m===defaultVal?' selected':''}>${m}</option>`).join('');
+}
+
+function buildStudio(){
+  const tabsEl=document.getElementById('studio-tabs');
+  tabsEl.innerHTML=STUDIO_TABS.map(t=>`<button class="studio-tab${t.id===state.studioTab?' active':''}" data-tab="${t.id}" onclick="switchStudioTab('${t.id}')">${t.label}</button>`).join('');
+
+  const panels=document.getElementById('studio-panels');
+  let html='';
+  for(const tab of STUDIO_TABS){
+    const cards=STUDIO_CARDS[tab.id];
+    html+=`<div class="studio-panel${tab.id===state.studioTab?' active':''}" data-panel="${tab.id}"><div class="studio-stack">`;
+    for(const card of cards){
+      html+=`<div class="s-card open" id="card-${card.id}">`;
+      html+=`<div class="s-card-head" onclick="toggleCard('${card.id}')"><div class="s-card-icon ${card.icon}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${getCardSvg(card.id)}</svg></div><span class="s-card-title">${card.title}</span><svg class="s-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>`;
+      html+=`<div class="s-card-body"><div class="s-card-inner">${buildCardFields(card)}<button class="btn-generate" onclick="generate('${card.id}')">Synthesize</button><div class="result-area" id="result-${card.id}">Results will appear here</div></div></div>`;
+      html+=`</div>`;
+    }
+    html+=`</div></div>`;
+  }
+  panels.innerHTML=html;
+}
+
+function getCardSvg(id){
+  const svgs={
+    t2i:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+    i2i:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+    t2v:'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
+    i2v:'<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>',
+    music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    sfx:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>',
+    upscale:'<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>',
+    bgremove:'<path d="M5 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5z"/><path d="M9 3v18M3 9h18" stroke-dasharray="2 2"/>',
+    faceswap:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    ghibli:'<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/>',
+    clip:'<rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/>',
+    lipsync:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>'
+  };
+  return svgs[id]||svgs.t2i;
+}
+
+function buildCardFields(card){
+  let h='';
+  const id=card.id;
+  switch(id){
+    case 't2i':
+      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['text-to-image'],'flux-dev')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Prompt</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the image you want to create..."></textarea></div>`;
+      h+=`<div class="field-row"><div class="field"><span class="field-label">Width</span><input type="number" class="input" id="f-${id}-w" value="1024" min="256" max="4096" step="64"></div><div class="field"><span class="field-label">Height</span><input type="number" class="input" id="f-${id}-h" value="1024" min="256" max="4096" step="64"></div></div>`;
+      h+=`<div class="field-row"><div class="field"><span class="field-label">Images</span><select class="select" id="f-${id}-n"><option>1</option><option>2</option><option>3</option><option>4</option></select></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar">${ASPECT_RATIOS.map(a=>`<option>${a}</option>`).join('')}</select></div></div>`;
+      break;
+    case 'i2i':
+      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['image-to-image'],'flux-kontext-dev')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Source Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
+      h+=`<div class="field"><span class="field-label">Edit Instruction</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the edit..."></textarea></div>`;
+      h+=`<div class="field"><span class="field-label">Number of Images</span><select class="select" id="f-${id}-n"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>`;
+      break;
+    case 't2v':
+      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['text-to-video'],'kling-master')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Prompt</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the video scene..."></textarea></div>`;
+      h+=`<div class="field-row"><div class="field"><span class="field-label">Duration (s)</span><input type="number" class="input" id="f-${id}-dur" value="5" min="1" max="30"></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar">${['16:9','9:16','1:1'].map(a=>`<option>${a}</option>`).join('')}</select></div></div>`;
+      break;
+    case 'i2v':
+      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['image-to-video'],'kling-std')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Source Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
+      h+=`<div class="field"><span class="field-label">Motion Prompt</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the motion/animation..."></textarea></div>`;
+      h+=`<div class="field-row"><div class="field"><span class="field-label">Duration (s)</span><input type="number" class="input" id="f-${id}-dur" value="5" min="1" max="30"></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar">${['16:9','9:16','1:1'].map(a=>`<option>${a}</option>`).join('')}</select></div></div>`;
+      break;
+    case 'music':
+      h+=`<div class="field"><span class="field-label">Prompt / Lyrics</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Song description or lyrics..."></textarea></div>`;
+      h+=`<div class="field-row"><div class="field"><span class="field-label">Title</span><input class="input" id="f-${id}-title" placeholder="Song title"></div><div class="field"><span class="field-label">Style Tags</span><input class="input" id="f-${id}-tags" placeholder="e.g. lo-fi hip hop"></div></div>`;
+      h+=`<div class="field"><span class="field-label">Instrumental</span><div class="toggle-wrap"><div class="toggle" id="f-${id}-inst" onclick="this.classList.toggle('on')" tabindex="0" role="checkbox" aria-checked="false"></div><span style="font-size:0.78rem;color:var(--text-2)">No vocals</span></div></div>`;
+      break;
+    case 'sfx':
+      h+=`<div class="field"><span class="field-label">Description</span><textarea class="textarea" id="f-${id}-prompt" placeholder="e.g. Thunder rumbling in distance..."></textarea></div>`;
+      h+=`<div class="field"><span class="field-label">Duration (seconds)</span><input type="number" class="input" id="f-${id}-dur" value="10" min="1" max="30"></div>`;
+      break;
+    case 'upscale':
+      h+=`<div class="field"><span class="field-label">Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
+      break;
+    case 'bgremove':
+      h+=`<div class="field"><span class="field-label">Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
+      break;
+    case 'faceswap':
+      h+=`<div class="field"><span class="field-label">Face Source URL</span><input type="url" class="input" id="f-${id}-src" placeholder="https://... (face to use)"></div>`;
+      h+=`<div class="field"><span class="field-label">Target URL</span><input type="url" class="input" id="f-${id}-tgt" placeholder="https://... (image/video to swap into)"></div>`;
+      h+=`<div class="field"><span class="field-label">Target Type</span><select class="select" id="f-${id}-mode"><option value="image">Image</option><option value="video">Video</option></select></div>`;
+      break;
+    case 'ghibli':
+      h+=`<div class="field"><span class="field-label">Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
+      break;
+    case 'clip':
+      h+=`<div class="field"><span class="field-label">Video URL</span><input type="url" class="input" id="f-${id}-vid" placeholder="https://..."></div>`;
+      h+=`<div class="field-row"><div class="field"><span class="field-label">Highlights</span><input type="number" class="input" id="f-${id}-num" value="3" min="1" max="10"></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar"><option>9:16</option><option>16:9</option><option>1:1</option></select></div></div>`;
+      break;
+    case 'lipsync':
+      h+=`<div class="field"><span class="field-label">Video URL</span><input type="url" class="input" id="f-${id}-vid" placeholder="https://..."></div>`;
+      h+=`<div class="field"><span class="field-label">Audio URL</span><input type="url" class="input" id="f-${id}-aud" placeholder="https://..."></div>`;
+      h+=`<div class="field"><span class="field-label">Engine</span><select class="select" id="f-${id}-model">${LIPSYNC_MODELS.map(m=>`<option>${m}</option>`).join('')}</select></div>`;
+      break;
+  }
+  return h;
+}
+
+function v(id){const el=document.getElementById(id);return el?el.value?.trim():''}
+
+function getPayload(cardId){
+  switch(cardId){
+    case 't2i':return{type:'image',method:'generate_image',body:{prompt:v('f-t2i-prompt'),model:v('f-t2i-model'),width:+v('f-t2i-w')||1024,height:+v('f-t2i-h')||1024,num_images:+v('f-t2i-n')||1,aspect_ratio:v('f-t2i-ar')}};
+    case 'i2i':return{type:'image',method:'edit_image',body:{prompt:v('f-i2i-prompt'),model:v('f-i2i-model'),image_url:v('f-i2i-img'),num_images:+v('f-i2i-n')||1}};
+    case 't2v':return{type:'video',method:'generate_video',body:{prompt:v('f-t2v-prompt'),model:v('f-t2v-model'),duration:+v('f-t2v-dur')||5,aspect_ratio:v('f-t2v-ar')}};
+    case 'i2v':return{type:'video',method:'animate_image',body:{prompt:v('f-i2v-prompt'),model:v('f-i2v-model'),image_url:v('f-i2v-img'),duration:+v('f-i2v-dur')||5,aspect_ratio:v('f-i2v-ar')}};
+    case 'music':return{type:'audio',method:'create_music',body:{prompt:v('f-music-prompt'),title:v('f-music-title'),tags:v('f-music-tags'),make_instrumental:document.getElementById('f-music-inst')?.classList.contains('on')||false}};
+    case 'sfx':return{type:'audio',method:'create_sfx',body:{prompt:v('f-sfx-prompt'),duration:+v('f-sfx-dur')||10}};
+    case 'upscale':return{type:'image',method:'upscale',body:{image_url:v('f-upscale-img')}};
+    case 'bgremove':return{type:'image',method:'bg_remove',body:{image_url:v('f-bgremove-img')}};
+    case 'faceswap':return{type:'image',method:'face_swap',body:{source_url:v('f-faceswap-src'),target_url:v('f-faceswap-tgt'),mode:v('f-faceswap-mode')}};
+    case 'ghibli':return{type:'image',method:'ghibli',body:{image_url:v('f-ghibli-img')}};
+    case 'clip':return{type:'video',method:'clip_video',body:{video_url:v('f-clip-vid'),num_highlights:+v('f-clip-num')||3,aspect_ratio:v('f-clip-ar')}};
+    case 'lipsync':return{type:'video',method:'lipsync',body:{video_url:v('f-lipsync-vid'),audio_url:v('f-lipsync-aud'),model:v('f-lipsync-model')}};
+  }
+}
+
+async function generate(cardId){
+  const payload=getPayload(cardId);
+  if(!payload)return;
+  const required=payload.body.prompt||payload.body.image_url||payload.body.video_url||payload.body.source_url;
+  if(!required){toast('Fill in required fields','error');return}
+  if(!state.apiKey){toast('Set your API key first','error');openKeyModal();return}
+  const btn=document.querySelector(`#card-${cardId} .btn-generate`);
+  const resultArea=document.getElementById('result-'+cardId);
+  btn.classList.add('loading');btn.disabled=true;
+
+  const apiPath='/v1/'+payload.method;
+  const res=await apiFetch(apiPath,{method:'POST',body:JSON.stringify(payload.body)});
+
+  if(res&&res._fetchError){
+    const curl=buildCurl(apiPath,payload.body);
+    resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2);margin-bottom:8px">Direct API call blocked (CORS). Use via Claude MCP tools or copy the command below:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(curl)}</div>`;
+    btn.classList.remove('loading');btn.disabled=false;
+    return;
+  }
+
+  if(!res){btn.classList.remove('loading');btn.disabled=false;return}
+
+  const reqId=res.request_id||res.id;
+  if(reqId){
+    const job={id:reqId,cardId,type:payload.type,model:payload.body.model||payload.method,prompt:payload.body.prompt||'',status:'pending',ts:Date.now()};
+    state.jobs.push(job);
+    renderJobsBadge();
+    resultArea.innerHTML=`<span class="job-badge pending"><span class="job-dot"></span>Processing...</span><p style="font-size:0.72rem;color:var(--text-3);margin-top:4px">ID: ${reqId}</p>`;
+    pollJob(job);
+  }else if(res.output||res.url||res.image_url||res.video_url||res.audio_url){
+    const url=res.output||res.url||res.image_url||res.video_url||res.audio_url;
+    showResult(cardId,payload.type,Array.isArray(url)?url:[url],payload);
+  }else{
+    resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2)">Response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
+  }
+  btn.classList.remove('loading');btn.disabled=false;
+}
+
+async function pollJob(job){
+  let attempts=0;const maxAttempts=120;
+  const poll=async()=>{
+    if(attempts++>maxAttempts){
+      job.status='timeout';renderJobsBadge();
+      const ra=document.getElementById('result-'+job.cardId);
+      if(ra)ra.innerHTML=`<span class="job-badge fail">Timeout</span><p style="font-size:0.72rem;color:var(--text-3)">Job ${job.id} timed out after ${maxAttempts*5}s</p>`;
+      return;
+    }
+    const res=await apiFetch('/v1/predict/'+job.id);
+    if(!res||res._fetchError)return;
+    if(res.status==='succeeded'||res.status==='completed'||res.output){
+      job.status='done';renderJobsBadge();
+      const urls=res.output??(res.url?[res.url]:[]);
+      const payload=getPayload(job.cardId);
+      showResult(job.cardId,job.type,Array.isArray(urls)?urls:[urls],payload||{type:job.type,body:{model:job.model,prompt:job.prompt}});
+      const btn=document.querySelector(`#card-${job.cardId} .btn-generate`);
+      if(btn){btn.classList.remove('loading');btn.disabled=false}
+    }else if(res.status==='failed'||res.error){
+      job.status='fail';renderJobsBadge();
+      const ra=document.getElementById('result-'+job.cardId);
+      if(ra)ra.innerHTML=`<span class="job-badge fail">Failed</span><p style="font-size:0.72rem;color:var(--error)">${escHtml(res.error||'Generation failed')}</p>`;
+      const btn=document.querySelector(`#card-${job.cardId} .btn-generate`);
+      if(btn){btn.classList.remove('loading');btn.disabled=false}
+    }else{
+      setTimeout(poll,5000);
+    }
+  };
+  setTimeout(poll,3000);
+}
+
+function showResult(cardId,type,urls,payload){
+  const ra=document.getElementById('result-'+cardId);
+  if(!ra)return;
+  let html='';
+  for(const url of urls){
+    if(!url)continue;
+    if(type==='image')html+=`<img src="${escAttr(url)}" alt="Generated image" loading="lazy">`;
+    else if(type==='video')html+=`<video src="${escAttr(url)}" controls playsinline preload="metadata" style="max-width:100%"></video>`;
+    else if(type==='audio')html+=`<audio src="${escAttr(url)}" controls preload="metadata"></audio>`;
+    html+=`<div class="result-actions"><button class="btn-small" onclick="copyText('${escAttr(url)}')">Copy URL</button><button class="btn-small" onclick="addToGallery('${escAttr(url)}','${type}','${escAttr(payload?.body?.model||'')}','${escAttr(payload?.body?.prompt||'')}')">Save to Gallery</button></div>`;
+  }
+  ra.innerHTML=html||'<p style="color:var(--text-3);font-size:0.78rem">No output received</p>';
+}
+
+function renderJobsBadge(){
+  const bar=document.getElementById('jobs-bar');
+  const active=state.jobs.filter(j=>j.status==='pending');
+  const done=state.jobs.filter(j=>j.status==='done');
+  const failed=state.jobs.filter(j=>j.status==='fail'||j.status==='timeout');
+  if(!active.length&&!done.length&&!failed.length){bar.hidden=true;return}
+  bar.hidden=false;
+  let h='';
+  if(active.length)h+=`<span class="stat-chip"><span class="job-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warning);margin-right:4px;vertical-align:middle;animation:pulse 1.2s infinite"></span><strong>${active.length}</strong> processing</span>`;
+  if(done.length)h+=`<span class="stat-chip"><strong style="color:var(--success)">${done.length}</strong> completed</span>`;
+  if(failed.length)h+=`<span class="stat-chip"><strong style="color:var(--error)">${failed.length}</strong> failed</span>`;
+  bar.innerHTML=h;
+}
+
+function addToGallery(url,type,model,prompt){
+  state.gallery.unshift({url,type,model,prompt,ts:Date.now()});
+  saveGallery();toast('Saved to gallery','success');
+}
+
+function renderGallery(){
+  const c=document.getElementById('gallery-container');
+  let items=state.gallery;
+  if(state.galleryFilter!=='all')items=items.filter(i=>i.type===state.galleryFilter);
+  if(!items.length){
+    c.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><p>No items in gallery yet. Generate something in Studio.</p></div>';
+    return;
+  }
+  c.innerHTML='<div class="gallery-grid">'+items.map((item,i)=>{
+    let thumb='';
+    if(item.type==='image')thumb=`<img class="gallery-thumb" src="${escAttr(item.url)}" alt="" loading="lazy">`;
+    else if(item.type==='video')thumb=`<div class="gallery-thumb" style="display:grid;place-items:center;background:var(--bg-3)"><svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent-2)" opacity="0.6"><polygon points="5 3 19 12 5 21"/></svg></div>`;
+    else thumb=`<div class="gallery-thumb" style="display:grid;place-items:center;background:var(--bg-3)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" opacity="0.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>`;
+    return`<div class="gallery-item" onclick="openGalleryDetail(${i})">${thumb}<div class="gallery-info"><div class="gallery-model">${escHtml(item.model||item.type)}</div><div class="gallery-prompt">${escHtml(item.prompt||'')}</div></div></div>`;
+  }).join('')+'</div>';
+}
+
+function openGalleryDetail(idx){
+  const item=state.gallery[idx];if(!item)return;
+  const modal=document.getElementById('detail-modal');
+  const content=document.getElementById('detail-content');
+  let media='';
+  if(item.type==='image')media=`<img class="detail-media" src="${escAttr(item.url)}" alt="Generated">`;
+  else if(item.type==='video')media=`<video class="detail-media" src="${escAttr(item.url)}" controls playsinline></video>`;
+  else media=`<audio src="${escAttr(item.url)}" controls style="width:100%;margin:16px 0"></audio>`;
+  content.innerHTML=`<button class="icon-btn detail-close" onclick="document.getElementById('detail-modal').hidden=true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><h3 style="font-size:1rem;margin-bottom:4px">${escHtml(item.model||'Generation')}</h3><div class="detail-meta"><strong>Type:</strong> ${item.type} &middot; <strong>Date:</strong> ${new Date(item.ts).toLocaleDateString()}</div>${media}${item.prompt?`<div class="detail-prompt">${escHtml(item.prompt)}</div>`:''}<div class="result-actions" style="margin-top:12px"><button class="btn-small" onclick="copyText('${escAttr(item.url)}')">Copy URL</button><button class="btn-small btn-danger" onclick="removeFromGallery(${idx})">Remove</button></div>`;
+  modal.hidden=false;
+}
+
+function removeFromGallery(idx){
+  state.gallery.splice(idx,1);saveGallery();
+  document.getElementById('detail-modal').hidden=true;
+  renderGallery();toast('Removed from gallery','success');
+}
+
+function clearGallery(){
+  state.gallery=[];saveGallery();
+  if(state.view==='gallery')renderGallery();
+  toast('Gallery cleared','success');
+}
+
+async function createNewKey(){
+  if(!state.apiKey){toast('Set your API key first','error');openKeyModal();return}
+  const res=await apiFetch('/v1/keys',{method:'POST',body:JSON.stringify({name:'synthesis-lab-'+Date.now()})});
+  if(res&&!res._fetchError){
+    toast('New key created','success');
+    if(res.key)toast('Key: '+res.key.slice(0,8)+'... (shown once)','info');
+  }else if(res&&res._fetchError){
+    toast('Use Claude MCP tools for key management','info');
+  }
+}
+
+function copyText(txt){
+  try{navigator.clipboard.writeText(txt);toast('Copied to clipboard','success')}
+  catch(e){
+    const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('Copied','success')}catch(e2){toast('Copy failed','error')}
+    ta.remove();
+  }
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function escAttr(s){return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+document.getElementById('model-search').addEventListener('input',e=>{state.modelSearch=e.target.value;renderModels()});
+
+document.querySelectorAll('[data-gf]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    state.galleryFilter=btn.dataset.gf;
+    document.querySelectorAll('[data-gf]').forEach(b=>b.classList.toggle('active',b.dataset.gf===state.galleryFilter));
+    renderGallery();
+  });
+});
+
+document.getElementById('detail-modal').addEventListener('click',e=>{
+  if(e.target===e.currentTarget)e.currentTarget.hidden=true;
+});
+document.getElementById('key-modal').addEventListener('click',e=>{
+  if(e.target===e.currentTarget)closeKeyModal();
+});
+
+document.getElementById('key-input').addEventListener('keydown',e=>{if(e.key==='Enter')saveApiKey()});
+
+loadState();
+buildNav();
+buildCatPills();
+buildStudio();
+renderModels();
+
+document.getElementById('key-display').textContent=maskKey(state.apiKey);
+if(state.apiKey)fetchBalance();
+if(!state.apiKey)setTimeout(openKeyModal,800);
+</script>
