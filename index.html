@@ -1093,20 +1093,22 @@ function buildCardFields(card){
 
 function v(id){const el=document.getElementById(id);return el?el.value?.trim():''}
 
+const LIPSYNC_ENDPOINTS={sync:'sync-lipsync',latentsync:'latentsync-video',creatify:'creatify-lipsync',veed:'veed-lipsync'};
+
 function getPayload(cardId){
   switch(cardId){
-    case 't2i':return{type:'image',method:'generate_image',body:{prompt:v('f-t2i-prompt'),model:v('f-t2i-model'),width:+v('f-t2i-w')||1024,height:+v('f-t2i-h')||1024,num_images:+v('f-t2i-n')||1,aspect_ratio:v('f-t2i-ar')}};
-    case 'i2i':return{type:'image',method:'edit_image',body:{prompt:v('f-i2i-prompt'),model:v('f-i2i-model'),image_url:v('f-i2i-img'),num_images:+v('f-i2i-n')||1}};
-    case 't2v':return{type:'video',method:'generate_video',body:{prompt:v('f-t2v-prompt'),model:v('f-t2v-model'),duration:+v('f-t2v-dur')||5,aspect_ratio:v('f-t2v-ar')}};
-    case 'i2v':return{type:'video',method:'animate_image',body:{prompt:v('f-i2v-prompt'),model:v('f-i2v-model'),image_url:v('f-i2v-img'),duration:+v('f-i2v-dur')||5,aspect_ratio:v('f-i2v-ar')}};
-    case 'music':return{type:'audio',method:'create_music',body:{prompt:v('f-music-prompt'),title:v('f-music-title'),tags:v('f-music-tags'),make_instrumental:document.getElementById('f-music-inst')?.classList.contains('on')||false}};
-    case 'sfx':return{type:'audio',method:'create_sfx',body:{prompt:v('f-sfx-prompt'),duration:+v('f-sfx-dur')||10}};
-    case 'upscale':return{type:'image',method:'upscale',body:{image_url:v('f-upscale-img')}};
-    case 'bgremove':return{type:'image',method:'bg_remove',body:{image_url:v('f-bgremove-img')}};
-    case 'faceswap':return{type:'image',method:'face_swap',body:{source_url:v('f-faceswap-src'),target_url:v('f-faceswap-tgt'),mode:v('f-faceswap-mode')}};
-    case 'ghibli':return{type:'image',method:'ghibli',body:{image_url:v('f-ghibli-img')}};
-    case 'clip':return{type:'video',method:'clip_video',body:{video_url:v('f-clip-vid'),num_highlights:+v('f-clip-num')||3,aspect_ratio:v('f-clip-ar')}};
-    case 'lipsync':return{type:'video',method:'lipsync',body:{video_url:v('f-lipsync-vid'),audio_url:v('f-lipsync-aud'),model:v('f-lipsync-model')}};
+    case 't2i':{const m=v('f-t2i-model');return{type:'image',endpoint:m,body:{prompt:v('f-t2i-prompt'),model:m,width:+v('f-t2i-w')||1024,height:+v('f-t2i-h')||1024,num_images:+v('f-t2i-n')||1,aspect_ratio:v('f-t2i-ar')}};}
+    case 'i2i':{const m=v('f-i2i-model');return{type:'image',endpoint:m,body:{prompt:v('f-i2i-prompt'),model:m,image_url:v('f-i2i-img'),num_images:+v('f-i2i-n')||1}};}
+    case 't2v':{const m=v('f-t2v-model');return{type:'video',endpoint:m,body:{prompt:v('f-t2v-prompt'),model:m,duration:+v('f-t2v-dur')||5,aspect_ratio:v('f-t2v-ar')}};}
+    case 'i2v':{const m=v('f-i2v-model');return{type:'video',endpoint:m,body:{prompt:v('f-i2v-prompt'),model:m,image_url:v('f-i2v-img'),duration:+v('f-i2v-dur')||5,aspect_ratio:v('f-i2v-ar')}};}
+    case 'music':return{type:'audio',endpoint:'suno-create-music',body:{prompt:v('f-music-prompt'),title:v('f-music-title'),tags:v('f-music-tags'),make_instrumental:document.getElementById('f-music-inst')?.classList.contains('on')||false}};
+    case 'sfx':return{type:'audio',endpoint:'mmaudio-v2/text-to-audio',body:{prompt:v('f-sfx-prompt'),duration:+v('f-sfx-dur')||10}};
+    case 'upscale':return{type:'image',endpoint:'ai-image-upscale',body:{image_url:v('f-upscale-img')}};
+    case 'bgremove':return{type:'image',endpoint:'ai-background-remover',body:{image_url:v('f-bgremove-img')}};
+    case 'faceswap':return{type:'image',endpoint:'ai-image-face-swap',body:{source_url:v('f-faceswap-src'),target_url:v('f-faceswap-tgt'),mode:v('f-faceswap-mode')}};
+    case 'ghibli':return{type:'image',endpoint:'ai-ghibli-style',body:{image_url:v('f-ghibli-img')}};
+    case 'clip':return{type:'video',endpoint:'ai-clipping',body:{video_url:v('f-clip-vid'),num_highlights:+v('f-clip-num')||3,aspect_ratio:v('f-clip-ar')}};
+    case 'lipsync':{const m=v('f-lipsync-model');return{type:'video',endpoint:LIPSYNC_ENDPOINTS[m]||'sync-lipsync',body:{video_url:v('f-lipsync-vid'),audio_url:v('f-lipsync-aud'),model:m}};}
   }
 }
 
@@ -1120,7 +1122,7 @@ async function generate(cardId){
   const resultArea=document.getElementById('result-'+cardId);
   btn.classList.add('loading');btn.disabled=true;
 
-  const apiPath='/api/v1/'+payload.method;
+  const apiPath='/api/v1/'+payload.endpoint;
   const res=await apiFetch(apiPath,{method:'POST',body:JSON.stringify(payload.body)});
 
   if(res&&res._fetchError){
@@ -1138,7 +1140,7 @@ async function generate(cardId){
 
   const reqId=res.request_id||res.id;
   if(reqId){
-    const job={id:reqId,cardId,type:payload.type,model:payload.body.model||payload.method,prompt:payload.body.prompt||'',status:'pending',ts:Date.now()};
+    const job={id:reqId,cardId,type:payload.type,model:payload.body.model||payload.endpoint,prompt:payload.body.prompt||'',status:'pending',ts:Date.now()};
     state.jobs.push(job);
     renderJobsBadge();
     resultArea.innerHTML=`<span class="job-badge pending"><span class="job-dot"></span>Processing...</span><p style="font-size:0.72rem;color:var(--text-3);margin-top:4px">ID: ${reqId}</p>`;
