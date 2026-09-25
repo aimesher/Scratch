@@ -853,10 +853,13 @@ async function testCors(){
     });
     if(r.ok){
       el.style.background='rgba(0,212,170,0.15)';el.style.color='var(--accent)';
-      el.textContent='Connected. API calls will work from this browser.';
-    }else{
+      el.textContent='Connected and authenticated. Ready to generate.';
+    }else if(r.status===401||r.status===403){
       el.style.background='rgba(255,180,0,0.15)';el.style.color='#ffb400';
-      el.textContent='Server responded ('+r.status+') but returned an error. Check your API key.';
+      el.textContent='Connected (CORS OK) but API key was rejected ('+r.status+'). Check your key.';
+    }else{
+      el.style.background='rgba(0,212,170,0.15)';el.style.color='var(--accent)';
+      el.textContent='Connected (CORS OK). Server returned '+r.status+' — try generating something.';
     }
   }catch(e){
     el.style.background='rgba(255,80,80,0.15)';el.style.color='#ff5050';
@@ -883,9 +886,11 @@ async function testProxy(){
       headers:{'Authorization':'Bearer '+(state.apiKey||'test'),'Content-Type':'application/json'}
     });
     if(r.ok){
-      el.style.color='var(--accent)';el.textContent='Connected — proxy is working.';
+      el.style.color='var(--accent)';el.textContent='Proxy is working and authenticated. Ready to generate.';
+    }else if(r.status===401||r.status===403){
+      el.style.color='#ffb400';el.textContent='Proxy works (CORS OK) but API key was rejected. Check your key.';
     }else{
-      el.style.color='#ffb400';el.textContent='Proxy responded ('+r.status+'). Check your API key.';
+      el.style.color='var(--accent)';el.textContent='Proxy works (CORS OK). Server returned '+r.status+' — try generating.';
     }
   }catch(e){
     el.style.color='#ff5050';el.textContent='Connection failed. Check the URL or deploy worker.js.';
