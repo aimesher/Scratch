@@ -762,7 +762,8 @@ let state = {
   jobs:[],
   catFilter:'all',
   galleryFilter:'all',
-  modelSearch:''
+  modelSearch:'',
+  sessionCost:0
 };
 
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}}
@@ -1033,24 +1034,24 @@ function buildCardFields(card){
   const id=card.id;
   switch(id){
     case 't2i':
-      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['text-to-image'],'flux-dev')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Model <a href="https://muapi.ai/pricing" target="_blank" style="font-size:0.65rem;font-weight:400;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0;float:right">View pricing</a></span><select class="select" id="f-${id}-model">${modelOpts(MODELS['text-to-image'],'flux-dev')}</select></div>`;
       h+=`<div class="field"><span class="field-label">Prompt</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the image you want to create..."></textarea></div>`;
       h+=`<div class="field-row"><div class="field"><span class="field-label">Width</span><input type="number" class="input" id="f-${id}-w" value="1024" min="256" max="4096" step="64"></div><div class="field"><span class="field-label">Height</span><input type="number" class="input" id="f-${id}-h" value="1024" min="256" max="4096" step="64"></div></div>`;
       h+=`<div class="field-row"><div class="field"><span class="field-label">Images</span><select class="select" id="f-${id}-n"><option>1</option><option>2</option><option>3</option><option>4</option></select></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar">${ASPECT_RATIOS.map(a=>`<option>${a}</option>`).join('')}</select></div></div>`;
       break;
     case 'i2i':
-      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['image-to-image'],'flux-kontext-dev')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Model <a href="https://muapi.ai/pricing" target="_blank" style="font-size:0.65rem;font-weight:400;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0;float:right">View pricing</a></span><select class="select" id="f-${id}-model">${modelOpts(MODELS['image-to-image'],'flux-kontext-dev')}</select></div>`;
       h+=`<div class="field"><span class="field-label">Source Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
       h+=`<div class="field"><span class="field-label">Edit Instruction</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the edit..."></textarea></div>`;
       h+=`<div class="field"><span class="field-label">Number of Images</span><select class="select" id="f-${id}-n"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>`;
       break;
     case 't2v':
-      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['text-to-video'],'kling-master')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Model <a href="https://muapi.ai/pricing" target="_blank" style="font-size:0.65rem;font-weight:400;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0;float:right">View pricing</a></span><select class="select" id="f-${id}-model">${modelOpts(MODELS['text-to-video'],'kling-master')}</select></div>`;
       h+=`<div class="field"><span class="field-label">Prompt</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the video scene..."></textarea></div>`;
       h+=`<div class="field-row"><div class="field"><span class="field-label">Duration (s)</span><input type="number" class="input" id="f-${id}-dur" value="5" min="1" max="30"></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar">${['16:9','9:16','1:1'].map(a=>`<option>${a}</option>`).join('')}</select></div></div>`;
       break;
     case 'i2v':
-      h+=`<div class="field"><span class="field-label">Model</span><select class="select" id="f-${id}-model">${modelOpts(MODELS['image-to-video'],'kling-std')}</select></div>`;
+      h+=`<div class="field"><span class="field-label">Model <a href="https://muapi.ai/pricing" target="_blank" style="font-size:0.65rem;font-weight:400;color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0;float:right">View pricing</a></span><select class="select" id="f-${id}-model">${modelOpts(MODELS['image-to-video'],'kling-std')}</select></div>`;
       h+=`<div class="field"><span class="field-label">Source Image URL</span><input type="url" class="input" id="f-${id}-img" placeholder="https://..."></div>`;
       h+=`<div class="field"><span class="field-label">Motion Prompt</span><textarea class="textarea" id="f-${id}-prompt" placeholder="Describe the motion/animation..."></textarea></div>`;
       h+=`<div class="field-row"><div class="field"><span class="field-label">Duration (s)</span><input type="number" class="input" id="f-${id}-dur" value="5" min="1" max="30"></div><div class="field"><span class="field-label">Aspect Ratio</span><select class="select" id="f-${id}-ar">${['16:9','9:16','1:1'].map(a=>`<option>${a}</option>`).join('')}</select></div></div>`;
@@ -1169,16 +1170,19 @@ async function generate(cardId){
 
   if(!res){btn.classList.remove('loading');btn.disabled=false;return}
 
+  const submitCost=extractCost(res);
+  if(submitCost!==null)trackCost(submitCost);
+
   const reqId=res.request_id||res.id;
   if(reqId){
-    const job={id:reqId,cardId,type:payload.type,model:payload.body.model||payload.endpoint,prompt:payload.body.prompt||'',status:'pending',ts:Date.now()};
+    const job={id:reqId,cardId,type:payload.type,model:payload.body.model||payload.endpoint,prompt:payload.body.prompt||'',status:'pending',ts:Date.now(),cost:submitCost};
     state.jobs.push(job);
     renderJobsBadge();
     resultArea.innerHTML=`<span class="job-badge pending"><span class="job-dot"></span>Processing...</span><p style="font-size:0.72rem;color:var(--text-3);margin-top:4px">ID: ${reqId}</p>`;
     pollJob(job);
   }else{
     const urls=extractUrls(res);
-    if(urls.length) showResult(cardId,payload.type,urls,payload);
+    if(urls.length) showResult(cardId,payload.type,urls,payload,submitCost);
     else resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2)">Response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
   }
   btn.classList.remove('loading');btn.disabled=false;
@@ -1197,6 +1201,23 @@ function extractUrls(res){
   return[];
 }
 
+function extractCost(res){
+  if(!res)return null;
+  const c=res.cost??res.charge??res.credits_used??res.credit_cost??res.credits??res.price??res.total_cost??res.amount_charged;
+  if(typeof c==='number')return c;
+  if(typeof c==='string'){const n=parseFloat(c);if(!isNaN(n))return n}
+  if(res.meta&&typeof res.meta.cost==='number')return res.meta.cost;
+  if(res.usage&&typeof res.usage.cost==='number')return res.usage.cost;
+  return null;
+}
+
+function trackCost(cost){
+  if(cost===null||cost===undefined)return;
+  state.sessionCost+=cost;
+  const el=document.getElementById('session-cost');
+  if(el){el.textContent='$'+state.sessionCost.toFixed(4);el.closest('.stat-chip').hidden=false}
+}
+
 async function pollJob(job){
   let attempts=0;const maxAttempts=120;
   const poll=async()=>{
@@ -1210,13 +1231,15 @@ async function pollJob(job){
     if(!res||res._fetchError)return;
     if(res.status==='succeeded'||res.status==='completed'||res.output||res.result){
       job.status='done';renderJobsBadge();
+      const resCost=extractCost(res);
+      if(resCost!==null){trackCost(resCost);job.cost=(job.cost||0)+resCost}
       const urls=extractUrls(res);
       const payload=getPayload(job.cardId);
       if(urls.length){
-        showResult(job.cardId,job.type,urls,payload||{type:job.type,body:{model:job.model,prompt:job.prompt}});
+        showResult(job.cardId,job.type,urls,payload||{type:job.type,body:{model:job.model,prompt:job.prompt}},job.cost);
       }else{
         const ra=document.getElementById('result-'+job.cardId);
-        if(ra)ra.innerHTML=`<span class="job-badge" style="background:var(--accent);color:#fff">Completed</span><p style="font-size:0.75rem;color:var(--text-2);margin-top:8px">Raw response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
+        if(ra)ra.innerHTML=`<span class="job-badge" style="background:var(--accent);color:#fff">Completed</span>${job.cost?`<span style="font-size:0.7rem;color:var(--accent);margin-left:6px">$${job.cost.toFixed(4)}</span>`:''}<p style="font-size:0.75rem;color:var(--text-2);margin-top:8px">Raw response:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(JSON.stringify(res,null,2))}</div>`;
       }
       const btn=document.querySelector(`#card-${job.cardId} .btn-generate`);
       if(btn){btn.classList.remove('loading');btn.disabled=false}
@@ -1233,7 +1256,7 @@ async function pollJob(job){
   setTimeout(poll,3000);
 }
 
-function showResult(cardId,type,urls,payload){
+function showResult(cardId,type,urls,payload,cost){
   const ra=document.getElementById('result-'+cardId);
   if(!ra)return;
   let html='';
@@ -1245,11 +1268,16 @@ function showResult(cardId,type,urls,payload){
     else if(type==='video')html+=`<video src="${escAttr(url)}" controls playsinline preload="metadata" style="max-width:100%"></video>`;
     else if(type==='audio')html+=`<audio src="${escAttr(url)}" controls preload="metadata"></audio>`;
     html+=`<div class="result-actions"><button class="btn-small" onclick="copyText('${escAttr(url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(url)}','${type}','${escAttr(model)}','${escAttr(prompt)}')">Share</button></div>`;
-    addToGallery(url,type,model,prompt,true);
+    addToGallery(url,type,model,prompt,true,cost);
   }
-  if(html)html+=`<p style="font-size:0.68rem;color:var(--text-3);margin-top:6px">Auto-saved to gallery</p>`;
+  if(html){
+    let footer='<p style="font-size:0.68rem;color:var(--text-3);margin-top:6px">Auto-saved to gallery';
+    if(cost)footer+=` &middot; Cost: <strong style="color:var(--accent)">$${cost.toFixed(4)}</strong>`;
+    footer+='</p>';
+    html+=footer;
+  }
   ra.innerHTML=html||'<p style="color:var(--text-3);font-size:0.78rem">No output received</p>';
-  saveResultState(cardId,type,urls,payload);
+  saveResultState(cardId,type,urls,payload,cost);
 }
 
 function renderJobsBadge(){
@@ -1257,18 +1285,22 @@ function renderJobsBadge(){
   const active=state.jobs.filter(j=>j.status==='pending');
   const done=state.jobs.filter(j=>j.status==='done');
   const failed=state.jobs.filter(j=>j.status==='fail'||j.status==='timeout');
-  if(!active.length&&!done.length&&!failed.length){bar.hidden=true;return}
+  const hasCost=state.sessionCost>0;
+  if(!active.length&&!done.length&&!failed.length&&!hasCost){bar.hidden=true;return}
   bar.hidden=false;
   let h='';
   if(active.length)h+=`<span class="stat-chip"><span class="job-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warning);margin-right:4px;vertical-align:middle;animation:pulse 1.2s infinite"></span><strong>${active.length}</strong> processing</span>`;
   if(done.length)h+=`<span class="stat-chip"><strong style="color:var(--success)">${done.length}</strong> completed</span>`;
   if(failed.length)h+=`<span class="stat-chip"><strong style="color:var(--error)">${failed.length}</strong> failed</span>`;
+  h+=`<span class="stat-chip"${hasCost?'':' hidden'}>Session: <strong style="color:var(--accent)" id="session-cost">${hasCost?'$'+state.sessionCost.toFixed(4):'--'}</strong></span>`;
   bar.innerHTML=h;
 }
 
-function addToGallery(url,type,model,prompt,silent){
+function addToGallery(url,type,model,prompt,silent,cost){
   if(state.gallery.some(g=>g.url===url))return;
-  state.gallery.unshift({url,type,model,prompt,ts:Date.now()});
+  const item={url,type,model,prompt,ts:Date.now()};
+  if(cost)item.cost=cost;
+  state.gallery.unshift(item);
   saveGallery();
   if(!silent)toast('Saved to gallery','success');
 }
@@ -1298,7 +1330,8 @@ function openGalleryDetail(idx){
   if(item.type==='image')media=`<img class="detail-media" src="${escAttr(item.url)}" alt="Generated">`;
   else if(item.type==='video')media=`<video class="detail-media" src="${escAttr(item.url)}" controls playsinline></video>`;
   else media=`<audio src="${escAttr(item.url)}" controls style="width:100%;margin:16px 0"></audio>`;
-  content.innerHTML=`<button class="icon-btn detail-close" onclick="document.getElementById('detail-modal').hidden=true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><h3 style="font-size:1rem;margin-bottom:4px">${escHtml(item.model||'Generation')}</h3><div class="detail-meta"><strong>Type:</strong> ${item.type} &middot; <strong>Date:</strong> ${new Date(item.ts).toLocaleDateString()}</div>${media}${item.prompt?`<div class="detail-prompt">${escHtml(item.prompt)}</div>`:''}<div class="result-actions" style="margin-top:12px"><button class="btn-small" onclick="copyText('${escAttr(item.url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(item.url)}','${item.type}','${escAttr(item.model||'')}','${escAttr(item.prompt||'')}')">Share</button><button class="btn-small btn-danger" onclick="removeFromGallery(${idx})">Remove</button></div>`;
+  const costStr=item.cost?` &middot; <strong>Cost:</strong> <span style="color:var(--accent)">$${item.cost.toFixed(4)}</span>`:'';
+  content.innerHTML=`<button class="icon-btn detail-close" onclick="document.getElementById('detail-modal').hidden=true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><h3 style="font-size:1rem;margin-bottom:4px">${escHtml(item.model||'Generation')}</h3><div class="detail-meta"><strong>Type:</strong> ${item.type} &middot; <strong>Date:</strong> ${new Date(item.ts).toLocaleDateString()}${costStr}</div>${media}${item.prompt?`<div class="detail-prompt">${escHtml(item.prompt)}</div>`:''}<div class="result-actions" style="margin-top:12px"><button class="btn-small" onclick="copyText('${escAttr(item.url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(item.url)}','${item.type}','${escAttr(item.model||'')}','${escAttr(item.prompt||'')}')">Share</button><button class="btn-small btn-danger" onclick="removeFromGallery(${idx})">Remove</button></div>`;
   modal.hidden=false;
 }
 
@@ -1369,15 +1402,17 @@ function restoreFormState(){
     else{const el=document.getElementById(k);if(el)el.value=val}
   }}catch(e){}
 }
-function saveResultState(cardId,type,urls,payload){
+function saveResultState(cardId,type,urls,payload,cost){
   try{const r=JSON.parse(ls('mu_results')||'{}');
-  r[cardId]={type,urls:urls.filter(Boolean),model:payload?.body?.model||'',prompt:payload?.body?.prompt||'',ts:Date.now()};
+  const entry={type,urls:urls.filter(Boolean),model:payload?.body?.model||'',prompt:payload?.body?.prompt||'',ts:Date.now()};
+  if(cost)entry.cost=cost;
+  r[cardId]=entry;
   ls('mu_results',JSON.stringify(r))}catch(e){}
 }
 function restoreResults(){
   try{const r=JSON.parse(ls('mu_results')||'{}');
   for(const[cid,d]of Object.entries(r)){
-    if(d.urls?.length)showResult(cid,d.type,d.urls,{type:d.type,body:{model:d.model,prompt:d.prompt}});
+    if(d.urls?.length)showResult(cid,d.type,d.urls,{type:d.type,body:{model:d.model,prompt:d.prompt}},d.cost);
   }}catch(e){}
 }
 
