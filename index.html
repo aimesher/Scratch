@@ -1237,14 +1237,19 @@ function showResult(cardId,type,urls,payload){
   const ra=document.getElementById('result-'+cardId);
   if(!ra)return;
   let html='';
+  const model=payload?.body?.model||'';
+  const prompt=payload?.body?.prompt||'';
   for(const url of urls){
     if(!url)continue;
     if(type==='image')html+=`<img src="${escAttr(url)}" alt="Generated image" loading="lazy">`;
     else if(type==='video')html+=`<video src="${escAttr(url)}" controls playsinline preload="metadata" style="max-width:100%"></video>`;
     else if(type==='audio')html+=`<audio src="${escAttr(url)}" controls preload="metadata"></audio>`;
-    html+=`<div class="result-actions"><button class="btn-small" onclick="copyText('${escAttr(url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(url)}','${type}','${escAttr(payload?.body?.model||'')}','${escAttr(payload?.body?.prompt||'')}')">Share</button><button class="btn-small" onclick="addToGallery('${escAttr(url)}','${type}','${escAttr(payload?.body?.model||'')}','${escAttr(payload?.body?.prompt||'')}')">Save to Gallery</button></div>`;
+    html+=`<div class="result-actions"><button class="btn-small" onclick="copyText('${escAttr(url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(url)}','${type}','${escAttr(model)}','${escAttr(prompt)}')">Share</button></div>`;
+    addToGallery(url,type,model,prompt,true);
   }
+  if(html)html+=`<p style="font-size:0.68rem;color:var(--text-3);margin-top:6px">Auto-saved to gallery</p>`;
   ra.innerHTML=html||'<p style="color:var(--text-3);font-size:0.78rem">No output received</p>';
+  saveResultState(cardId,type,urls,payload);
 }
 
 function renderJobsBadge(){
@@ -1261,9 +1266,11 @@ function renderJobsBadge(){
   bar.innerHTML=h;
 }
 
-function addToGallery(url,type,model,prompt){
+function addToGallery(url,type,model,prompt,silent){
+  if(state.gallery.some(g=>g.url===url))return;
   state.gallery.unshift({url,type,model,prompt,ts:Date.now()});
-  saveGallery();toast('Saved to gallery','success');
+  saveGallery();
+  if(!silent)toast('Saved to gallery','success');
 }
 
 function renderGallery(){
@@ -1303,7 +1310,9 @@ function removeFromGallery(idx){
 
 function clearGallery(){
   state.gallery=[];saveGallery();
+  ls('mu_results',null);
   if(state.view==='gallery')renderGallery();
+  document.querySelectorAll('[id^="result-"]').forEach(ra=>{ra.innerHTML='Results will appear here'});
   toast('Gallery cleared','success');
 }
 
@@ -1343,6 +1352,35 @@ async function shareItem(url,type,model,prompt){
   toast('Share text copied','success');
 }
 
+function saveFormState(){
+  const d={};
+  document.querySelectorAll('#studio-panels input,#studio-panels textarea,#studio-panels select').forEach(el=>{
+    if(el.id)d[el.id]=el.value;
+  });
+  document.querySelectorAll('#studio-panels .toggle').forEach(el=>{
+    if(el.id)d[el.id+'_tog']=el.classList.contains('on')?'1':'0';
+  });
+  ls('mu_forms',JSON.stringify(d));
+}
+function restoreFormState(){
+  try{const d=JSON.parse(ls('mu_forms')||'{}');
+  for(const[k,val]of Object.entries(d)){
+    if(k.endsWith('_tog')){const el=document.getElementById(k.slice(0,-4));if(el&&val==='1')el.classList.add('on')}
+    else{const el=document.getElementById(k);if(el)el.value=val}
+  }}catch(e){}
+}
+function saveResultState(cardId,type,urls,payload){
+  try{const r=JSON.parse(ls('mu_results')||'{}');
+  r[cardId]={type,urls:urls.filter(Boolean),model:payload?.body?.model||'',prompt:payload?.body?.prompt||'',ts:Date.now()};
+  ls('mu_results',JSON.stringify(r))}catch(e){}
+}
+function restoreResults(){
+  try{const r=JSON.parse(ls('mu_results')||'{}');
+  for(const[cid,d]of Object.entries(r)){
+    if(d.urls?.length)showResult(cid,d.type,d.urls,{type:d.type,body:{model:d.model,prompt:d.prompt}});
+  }}catch(e){}
+}
+
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function escAttr(s){return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
@@ -1369,6 +1407,10 @@ loadState();
 buildNav();
 buildCatPills();
 buildStudio();
+restoreFormState();
+restoreResults();
+document.getElementById('studio-panels').addEventListener('input',saveFormState);
+document.getElementById('studio-panels').addEventListener('change',saveFormState);
 renderModels();
 
 document.getElementById('key-display').textContent=maskKey(state.apiKey);
