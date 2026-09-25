@@ -1088,7 +1088,7 @@ function showResult(cardId,type,urls,payload){
     if(type==='image')html+=`<img src="${escAttr(url)}" alt="Generated image" loading="lazy">`;
     else if(type==='video')html+=`<video src="${escAttr(url)}" controls playsinline preload="metadata" style="max-width:100%"></video>`;
     else if(type==='audio')html+=`<audio src="${escAttr(url)}" controls preload="metadata"></audio>`;
-    html+=`<div class="result-actions"><button class="btn-small" onclick="copyText('${escAttr(url)}')">Copy URL</button><button class="btn-small" onclick="addToGallery('${escAttr(url)}','${type}','${escAttr(payload?.body?.model||'')}','${escAttr(payload?.body?.prompt||'')}')">Save to Gallery</button></div>`;
+    html+=`<div class="result-actions"><button class="btn-small" onclick="copyText('${escAttr(url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(url)}','${type}','${escAttr(payload?.body?.model||'')}','${escAttr(payload?.body?.prompt||'')}')">Share</button><button class="btn-small" onclick="addToGallery('${escAttr(url)}','${type}','${escAttr(payload?.body?.model||'')}','${escAttr(payload?.body?.prompt||'')}')">Save to Gallery</button></div>`;
   }
   ra.innerHTML=html||'<p style="color:var(--text-3);font-size:0.78rem">No output received</p>';
 }
@@ -1137,7 +1137,7 @@ function openGalleryDetail(idx){
   if(item.type==='image')media=`<img class="detail-media" src="${escAttr(item.url)}" alt="Generated">`;
   else if(item.type==='video')media=`<video class="detail-media" src="${escAttr(item.url)}" controls playsinline></video>`;
   else media=`<audio src="${escAttr(item.url)}" controls style="width:100%;margin:16px 0"></audio>`;
-  content.innerHTML=`<button class="icon-btn detail-close" onclick="document.getElementById('detail-modal').hidden=true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><h3 style="font-size:1rem;margin-bottom:4px">${escHtml(item.model||'Generation')}</h3><div class="detail-meta"><strong>Type:</strong> ${item.type} &middot; <strong>Date:</strong> ${new Date(item.ts).toLocaleDateString()}</div>${media}${item.prompt?`<div class="detail-prompt">${escHtml(item.prompt)}</div>`:''}<div class="result-actions" style="margin-top:12px"><button class="btn-small" onclick="copyText('${escAttr(item.url)}')">Copy URL</button><button class="btn-small btn-danger" onclick="removeFromGallery(${idx})">Remove</button></div>`;
+  content.innerHTML=`<button class="icon-btn detail-close" onclick="document.getElementById('detail-modal').hidden=true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><h3 style="font-size:1rem;margin-bottom:4px">${escHtml(item.model||'Generation')}</h3><div class="detail-meta"><strong>Type:</strong> ${item.type} &middot; <strong>Date:</strong> ${new Date(item.ts).toLocaleDateString()}</div>${media}${item.prompt?`<div class="detail-prompt">${escHtml(item.prompt)}</div>`:''}<div class="result-actions" style="margin-top:12px"><button class="btn-small" onclick="copyText('${escAttr(item.url)}')">Copy URL</button><button class="btn-small" onclick="shareItem('${escAttr(item.url)}','${item.type}','${escAttr(item.model||'')}','${escAttr(item.prompt||'')}')">Share</button><button class="btn-small btn-danger" onclick="removeFromGallery(${idx})">Remove</button></div>`;
   modal.hidden=false;
 }
 
@@ -1172,6 +1172,21 @@ function copyText(txt){
     try{document.execCommand('copy');toast('Copied','success')}catch(e2){toast('Copy failed','error')}
     ta.remove();
   }
+}
+
+async function shareItem(url,type,model,prompt){
+  const title='Synthesis Lab — '+(model||type||'creation');
+  const text=(prompt?prompt+'\n\n':'')+'Made with '+(model||'AI')+' via Synthesis Lab\n'+url;
+  try{
+    if(navigator.share){
+      await navigator.share({title,text,url});
+      return;
+    }
+  }catch(e){
+    if(e.name==='AbortError')return;
+  }
+  copyText(text);
+  toast('Share text copied','success');
 }
 
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
