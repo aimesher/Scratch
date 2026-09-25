@@ -531,12 +531,15 @@ input,textarea,select{font:inherit;color:var(--text-1)}
       <label class="field-label" for="key-input">API Key</label>
       <input type="password" id="key-input" class="input" placeholder="Enter your MUAPI API key" autocomplete="off">
     </div>
-    <div class="field">
+    <div class="field" style="margin-bottom:12px">
       <label class="field-label" for="base-url-input">API Base URL</label>
       <input type="url" id="base-url-input" class="input" placeholder="https://api.muapi.ai" value="https://api.muapi.ai">
+      <p class="sub" style="margin-top:6px;font-size:0.7rem">MUAPI blocks direct browser calls (CORS). To fix: deploy the included <strong>worker.js</strong> as a Cloudflare Worker and paste its URL here instead.</p>
     </div>
+    <div id="cors-status" style="padding:8px 12px;border-radius:8px;font-size:0.75rem;margin-bottom:12px;display:none"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeKeyModal()">Cancel</button>
+      <button class="btn-outline" onclick="testCors()" style="margin-right:auto">Test Connection</button>
       <button class="btn-primary" onclick="saveApiKey()">Save</button>
     </div>
   </div>
@@ -614,6 +617,27 @@ input,textarea,select{font:inherit;color:var(--text-1)}
         <h3>API Keys</h3>
         <div id="keys-list-container"><p style="font-size:0.8rem;color:var(--text-3)">Configure API key to view</p></div>
         <button class="btn-outline" style="margin-top:10px" onclick="createNewKey()">Create New Key</button>
+      </div>
+      <div class="settings-section">
+        <h3>CORS Proxy</h3>
+        <p style="font-size:0.8rem;color:var(--text-3);margin-bottom:10px">MUAPI.ai blocks direct browser calls. Deploy the included <strong>worker.js</strong> on Cloudflare Workers (free) and set its URL below.</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="url" id="proxy-url-settings" class="input" style="flex:1;min-width:200px" placeholder="https://your-worker.workers.dev">
+          <button class="btn-outline" onclick="saveProxy()">Save</button>
+          <button class="btn-outline" onclick="testProxy()">Test</button>
+        </div>
+        <div id="proxy-status-settings" style="margin-top:8px;font-size:0.75rem;display:none"></div>
+        <details style="margin-top:12px">
+          <summary style="font-size:0.8rem;color:var(--accent);cursor:pointer">Setup instructions</summary>
+          <ol style="font-size:0.78rem;color:var(--text-2);padding-left:20px;margin-top:8px;line-height:1.6">
+            <li>Go to <a href="https://dash.cloudflare.com" target="_blank" style="color:var(--accent)">dash.cloudflare.com</a> (free account)</li>
+            <li>Workers &amp; Pages &rarr; Create &rarr; "Hello World" template</li>
+            <li>Name it (e.g. <code style="color:var(--accent)">synthesis-proxy</code>) &rarr; Deploy</li>
+            <li>Click "Edit Code" &rarr; paste the contents of <strong>worker.js</strong> &rarr; Deploy</li>
+            <li>Copy the URL (e.g. <code style="color:var(--accent)">https://synthesis-proxy.your-name.workers.dev</code>)</li>
+            <li>Paste it above and click Save</li>
+          </ol>
+        </details>
       </div>
       <div class="settings-section">
         <h3>Theme</h3>
@@ -812,8 +836,60 @@ async function apiFetch(path,opts={}){
 }
 
 function buildCurl(path,body){
-  let cmd='curl -X POST "'+state.apiBase+path+'" \\\n  -H "Authorization: Bearer YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \''+JSON.stringify(body,null,2)+"'";
+  let cmd='curl -X POST "https://api.muapi.ai'+path+'" \\\n  -H "Authorization: Bearer YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \''+JSON.stringify(body,null,2)+"'";
   return cmd;
+}
+
+async function testCors(){
+  const el=document.getElementById('cors-status');
+  const base=document.getElementById('base-url-input').value.trim()||'https://api.muapi.ai';
+  const key=document.getElementById('key-input').value.trim()||state.apiKey;
+  el.style.display='block';
+  el.style.background='var(--bg-3)';el.style.color='var(--text-2)';
+  el.textContent='Testing connection to '+base+'...';
+  try{
+    const r=await fetch(base+'/v1/account/balance',{
+      headers:{'Authorization':'Bearer '+(key||'test'),'Content-Type':'application/json'}
+    });
+    if(r.ok){
+      el.style.background='rgba(0,212,170,0.15)';el.style.color='var(--accent)';
+      el.textContent='Connected. API calls will work from this browser.';
+    }else{
+      el.style.background='rgba(255,180,0,0.15)';el.style.color='#ffb400';
+      el.textContent='Server responded ('+r.status+') but returned an error. Check your API key.';
+    }
+  }catch(e){
+    el.style.background='rgba(255,80,80,0.15)';el.style.color='#ff5050';
+    el.textContent='Blocked (CORS). Deploy worker.js as a Cloudflare Worker and use its URL.';
+  }
+}
+
+function saveProxy(){
+  const url=document.getElementById('proxy-url-settings').value.trim().replace(/\/$/,'');
+  if(!url){toast('Enter a proxy URL','error');return}
+  state.apiBase=url;
+  ls('mu_base',url);
+  document.getElementById('base-url-input').value=url;
+  toast('Proxy URL saved','success');
+}
+
+async function testProxy(){
+  const el=document.getElementById('proxy-status-settings');
+  const url=(document.getElementById('proxy-url-settings').value.trim()||state.apiBase).replace(/\/$/,'');
+  el.style.display='block';
+  el.style.color='var(--text-2)';el.textContent='Testing '+url+'...';
+  try{
+    const r=await fetch(url+'/v1/account/balance',{
+      headers:{'Authorization':'Bearer '+(state.apiKey||'test'),'Content-Type':'application/json'}
+    });
+    if(r.ok){
+      el.style.color='var(--accent)';el.textContent='Connected — proxy is working.';
+    }else{
+      el.style.color='#ffb400';el.textContent='Proxy responded ('+r.status+'). Check your API key.';
+    }
+  }catch(e){
+    el.style.color='#ff5050';el.textContent='Connection failed. Check the URL or deploy worker.js.';
+  }
 }
 
 async function fetchBalance(){
@@ -1044,7 +1120,11 @@ async function generate(cardId){
 
   if(res&&res._fetchError){
     const curl=buildCurl(apiPath,payload.body);
-    resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2);margin-bottom:8px">Direct API call blocked (CORS). Use via Claude MCP tools or copy the command below:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(curl)}</div>`;
+    const isDirectApi=state.apiBase==='https://api.muapi.ai';
+    const hint=isDirectApi
+      ? '<strong>Fix:</strong> Deploy the included <em>worker.js</em> as a <a href="https://dash.cloudflare.com" target="_blank" style="color:var(--accent)">Cloudflare Worker</a>, then set its URL as your API Base URL in settings (key icon, top right).'
+      : 'Your proxy may be down or misconfigured. Check the URL in settings.';
+    resultArea.innerHTML=`<p style="font-size:0.75rem;color:var(--text-2);margin-bottom:8px">API call blocked (CORS). ${hint}</p><p style="font-size:0.7rem;color:var(--text-3);margin-bottom:8px">Or copy the curl command to run manually:</p><div class="curl-box" onclick="copyText(this.innerText)">${escHtml(curl)}</div>`;
     btn.classList.remove('loading');btn.disabled=false;
     return;
   }
@@ -1237,6 +1317,7 @@ buildStudio();
 renderModels();
 
 document.getElementById('key-display').textContent=maskKey(state.apiKey);
+if(state.apiBase!=='https://api.muapi.ai')document.getElementById('proxy-url-settings').value=state.apiBase;
 if(state.apiKey)fetchBalance();
 if(!state.apiKey)setTimeout(openKeyModal,800);
 </script>
