@@ -1093,14 +1093,45 @@ function buildCardFields(card){
 
 function v(id){const el=document.getElementById(id);return el?el.value?.trim():''}
 
-const LIPSYNC_ENDPOINTS={sync:'sync-lipsync',latentsync:'latentsync-video',creatify:'creatify-lipsync',veed:'veed-lipsync'};
+const EP={
+  t2i:{'flux-dev':'flux-dev-image','flux-schnell':'flux-schnell-image','midjourney':'midjourney-v7',
+    'gpt4o':'gpt4o-text-to-image','gpt-image-2':'gpt-image-2-text-to-image',
+    'seedream':'bytedance-seedream-v4','seedream-v5':'seedream-5.0','seedream-5-pro':'seedream-5.0-pro',
+    'qwen':'qwen-image','qwen-image-2':'qwen-image-2.0',
+    'hidream-fast':'hidream_i1_fast_image','hidream-dev':'hidream_i1_dev_image','hidream-full':'hidream_i1_full_image',
+    'wan2.1':'wan2.1-text-to-image','wan2.7':'wan2.7-text-to-image','reve':'reve-text-to-image'},
+  i2i:{'flux-kontext-dev':'flux-kontext-dev-i2i','flux-kontext-pro':'flux-kontext-pro-i2i','flux-kontext-max':'flux-kontext-max-i2i',
+    'gpt4o':'gpt4o-image-to-image','gpt-image-2':'gpt-image-2-image-to-image',
+    'midjourney':'midjourney-v7-image-to-image','midjourney-omni':'midjourney-v7-omni-reference',
+    'midjourney-v8-edit':'midjourney-v8','midjourney-v7-edit':'midjourney-v7',
+    'reve':'reve-image-edit','seededit':'bytedance-seededit-image',
+    'qwen':'qwen-image-edit','qwen-image-2':'qwen-image-2.0-edit',
+    'nano-banana-pro':'nano-banana-pro-edit','seedream-v5':'seedream-5.0-edit','seedream-5-pro':'seedream-5.0-pro-edit',
+    'wan2.7':'wan2.7-image-edit'},
+  t2v:{'veo3':'veo3-text-to-video','veo3.1':'veo3.1-text-to-video','veo3-fast':'veo3-fast-text-to-video','veo3.1-fast':'veo3.1-fast-text-to-video',
+    'kling-master':'kling-v2.1-master-t2v','seedance-2':'seedance-2-text-to-video','seedance-2-fast':'seedance-2-text-to-video-fast',
+    'seedance-pro':'seedance-pro-t2v','seedance-lite':'seedance-lite-t2v',
+    'wan2.1':'wan2.1-text-to-video','wan2.2':'wan2.2-text-to-video',
+    'hunyuan':'hunyuan-text-to-video','runway':'runway-text-to-video',
+    'pixverse':'pixverse-v6-t2v','vidu':'vidu-v2.0-t2v',
+    'minimax-std':'minimax-hailuo-02-standard-t2v','minimax-pro':'minimax-hailuo-02-pro-t2v'},
+  i2v:{'kling-std':'kling-v2.1-standard-i2v','kling-pro':'kling-v2.1-pro-i2v','kling-master':'kling-v2.1-master-i2v',
+    'seedance-2':'seedance-2-image-to-video','seedance-2-fast':'seedance-2-image-to-video-fast',
+    'seedance-pro':'seedance-pro-i2v','seedance-lite':'seedance-lite-i2v',
+    'wan2.1':'wan2.1-image-to-video','wan2.2':'wan2.2-image-to-video',
+    'runway':'runway-image-to-video','veo3':'veo3-image-to-video','veo3.1':'veo3.1-image-to-video',
+    'veo3-fast':'veo3-fast-image-to-video','pixverse':'pixverse-v6-i2v','vidu':'vidu-v2.0-i2v',
+    'minimax-std':'minimax-hailuo-02-standard-i2v','minimax-pro':'minimax-hailuo-02-pro-i2v',
+    'midjourney':'midjourney-v7-image-to-video','hunyuan':'hunyuan-image-to-video'},
+  lipsync:{sync:'sync-lipsync',latentsync:'latentsync-video',creatify:'creatify-lipsync',veed:'veed-lipsync'}
+};
 
 function getPayload(cardId){
   switch(cardId){
-    case 't2i':{const m=v('f-t2i-model');return{type:'image',endpoint:m,body:{prompt:v('f-t2i-prompt'),model:m,width:+v('f-t2i-w')||1024,height:+v('f-t2i-h')||1024,num_images:+v('f-t2i-n')||1,aspect_ratio:v('f-t2i-ar')}};}
-    case 'i2i':{const m=v('f-i2i-model');return{type:'image',endpoint:m,body:{prompt:v('f-i2i-prompt'),model:m,image_url:v('f-i2i-img'),num_images:+v('f-i2i-n')||1}};}
-    case 't2v':{const m=v('f-t2v-model');return{type:'video',endpoint:m,body:{prompt:v('f-t2v-prompt'),model:m,duration:+v('f-t2v-dur')||5,aspect_ratio:v('f-t2v-ar')}};}
-    case 'i2v':{const m=v('f-i2v-model');return{type:'video',endpoint:m,body:{prompt:v('f-i2v-prompt'),model:m,image_url:v('f-i2v-img'),duration:+v('f-i2v-dur')||5,aspect_ratio:v('f-i2v-ar')}};}
+    case 't2i':{const m=v('f-t2i-model');return{type:'image',endpoint:EP.t2i[m]||m,body:{prompt:v('f-t2i-prompt'),model:m,width:+v('f-t2i-w')||1024,height:+v('f-t2i-h')||1024,num_images:+v('f-t2i-n')||1,aspect_ratio:v('f-t2i-ar')}};}
+    case 'i2i':{const m=v('f-i2i-model');return{type:'image',endpoint:EP.i2i[m]||m,body:{prompt:v('f-i2i-prompt'),model:m,image_url:v('f-i2i-img'),num_images:+v('f-i2i-n')||1}};}
+    case 't2v':{const m=v('f-t2v-model');return{type:'video',endpoint:EP.t2v[m]||m,body:{prompt:v('f-t2v-prompt'),model:m,duration:+v('f-t2v-dur')||5,aspect_ratio:v('f-t2v-ar')}};}
+    case 'i2v':{const m=v('f-i2v-model');return{type:'video',endpoint:EP.i2v[m]||m,body:{prompt:v('f-i2v-prompt'),model:m,image_url:v('f-i2v-img'),duration:+v('f-i2v-dur')||5,aspect_ratio:v('f-i2v-ar')}};}
     case 'music':return{type:'audio',endpoint:'suno-create-music',body:{prompt:v('f-music-prompt'),title:v('f-music-title'),tags:v('f-music-tags'),make_instrumental:document.getElementById('f-music-inst')?.classList.contains('on')||false}};
     case 'sfx':return{type:'audio',endpoint:'mmaudio-v2/text-to-audio',body:{prompt:v('f-sfx-prompt'),duration:+v('f-sfx-dur')||10}};
     case 'upscale':return{type:'image',endpoint:'ai-image-upscale',body:{image_url:v('f-upscale-img')}};
@@ -1108,7 +1139,7 @@ function getPayload(cardId){
     case 'faceswap':return{type:'image',endpoint:'ai-image-face-swap',body:{source_url:v('f-faceswap-src'),target_url:v('f-faceswap-tgt'),mode:v('f-faceswap-mode')}};
     case 'ghibli':return{type:'image',endpoint:'ai-ghibli-style',body:{image_url:v('f-ghibli-img')}};
     case 'clip':return{type:'video',endpoint:'ai-clipping',body:{video_url:v('f-clip-vid'),num_highlights:+v('f-clip-num')||3,aspect_ratio:v('f-clip-ar')}};
-    case 'lipsync':{const m=v('f-lipsync-model');return{type:'video',endpoint:LIPSYNC_ENDPOINTS[m]||'sync-lipsync',body:{video_url:v('f-lipsync-vid'),audio_url:v('f-lipsync-aud'),model:m}};}
+    case 'lipsync':{const m=v('f-lipsync-model');return{type:'video',endpoint:EP.lipsync[m]||'sync-lipsync',body:{video_url:v('f-lipsync-vid'),audio_url:v('f-lipsync-aud'),model:m}};}
   }
 }
 
