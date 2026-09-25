@@ -826,7 +826,7 @@ async function apiFetch(path,opts={}){
   try{
     const r=await fetch(state.apiBase+path,{
       ...opts,
-      headers:{'Authorization':'Bearer '+state.apiKey,'Content-Type':'application/json',...(opts.headers||{})}
+      headers:{'x-api-key':state.apiKey,'Content-Type':'application/json',...(opts.headers||{})}
     });
     if(!r.ok){const e=await r.text().catch(()=>'');toast('API error: '+r.status+' '+(e||r.statusText),'error');return null}
     return await r.json();
@@ -836,7 +836,7 @@ async function apiFetch(path,opts={}){
 }
 
 function buildCurl(path,body){
-  let cmd='curl -X POST "https://api.muapi.ai'+path+'" \\\n  -H "Authorization: Bearer YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \''+JSON.stringify(body,null,2)+"'";
+  let cmd='curl -X POST "https://api.muapi.ai'+path+'" \\\n  -H "x-api-key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \''+JSON.stringify(body,null,2)+"'";
   return cmd;
 }
 
@@ -848,8 +848,8 @@ async function testCors(){
   el.style.background='var(--bg-3)';el.style.color='var(--text-2)';
   el.textContent='Testing connection to '+base+'...';
   try{
-    const r=await fetch(base+'/v1/account/balance',{
-      headers:{'Authorization':'Bearer '+(key||'test'),'Content-Type':'application/json'}
+    const r=await fetch(base+'/api/v1/account/balance',{
+      headers:{'x-api-key':(key||'test'),'Content-Type':'application/json'}
     });
     if(r.ok){
       el.style.background='rgba(0,212,170,0.15)';el.style.color='var(--accent)';
@@ -882,8 +882,8 @@ async function testProxy(){
   el.style.display='block';
   el.style.color='var(--text-2)';el.textContent='Testing '+url+'...';
   try{
-    const r=await fetch(url+'/v1/account/balance',{
-      headers:{'Authorization':'Bearer '+(state.apiKey||'test'),'Content-Type':'application/json'}
+    const r=await fetch(url+'/api/v1/account/balance',{
+      headers:{'x-api-key':(state.apiKey||'test'),'Content-Type':'application/json'}
     });
     if(r.ok){
       el.style.color='var(--accent)';el.textContent='Proxy is working and authenticated. Ready to generate.';
@@ -898,7 +898,7 @@ async function testProxy(){
 }
 
 async function fetchBalance(){
-  const d=await apiFetch('/v1/account/balance');
+  const d=await apiFetch('/api/v1/account/balance');
   if(d&&!d._fetchError){
     const bal=d.balance||d.credits||d.amount||JSON.stringify(d);
     document.getElementById('balance-amount').textContent=bal;
@@ -1120,12 +1120,12 @@ async function generate(cardId){
   const resultArea=document.getElementById('result-'+cardId);
   btn.classList.add('loading');btn.disabled=true;
 
-  const apiPath='/v1/'+payload.method;
+  const apiPath='/api/v1/'+payload.method;
   const res=await apiFetch(apiPath,{method:'POST',body:JSON.stringify(payload.body)});
 
   if(res&&res._fetchError){
     const curl=buildCurl(apiPath,payload.body);
-    const isDirectApi=state.apiBase==='https://api.muapi.ai';
+    const isDirectApi=state.apiBase.startsWith('https://api.muapi.ai');
     const hint=isDirectApi
       ? '<strong>Fix:</strong> Deploy the included <em>worker.js</em> as a <a href="https://dash.cloudflare.com" target="_blank" style="color:var(--accent)">Cloudflare Worker</a>, then set its URL as your API Base URL in settings (key icon, top right).'
       : 'Your proxy may be down or misconfigured. Check the URL in settings.';
@@ -1161,7 +1161,7 @@ async function pollJob(job){
       if(ra)ra.innerHTML=`<span class="job-badge fail">Timeout</span><p style="font-size:0.72rem;color:var(--text-3)">Job ${job.id} timed out after ${maxAttempts*5}s</p>`;
       return;
     }
-    const res=await apiFetch('/v1/predict/'+job.id);
+    const res=await apiFetch('/api/v1/predictions/'+job.id+'/result');
     if(!res||res._fetchError)return;
     if(res.status==='succeeded'||res.status==='completed'||res.output){
       job.status='done';renderJobsBadge();
@@ -1259,7 +1259,7 @@ function clearGallery(){
 
 async function createNewKey(){
   if(!state.apiKey){toast('Set your API key first','error');openKeyModal();return}
-  const res=await apiFetch('/v1/keys',{method:'POST',body:JSON.stringify({name:'synthesis-lab-'+Date.now()})});
+  const res=await apiFetch('/api/v1/keys',{method:'POST',body:JSON.stringify({name:'synthesis-lab-'+Date.now()})});
   if(res&&!res._fetchError){
     toast('New key created','success');
     if(res.key)toast('Key: '+res.key.slice(0,8)+'... (shown once)','info');
@@ -1322,7 +1322,7 @@ buildStudio();
 renderModels();
 
 document.getElementById('key-display').textContent=maskKey(state.apiKey);
-if(state.apiBase!=='https://api.muapi.ai')document.getElementById('proxy-url-settings').value=state.apiBase;
+if(!state.apiBase.startsWith('https://api.muapi.ai'))document.getElementById('proxy-url-settings').value=state.apiBase;
 if(state.apiKey)fetchBalance();
 if(!state.apiKey)setTimeout(openKeyModal,800);
 </script>
