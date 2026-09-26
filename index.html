@@ -20,15 +20,15 @@
     --cream-deep: #E5D8C0;
     --forest: #2D4A2E;
     --forest-mid: #4A7A4C;
+    --forest-light: #6B9A6C;
     --brown: #5A3E2A;
     --brown-text: #3A2818;
-
     --bg: var(--cream-light);
     --text: var(--brown-text);
     --text-mid: var(--brown);
     --text-soft: #7A6650;
     --surface: #FFFCF5;
-    --border: rgba(61,31,51,0.08);
+    --border: rgba(61,31,51,0.1);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -42,7 +42,6 @@
       --cream: #241A15;
       --cream-light: #1A1210;
       --cream-deep: #2E221A;
-      --plum: #C48A9A;
       color-scheme: dark;
     }
   }
@@ -56,7 +55,6 @@
     --cream: #241A15;
     --cream-light: #1A1210;
     --cream-deep: #2E221A;
-    --plum: #C48A9A;
     color-scheme: dark;
   }
 
@@ -71,6 +69,24 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Reusable SVG texture overlay */
+  .tex {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Botanical scatter pattern for backgrounds */
+  .bot-pat {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
   .wrap { max-width: 480px; margin: 0 auto; padding: 0 16px; }
 
   h1, h2, h3 {
@@ -79,48 +95,51 @@
     line-height: 1.2;
   }
 
-  /* ── Hero ── */
+  /* ══════════════════════════════════════════
+     HERO
+  ══════════════════════════════════════════ */
   .hero {
-    background: linear-gradient(175deg, #3D1F33 0%, #2D1A25 40%, #1A1210 100%);
+    position: relative;
     padding: 3rem 16px 2.5rem;
     text-align: center;
-    position: relative;
     overflow: hidden;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(92,45,74,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(45,74,46,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(184,155,88,0.1) 0%, transparent 40%),
+      linear-gradient(175deg, #3D1F33 0%, #2A1520 30%, #1E150F 60%, #151010 100%);
   }
 
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 30%, rgba(184,155,88,0.08) 0%, transparent 60%);
-  }
+  .hero .tex { opacity: 0.2; }
 
-  .hero-content { position: relative; max-width: 480px; margin: 0 auto; }
+  .hero-content { position: relative; z-index: 2; max-width: 480px; margin: 0 auto; }
 
-  .hero-logo { width: 180px; height: auto; margin-bottom: 1.2rem; }
+  .hero-logo { width: 200px; height: auto; margin-bottom: 1rem; filter: drop-shadow(0 4px 20px rgba(184,155,88,0.15)); }
 
   .hero h1 {
-    color: #FAF4E8;
-    font-size: 1.8rem;
+    color: var(--cream-light);
+    font-size: 1.9rem;
     font-weight: 700;
     margin-bottom: 0.3rem;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
   }
 
   .hero-tagline {
     font-family: 'Cormorant', Georgia, serif;
     color: var(--gold-warm);
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-style: italic;
     font-weight: 300;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.3);
   }
 
   .hero-sub {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    color: rgba(250,244,232,0.5);
+    color: rgba(250,244,232,0.45);
   }
 
   .orn {
@@ -128,7 +147,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 0.6rem 0;
+    padding: 0.5rem 0;
   }
 
   .orn i {
@@ -142,14 +161,64 @@
     color: var(--gold); font-size: 10px; line-height: 1; opacity: 0.6;
   }
 
-  /* ── Section ── */
-  .section { padding: 2.5rem 16px; }
+  /* Hero decorative corners */
+  .hero-corner {
+    position: absolute;
+    z-index: 1;
+    opacity: 0.15;
+  }
+
+  .hero-corner--tl { top: 0; left: 0; }
+  .hero-corner--tr { top: 0; right: 0; transform: scaleX(-1); }
+  .hero-corner--bl { bottom: 0; left: 0; transform: scaleY(-1); }
+  .hero-corner--br { bottom: 0; right: 0; transform: scale(-1); }
+
+  /* Victorian badge wrapper in hero */
+  .hero-badge {
+    display: inline-block;
+    margin: 1rem auto 0;
+    padding: 0.5rem 1.8rem;
+    border: 1px solid rgba(184,155,88,0.25);
+    border-radius: 50px;
+    background: rgba(184,155,88,0.06);
+  }
+
+  .hero-badge span {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--gold-warm);
+    opacity: 0.7;
+  }
+
+  /* ══════════════════════════════════════════
+     SECTIONS
+  ══════════════════════════════════════════ */
+  .section {
+    padding: 2.5rem 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section--cream {
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(184,155,88,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(61,31,51,0.04) 0%, transparent 50%),
+      var(--cream-light);
+  }
+
+  .section--warm {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(184,155,88,0.08) 0%, transparent 40%),
+      linear-gradient(180deg, var(--cream), var(--cream-light));
+  }
 
   .section-label {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     text-transform: uppercase;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.25em;
     color: var(--gold);
     text-align: center;
     margin-bottom: 0.3rem;
@@ -158,38 +227,98 @@
   .section h2 {
     text-align: center;
     color: var(--plum);
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .section-intro {
+    text-align: center;
+    font-family: 'Cormorant', Georgia, serif;
+    font-style: italic;
+    color: var(--text-soft);
+    font-size: 0.95rem;
     margin-bottom: 1.5rem;
   }
 
-  /* ── Product cards ── */
-  .product-list { display: flex; flex-direction: column; gap: 0.8rem; }
+  /* Victorian frame around section titles */
+  .frame-title {
+    text-align: center;
+    padding: 1.2rem 0;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .frame-title::before,
+  .frame-title::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.35;
+  }
+
+  .frame-title::before { top: 0; }
+  .frame-title::after { bottom: 0; }
+
+  /* ══════════════════════════════════════════
+     PRODUCT CARDS — rich ornate style
+  ══════════════════════════════════════════ */
+  .product-list { display: flex; flex-direction: column; gap: 1rem; }
 
   .product-card {
-    background: var(--surface);
+    position: relative;
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(184,155,88,0.06) 0%, transparent 50%),
+      var(--surface);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.2rem 1.3rem;
+    border-radius: 16px;
+    padding: 1.4rem 1.4rem 1.4rem 1.2rem;
     display: flex;
     gap: 1rem;
     align-items: flex-start;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(61,31,51,0.04), 0 0 0 1px rgba(184,155,88,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(61,31,51,0.08), 0 0 0 1px rgba(184,155,88,0.08);
+  }
+
+  /* Gold accent line on left */
+  .product-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, var(--gold-pale), var(--gold), var(--gold-pale));
+    opacity: 0.5;
   }
 
   .product-icon {
-    width: 52px; height: 52px;
-    border-radius: 12px;
+    width: 56px; height: 56px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border: 1px solid rgba(184,155,88,0.15);
+    position: relative;
   }
 
-  .product-icon svg { width: 30px; height: 30px; }
+  .product-icon svg { width: 32px; height: 32px; }
 
   .product-name {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--plum);
     margin-bottom: 0.15rem;
@@ -205,43 +334,78 @@
 
   .product-badge {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.52rem;
+    font-size: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--gold);
-    border: 1px solid rgba(184,155,88,0.3);
+    border: 1px solid rgba(184,155,88,0.35);
     border-radius: 20px;
-    padding: 0.2rem 0.6rem;
+    padding: 0.25rem 0.7rem;
     white-space: nowrap;
     flex-shrink: 0;
-    margin-top: 0.15rem;
+    margin-top: 0.1rem;
     margin-left: auto;
+    background: rgba(184,155,88,0.05);
   }
 
-  /* ── How it works ── */
-  .steps { display: flex; flex-direction: column; gap: 1rem; }
+  /* ══════════════════════════════════════════
+     WHATSAPP CTA
+  ══════════════════════════════════════════ */
+  .wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #25D366 0%, #1EBE5A 100%);
+    color: #fff;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.95rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    margin: 1.5rem auto 0;
+    max-width: 320px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    letter-spacing: 0.02em;
+  }
 
-  .step { display: flex; gap: 1rem; align-items: flex-start; }
+  .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37,211,102,0.35); }
+  .wa-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ══════════════════════════════════════════
+     HOW IT WORKS — with ornate numbering
+  ══════════════════════════════════════════ */
+  .steps { display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    position: relative;
+    padding: 1rem 1.2rem;
+    background:
+      radial-gradient(ellipse at 0% 50%, rgba(184,155,88,0.04) 0%, transparent 50%),
+      var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 6px rgba(61,31,51,0.03);
+  }
 
   .step-num {
-    width: 36px; height: 36px;
+    width: 40px; height: 40px;
     border-radius: 50%;
-    background: var(--cream-deep);
+    background: linear-gradient(135deg, var(--plum) 0%, var(--plum-rich) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: var(--plum);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .step-num {
-      background: #2E221A;
-      color: var(--gold-warm);
-    }
+    color: var(--cream-light);
+    box-shadow: 0 2px 8px rgba(61,31,51,0.15);
   }
 
   .step-text h3 {
@@ -254,34 +418,13 @@
 
   .step-text p { font-size: 0.88rem; color: var(--text-soft); }
 
-  /* ── WhatsApp CTA ── */
-  .wa-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: #25D366;
-    color: #fff;
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.9rem 2rem;
-    border-radius: 50px;
-    text-decoration: none;
-    margin: 1.5rem auto 0;
-    max-width: 320px;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 16px rgba(37,211,102,0.25);
-  }
-
-  .wa-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(37,211,102,0.3); }
-  .wa-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-
-  /* ── Delivery badges ── */
+  /* ══════════════════════════════════════════
+     DELIVERY BADGES
+  ══════════════════════════════════════════ */
   .delivery-strip {
     display: flex;
     justify-content: center;
-    gap: 0.8rem;
+    gap: 0.6rem;
     flex-wrap: wrap;
     margin-top: 1.5rem;
   }
@@ -290,58 +433,92 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    background: var(--surface);
+    background: linear-gradient(135deg, var(--surface) 0%, var(--cream) 100%);
     border: 1px solid var(--border);
     border-radius: 50px;
     padding: 0.5rem 1rem;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--text-mid);
+    box-shadow: 0 1px 4px rgba(61,31,51,0.04);
   }
 
   .delivery-pill svg { width: 14px; height: 14px; color: var(--forest-mid); flex-shrink: 0; }
 
-  /* ── About ── */
-  .about-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.5rem;
+  /* ══════════════════════════════════════════
+     ABOUT — rich framed card
+  ══════════════════════════════════════════ */
+  .about-frame {
+    position: relative;
+    border: 1px solid rgba(184,155,88,0.2);
+    border-radius: 18px;
+    padding: 2rem 1.5rem;
     text-align: center;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(184,155,88,0.06) 0%, transparent 50%),
+      var(--surface);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(61,31,51,0.05);
   }
 
-  .about-box p {
+  /* Inner gold frame line */
+  .about-frame::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(184,155,88,0.12);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+
+  .about-frame .about-plum { margin-bottom: 1rem; opacity: 0.6; }
+
+  .about-frame p {
     font-size: 0.95rem;
     color: var(--text);
-    line-height: 1.7;
+    line-height: 1.75;
     margin-bottom: 0.8rem;
+    position: relative;
   }
 
-  .about-box p:last-child { margin-bottom: 0; }
+  .about-frame p:last-child { margin-bottom: 0; }
 
   .about-sign {
     font-family: 'Cormorant', Georgia, serif;
     font-style: italic;
     color: var(--text-mid);
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
-  /* ── CTA dark ── */
+  /* ══════════════════════════════════════════
+     CTA DARK — forest green with texture
+  ══════════════════════════════════════════ */
   .cta-dark {
-    background: linear-gradient(175deg, #2D4A2E 0%, #1A2E1B 50%, #1A1210 100%);
-    padding: 2.5rem 16px;
+    position: relative;
+    overflow: hidden;
+    padding: 3rem 16px;
     text-align: center;
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(74,122,76,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 60%, rgba(61,31,51,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(184,155,88,0.08) 0%, transparent 40%),
+      linear-gradient(175deg, #2D4A2E 0%, #1E3520 30%, #171210 70%, #121010 100%);
   }
+
+  .cta-dark .tex { opacity: 0.15; }
+
+  .cta-dark .cta-inner { position: relative; z-index: 2; }
 
   .cta-dark h2 {
-    color: #FAF4E8;
-    font-size: 1.6rem;
+    color: var(--cream-light);
+    font-size: 1.7rem;
     margin-bottom: 0.3rem;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.3);
   }
 
   .cta-dark h2 em { color: var(--gold-warm); font-style: italic; }
 
   .cta-dark p {
-    color: rgba(250,244,232,0.6);
+    color: rgba(250,244,232,0.55);
     font-size: 0.9rem;
     margin-bottom: 0.3rem;
   }
@@ -349,29 +526,111 @@
   .cta-dark .phone {
     font-family: 'Playfair Display', Georgia, serif;
     color: var(--gold-warm);
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    margin: 0.5rem 0;
+    margin: 0.6rem 0;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.2);
   }
 
-  /* ── Footer ── */
-  .footer {
-    background: #3D1F33;
-    padding: 2rem 16px;
+  .cta-dark .cta-frame {
+    display: inline-block;
+    border: 1px solid rgba(184,155,88,0.25);
+    border-radius: 14px;
+    padding: 1.3rem 1.8rem;
+    margin-top: 0.5rem;
+    background: rgba(184,155,88,0.04);
+  }
+
+  /* ══════════════════════════════════════════
+     BRAND PILLARS strip
+  ══════════════════════════════════════════ */
+  .pillars {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 0;
+  }
+
+  .pillars span {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    opacity: 0.6;
+  }
+
+  .pillars i {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.3;
+    display: block;
+  }
+
+  /* ══════════════════════════════════════════
+     GIFT TAGS
+  ══════════════════════════════════════════ */
+  .gift-tags {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .gift-tag {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(184,155,88,0.08) 0%, transparent 50%),
+      var(--cream);
+    border: 1px solid var(--cream-deep);
+    border-radius: 4px 14px 14px 4px;
+    padding: 0.9rem 1.3rem 0.9rem 1.6rem;
+    position: relative;
+    font-family: 'Cormorant', Georgia, serif;
+    font-style: italic;
+    font-size: 0.88rem;
+    color: var(--text-mid);
+    max-width: 170px;
     text-align: center;
+    box-shadow: 0 3px 12px rgba(61,31,51,0.06);
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .footer { background: #0E0A08; }
-    :root:not([data-theme="light"]) .hero { background: linear-gradient(175deg, #241A15 0%, #1A1210 100%); }
+  .gift-tag::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--text-soft);
+    opacity: 0.35;
   }
 
-  .footer-logo { width: 60px; height: auto; margin-bottom: 0.8rem; opacity: 0.8; }
+  /* ══════════════════════════════════════════
+     FOOTER
+  ══════════════════════════════════════════ */
+  .footer {
+    position: relative;
+    overflow: hidden;
+    padding: 2.5rem 16px 2rem;
+    text-align: center;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(92,45,74,0.4) 0%, transparent 50%),
+      linear-gradient(180deg, #3D1F33 0%, #2A1520 50%, #1A1210 100%);
+  }
+
+  .footer .tex { opacity: 0.15; }
+
+  .footer-inner { position: relative; z-index: 2; }
+
+  .footer-logo { width: 60px; height: auto; margin-bottom: 0.8rem; opacity: 0.8; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2)); }
 
   .footer-name {
     font-family: 'Playfair Display', Georgia, serif;
-    color: #FAF4E8;
+    color: var(--cream-light);
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -382,71 +641,202 @@
     color: var(--gold-warm);
     font-style: italic;
     font-size: 0.85rem;
-    margin-bottom: 0.8rem;
-    opacity: 0.7;
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
   }
 
   .footer-loc {
-    font-size: 0.72rem;
-    color: rgba(250,244,232,0.35);
-    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    color: rgba(250,244,232,0.3);
+    letter-spacing: 0.1em;
+    font-family: 'Playfair Display', Georgia, serif;
   }
 
   .sep {
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    background: linear-gradient(90deg, transparent 5%, var(--cream-deep) 50%, transparent 95%);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .hero { background: linear-gradient(175deg, #241A15 0%, #1A1210 100%); }
+    :root:not([data-theme="light"]) .footer { background: linear-gradient(180deg, #1A1210 0%, #0E0A08 100%); }
+    :root:not([data-theme="light"]) .cta-dark { background: linear-gradient(175deg, #1A2E1B 0%, #0E0A08 100%); }
+    :root:not([data-theme="light"]) .step-num { background: linear-gradient(135deg, #5C2D4A 0%, #3D1F33 100%); }
   }
 </style>
 </head>
 <body>
 
-<!-- ═══ HERO ═══ -->
+<!-- ═══════════════════ HERO ═══════════════════ -->
 <section class="hero">
+  <div class="tex"></div>
+
+  <!-- Botanical corner ornaments -->
+  <svg class="hero-corner hero-corner--tl" width="120" height="160" viewBox="0 0 120 160" fill="none">
+    <path d="M8 155 Q12 110, 18 75 Q24 45, 40 20 Q50 8, 65 2" stroke="#4A7A4C" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <ellipse cx="16" cy="120" rx="12" ry="6" fill="#2D4A2E" transform="rotate(-25 16 120)"/>
+    <ellipse cx="20" cy="95" rx="14" ry="7" fill="#4A7A4C" transform="rotate(-20 20 95)"/>
+    <ellipse cx="26" cy="68" rx="13" ry="6.5" fill="#2D4A2E" transform="rotate(-30 26 68)"/>
+    <ellipse cx="34" cy="44" rx="12" ry="6" fill="#4A7A4C" transform="rotate(-40 34 44)"/>
+    <ellipse cx="48" cy="24" rx="10" ry="5" fill="#2D4A2E" transform="rotate(-50 48 24)"/>
+    <ellipse cx="22" cy="140" rx="11" ry="5.5" fill="#4A7A4C" transform="rotate(-15 22 140)"/>
+    <!-- Plum fruits -->
+    <ellipse cx="24" cy="108" rx="5" ry="6" fill="#5C2D4A" opacity="0.6"/>
+    <ellipse cx="30" cy="58" rx="4.5" ry="5.5" fill="#3D1F33" opacity="0.5"/>
+    <ellipse cx="14" cy="138" rx="4" ry="5" fill="#5C2D4A" opacity="0.5"/>
+  </svg>
+  <svg class="hero-corner hero-corner--tr" width="120" height="160" viewBox="0 0 120 160" fill="none">
+    <path d="M8 155 Q12 110, 18 75 Q24 45, 40 20 Q50 8, 65 2" stroke="#4A7A4C" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <ellipse cx="16" cy="120" rx="12" ry="6" fill="#2D4A2E" transform="rotate(-25 16 120)"/>
+    <ellipse cx="20" cy="95" rx="14" ry="7" fill="#4A7A4C" transform="rotate(-20 20 95)"/>
+    <ellipse cx="26" cy="68" rx="13" ry="6.5" fill="#2D4A2E" transform="rotate(-30 26 68)"/>
+    <ellipse cx="34" cy="44" rx="12" ry="6" fill="#4A7A4C" transform="rotate(-40 34 44)"/>
+    <ellipse cx="48" cy="24" rx="10" ry="5" fill="#2D4A2E" transform="rotate(-50 48 24)"/>
+    <ellipse cx="22" cy="140" rx="11" ry="5.5" fill="#4A7A4C" transform="rotate(-15 22 140)"/>
+    <ellipse cx="24" cy="108" rx="5" ry="6" fill="#5C2D4A" opacity="0.6"/>
+    <ellipse cx="30" cy="58" rx="4.5" ry="5.5" fill="#3D1F33" opacity="0.5"/>
+    <ellipse cx="14" cy="138" rx="4" ry="5" fill="#5C2D4A" opacity="0.5"/>
+  </svg>
+  <svg class="hero-corner hero-corner--bl" width="120" height="160" viewBox="0 0 120 160" fill="none">
+    <path d="M8 155 Q12 110, 18 75 Q24 45, 40 20 Q50 8, 65 2" stroke="#4A7A4C" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <ellipse cx="16" cy="120" rx="12" ry="6" fill="#2D4A2E" transform="rotate(-25 16 120)"/>
+    <ellipse cx="20" cy="95" rx="14" ry="7" fill="#4A7A4C" transform="rotate(-20 20 95)"/>
+    <ellipse cx="26" cy="68" rx="13" ry="6.5" fill="#2D4A2E" transform="rotate(-30 26 68)"/>
+    <ellipse cx="22" cy="140" rx="11" ry="5.5" fill="#4A7A4C" transform="rotate(-15 22 140)"/>
+    <ellipse cx="24" cy="108" rx="5" ry="6" fill="#5C2D4A" opacity="0.6"/>
+  </svg>
+  <svg class="hero-corner hero-corner--br" width="120" height="160" viewBox="0 0 120 160" fill="none">
+    <path d="M8 155 Q12 110, 18 75 Q24 45, 40 20 Q50 8, 65 2" stroke="#4A7A4C" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <ellipse cx="16" cy="120" rx="12" ry="6" fill="#2D4A2E" transform="rotate(-25 16 120)"/>
+    <ellipse cx="20" cy="95" rx="14" ry="7" fill="#4A7A4C" transform="rotate(-20 20 95)"/>
+    <ellipse cx="26" cy="68" rx="13" ry="6.5" fill="#2D4A2E" transform="rotate(-30 26 68)"/>
+    <ellipse cx="22" cy="140" rx="11" ry="5.5" fill="#4A7A4C" transform="rotate(-15 22 140)"/>
+    <ellipse cx="24" cy="108" rx="5" ry="6" fill="#5C2D4A" opacity="0.6"/>
+  </svg>
+
   <div class="hero-content">
-    <svg class="hero-logo" viewBox="0 0 180 210" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M90 6 C115 6, 140 10, 155 20 Q170 30, 174 50 L176 80 Q177 105, 176 125 L174 145 Q170 170, 155 185 Q140 198, 90 204 Q40 198, 25 185 Q10 170, 6 145 L4 125 Q3 105, 4 80 L6 50 Q10 30, 25 20 C40 10, 65 6, 90 6 Z" fill="none" stroke="#B89B58" stroke-width="1.2" opacity="0.5"/>
-      <g transform="translate(65, 22)" opacity="0.6">
-        <rect x="8" y="16" width="34" height="22" fill="#FAF4E8" rx="1"/>
-        <path d="M4 16 L25 2 L46 16 Z" fill="#FAF4E8" opacity="0.8"/>
-        <rect x="18" y="22" width="14" height="16" fill="#3D1F33" rx="0.5" opacity="0.4"/>
-        <rect x="21" y="6" width="8" height="10" fill="#FAF4E8" rx="0.5" opacity="0.7"/>
+    <!-- Logo (established — keeping as-is) -->
+    <svg class="hero-logo" viewBox="0 0 340 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#C9AD6A"/>
+          <stop offset="50%" stop-color="#D9C48A"/>
+          <stop offset="100%" stop-color="#C9AD6A"/>
+        </linearGradient>
+      </defs>
+      <path d="M170 16 C210 16, 250 22, 278 38 Q306 54, 314 90 L318 150 Q320 190, 318 220 L314 260 Q306 310, 270 340 Q240 368, 170 384 Q100 368, 70 340 Q34 310, 26 260 L22 220 Q20 190, 22 150 L26 90 Q34 54, 62 38 C90 22, 130 16, 170 16 Z" fill="rgba(250,244,232,0.04)" stroke="url(#fg)" stroke-width="2.5"/>
+      <path d="M170 28 C206 28, 242 34, 268 48 Q292 62, 300 94 L303 148 Q305 184, 303 214 L300 254 Q292 300, 260 328 Q234 352, 170 366 Q106 352, 80 328 Q48 300, 40 254 L37 214 Q35 184, 37 148 L40 94 Q48 62, 72 48 C98 34, 134 28, 170 28 Z" fill="none" stroke="#C9AD6A" stroke-width="0.8" opacity="0.35"/>
+      <path d="M130 30 Q125 22, 118 25 Q112 28, 118 34 Q110 28, 105 32 Q100 38, 108 42 Q115 46, 125 38 Z" fill="#4A7A4C" opacity="0.4"/>
+      <path d="M210 30 Q215 22, 222 25 Q228 28, 222 34 Q230 28, 235 32 Q240 38, 232 42 Q225 46, 215 38 Z" fill="#4A7A4C" opacity="0.4"/>
+      <ellipse cx="170" cy="22" rx="8" ry="9" fill="#FAF4E8" opacity="0.5"/>
+      <path d="M168 14 Q170 10, 172 14" stroke="#6B9A6C" stroke-width="0.8" fill="none"/>
+      <path d="M170 12 Q174 10, 176 14" stroke="#4A7A4C" stroke-width="1" fill="#6B9A6C" fill-opacity="0.4"/>
+      <g opacity="0.55">
+        <path d="M52 100 Q48 130, 44 160 Q40 190, 42 220 Q44 245, 50 270" stroke="#4A7A4C" stroke-width="1.2" fill="none"/>
+        <ellipse cx="46" cy="112" rx="8" ry="5" fill="#4A7A4C" opacity="0.5" transform="rotate(-30 46 112)"/>
+        <ellipse cx="42" cy="130" rx="9" ry="5.5" fill="#6B9A6C" opacity="0.4" transform="rotate(-20 42 130)"/>
+        <ellipse cx="40" cy="150" rx="8.5" ry="5" fill="#4A7A4C" opacity="0.45" transform="rotate(-10 40 150)"/>
+        <ellipse cx="39" cy="172" rx="9" ry="5.5" fill="#6B9A6C" opacity="0.4" transform="rotate(-5 39 172)"/>
+        <ellipse cx="40" cy="194" rx="8" ry="5" fill="#4A7A4C" opacity="0.4" transform="rotate(5 40 194)"/>
+        <ellipse cx="42" cy="215" rx="8.5" ry="5.5" fill="#6B9A6C" opacity="0.38" transform="rotate(10 42 215)"/>
+        <ellipse cx="44" cy="236" rx="8" ry="5" fill="#4A7A4C" opacity="0.35" transform="rotate(15 44 236)"/>
+        <ellipse cx="50" cy="145" rx="6" ry="7" fill="#FAF4E8" opacity="0.35"/>
+        <ellipse cx="48" cy="200" rx="5.5" ry="6.5" fill="#E5D8C0" opacity="0.3"/>
+        <ellipse cx="52" cy="250" rx="5" ry="6" fill="#FAF4E8" opacity="0.3"/>
       </g>
-      <text x="90" y="68" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="8" fill="#FAF4E8" letter-spacing="0.12em" font-weight="700">THE OLD</text>
-      <text x="90" y="90" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="22" fill="#FAF4E8" letter-spacing="0.04em" font-weight="800">PLUM</text>
-      <text x="90" y="106" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="11" fill="#FAF4E8" letter-spacing="0.1em" font-weight="700">HOUSE</text>
-      <line x1="50" y1="114" x2="130" y2="114" stroke="#C9AD6A" stroke-width="0.5" opacity="0.4"/>
-      <text x="90" y="128" text-anchor="middle" font-family="'Cormorant',Georgia,serif" font-size="9" font-style="italic" fill="#C9AD6A" letter-spacing="0.03em" font-weight="300">A Little Taste of Tradition.</text>
-      <ellipse cx="90" cy="150" rx="8" ry="9" fill="#FAF4E8" opacity="0.7"/>
-      <ellipse cx="80" cy="154" rx="6" ry="7" fill="#E5D8C0" opacity="0.5"/>
-      <ellipse cx="100" cy="153" rx="6.5" ry="7.5" fill="#E5D8C0" opacity="0.5"/>
-      <path d="M88 142 Q90 138, 92 142" stroke="#6B9A6C" stroke-width="0.8" fill="none"/>
-      <path d="M90 140 Q93 138, 95 142" stroke="#4A7A4C" stroke-width="1" fill="#6B9A6C" fill-opacity="0.4"/>
-      <text x="90" y="178" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="4.5" fill="#C9AD6A" letter-spacing="0.2em" opacity="0.5">EST. 2026 · AHMEDABAD</text>
+      <g opacity="0.55">
+        <path d="M288 100 Q292 130, 296 160 Q300 190, 298 220 Q296 245, 290 270" stroke="#4A7A4C" stroke-width="1.2" fill="none"/>
+        <ellipse cx="294" cy="112" rx="8" ry="5" fill="#4A7A4C" opacity="0.5" transform="rotate(30 294 112)"/>
+        <ellipse cx="298" cy="130" rx="9" ry="5.5" fill="#6B9A6C" opacity="0.4" transform="rotate(20 298 130)"/>
+        <ellipse cx="300" cy="150" rx="8.5" ry="5" fill="#4A7A4C" opacity="0.45" transform="rotate(10 300 150)"/>
+        <ellipse cx="301" cy="172" rx="9" ry="5.5" fill="#6B9A6C" opacity="0.4" transform="rotate(5 301 172)"/>
+        <ellipse cx="300" cy="194" rx="8" ry="5" fill="#4A7A4C" opacity="0.4" transform="rotate(-5 300 194)"/>
+        <ellipse cx="298" cy="215" rx="8.5" ry="5.5" fill="#6B9A6C" opacity="0.38" transform="rotate(-10 298 215)"/>
+        <ellipse cx="296" cy="236" rx="8" ry="5" fill="#4A7A4C" opacity="0.35" transform="rotate(-15 296 236)"/>
+        <ellipse cx="290" cy="145" rx="6" ry="7" fill="#FAF4E8" opacity="0.35"/>
+        <ellipse cx="292" cy="200" rx="5.5" ry="6.5" fill="#E5D8C0" opacity="0.3"/>
+        <ellipse cx="288" cy="250" rx="5" ry="6" fill="#FAF4E8" opacity="0.3"/>
+      </g>
+      <g transform="translate(140, 48)" opacity="0.5">
+        <rect x="10" y="20" width="40" height="28" fill="#FAF4E8" rx="1"/>
+        <path d="M5 20 L30 2 L55 20 Z" fill="#FAF4E8" opacity="0.8"/>
+        <rect x="22" y="28" width="16" height="20" fill="#3D1F33" rx="1" opacity="0.25"/>
+        <path d="M22 38 L38 38" stroke="#FAF4E8" stroke-width="0.3" opacity="0.3"/>
+        <path d="M30 28 L30 48" stroke="#FAF4E8" stroke-width="0.3" opacity="0.3"/>
+        <rect x="14" y="28" width="6" height="8" fill="#FAF4E8" rx="0.5" opacity="0.5"/>
+        <rect x="40" y="28" width="6" height="8" fill="#FAF4E8" rx="0.5" opacity="0.5"/>
+        <rect x="26" y="6" width="8" height="14" fill="#FAF4E8" rx="0.5" opacity="0.6"/>
+        <path d="M27 6 L30 2 L33 6" fill="#FAF4E8" opacity="0.5"/>
+      </g>
+      <line x1="110" y1="102" x2="230" y2="102" stroke="#C9AD6A" stroke-width="0.6" opacity="0.4"/>
+      <circle cx="170" cy="102" r="2" fill="#C9AD6A" opacity="0.3"/>
+      <text x="170" y="132" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="14" fill="#FAF4E8" letter-spacing="0.12em" font-weight="700">THE OLD</text>
+      <text x="170" y="170" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="32" fill="#FAF4E8" letter-spacing="0.04em" font-weight="800">PLUM</text>
+      <text x="170" y="198" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="18" fill="#FAF4E8" letter-spacing="0.1em" font-weight="700">HOUSE</text>
+      <line x1="100" y1="210" x2="240" y2="210" stroke="#C9AD6A" stroke-width="0.6" opacity="0.4"/>
+      <path d="M160 207 L170 203 L180 207" stroke="#C9AD6A" stroke-width="0.6" fill="none" opacity="0.4"/>
+      <text x="170" y="232" text-anchor="middle" font-family="'Cormorant',Georgia,serif" font-size="14" font-style="italic" fill="#C9AD6A" letter-spacing="0.03em" font-weight="300">A Little Taste of Tradition.</text>
+      <ellipse cx="170" cy="268" rx="14" ry="16" fill="#FAF4E8" opacity="0.6"/>
+      <ellipse cx="167" cy="264" rx="5" ry="3.5" fill="#E5D8C0" opacity="0.25"/>
+      <path d="M167 254 Q170 248, 173 254" stroke="#6B9A6C" stroke-width="1" fill="none"/>
+      <path d="M170 250 Q175 247, 177 252" stroke="#4A7A4C" stroke-width="1.2" fill="#6B9A6C" fill-opacity="0.45"/>
+      <path d="M170 250 Q165 248, 163 253" stroke="#4A7A4C" stroke-width="1" fill="#4A7A4C" fill-opacity="0.3"/>
+      <ellipse cx="148" cy="274" rx="11" ry="13" fill="#E5D8C0" opacity="0.45"/>
+      <ellipse cx="192" cy="272" rx="11.5" ry="13.5" fill="#E5D8C0" opacity="0.45"/>
+      <path d="M158 258 Q162 252, 166 256" stroke="#4A7A4C" stroke-width="0.8" fill="#6B9A6C" fill-opacity="0.35"/>
+      <path d="M174 256 Q178 250, 182 254" stroke="#4A7A4C" stroke-width="0.8" fill="#6B9A6C" fill-opacity="0.35"/>
+      <path d="M120 310 Q110 305, 105 312 Q100 320, 112 318 Q108 324, 115 326 Q122 328, 125 320 Z" fill="#4A7A4C" opacity="0.25"/>
+      <path d="M220 310 Q230 305, 235 312 Q240 320, 228 318 Q232 324, 225 326 Q218 328, 215 320 Z" fill="#4A7A4C" opacity="0.25"/>
+      <text x="170" y="320" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="7.5" fill="#C9AD6A" letter-spacing="0.22em">SIGNATURE VICTORIAN PLUM CAKE</text>
+      <line x1="110" y1="330" x2="230" y2="330" stroke="#C9AD6A" stroke-width="0.4" opacity="0.35"/>
+      <text x="170" y="346" text-anchor="middle" font-family="'Cormorant',Georgia,serif" font-size="10" font-style="italic" fill="#C9AD6A" letter-spacing="0.04em" opacity="0.7">Handcrafted in Small Batches.</text>
+      <text x="170" y="365" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="7" fill="#C9AD6A" letter-spacing="0.2em" opacity="0.45">EST. 2026 · AHMEDABAD</text>
+      <path d="M80 340 Q72 338, 70 344 Q68 350, 76 348" stroke="#C9AD6A" stroke-width="0.6" fill="none" opacity="0.25"/>
+      <path d="M260 340 Q268 338, 270 344 Q272 350, 264 348" stroke="#C9AD6A" stroke-width="0.6" fill="none" opacity="0.25"/>
     </svg>
 
     <h1>The Old Plum House</h1>
     <p class="hero-tagline">A Little Taste of Tradition.</p>
     <div class="orn"><i></i><b>&#10047;</b><i></i></div>
-    <p class="hero-sub">Signature Victorian Plum Cake &middot; Handcrafted in Small Batches</p>
+    <div class="hero-badge">
+      <span>Signature Victorian Plum Cake &middot; Handcrafted in Small Batches</span>
+    </div>
   </div>
 </section>
 
-<!-- ═══ CHRISTMAS COLLECTION ═══ -->
-<section class="section">
-  <div class="wrap">
-    <p class="section-label">Christmas Collection 2026</p>
-    <h2>The Menu</h2>
+<!-- ═══════════════════ CHRISTMAS COLLECTION ═══════════════════ -->
+<section class="section section--cream">
+  <!-- Background botanical scatter -->
+  <div class="bot-pat">
+    <svg width="100%" height="100%" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice" fill="none" style="opacity:0.04;">
+      <ellipse cx="40" cy="80" rx="20" ry="10" fill="#2D4A2E" transform="rotate(-30 40 80)"/>
+      <ellipse cx="360" cy="150" rx="18" ry="9" fill="#2D4A2E" transform="rotate(25 360 150)"/>
+      <ellipse cx="50" cy="300" rx="16" ry="8" fill="#4A7A4C" transform="rotate(-20 50 300)"/>
+      <ellipse cx="370" cy="400" rx="22" ry="11" fill="#2D4A2E" transform="rotate(35 370 400)"/>
+      <ellipse cx="30" cy="500" rx="14" ry="7" fill="#4A7A4C" transform="rotate(-15 30 500)"/>
+      <ellipse cx="380" cy="550" rx="16" ry="8" fill="#2D4A2E" transform="rotate(20 380 550)"/>
+      <ellipse cx="60" cy="180" rx="6" ry="8" fill="#3D1F33"/>
+      <ellipse cx="350" cy="320" rx="5" ry="7" fill="#5C2D4A"/>
+      <ellipse cx="380" cy="60" rx="5" ry="6.5" fill="#3D1F33"/>
+      <ellipse cx="20" cy="450" rx="5.5" ry="7" fill="#5C2D4A"/>
+    </svg>
+  </div>
+  <div class="wrap" style="position:relative; z-index:2;">
+    <div class="frame-title">
+      <p class="section-label">Christmas Collection 2026</p>
+      <h2>The Menu</h2>
+      <p class="section-intro">Four handcrafted offerings, baked with the finest ingredients.</p>
+    </div>
 
     <div class="product-list">
       <div class="product-card">
-        <div class="product-icon" style="background:rgba(61,31,51,0.08);">
+        <div class="product-icon" style="background: linear-gradient(135deg, rgba(61,31,51,0.08) 0%, rgba(184,155,88,0.06) 100%);">
           <svg viewBox="0 0 40 40" fill="none">
             <ellipse cx="20" cy="18" rx="8" ry="9" fill="#3D1F33" opacity="0.7"/>
             <ellipse cx="16" cy="22" rx="6" ry="7" fill="#5C2D4A" opacity="0.5"/>
             <ellipse cx="24" cy="21" rx="6" ry="7" fill="#5C2D4A" opacity="0.5"/>
             <path d="M19 10 Q20 7, 21 10" stroke="#2D4A2E" stroke-width="0.8" fill="none"/>
             <path d="M20 8 Q22 6, 24 9" stroke="#2D4A2E" stroke-width="1" fill="#4A7A4C" fill-opacity="0.5"/>
-            <text x="20" y="36" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="3.5" fill="#B89B58" letter-spacing="0.06em" font-weight="700">OPH</text>
           </svg>
         </div>
         <div style="flex:1; min-width:0;">
@@ -457,7 +847,7 @@
       </div>
 
       <div class="product-card">
-        <div class="product-icon" style="background:rgba(45,74,46,0.08);">
+        <div class="product-icon" style="background: linear-gradient(135deg, rgba(45,74,46,0.08) 0%, rgba(184,155,88,0.06) 100%);">
           <svg viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="12" fill="none" stroke="#2D4A2E" stroke-width="0.8" opacity="0.4"/>
             <path d="M14 22 Q14 14, 20 11 Q26 14, 26 22 Q26 28, 20 30 Q14 28, 14 22Z" fill="#3D1F33" opacity="0.5"/>
@@ -473,7 +863,7 @@
       </div>
 
       <div class="product-card">
-        <div class="product-icon" style="background:rgba(184,155,88,0.1);">
+        <div class="product-icon" style="background: linear-gradient(135deg, rgba(184,155,88,0.1) 0%, rgba(61,31,51,0.04) 100%);">
           <svg viewBox="0 0 40 40" fill="none">
             <rect x="8" y="10" width="24" height="20" rx="3" fill="none" stroke="#B89B58" stroke-width="0.8" opacity="0.5"/>
             <line x1="8" y1="16" x2="32" y2="16" stroke="#B89B58" stroke-width="0.5" opacity="0.3"/>
@@ -491,7 +881,7 @@
       </div>
 
       <div class="product-card">
-        <div class="product-icon" style="background:rgba(61,31,51,0.06);">
+        <div class="product-icon" style="background: linear-gradient(135deg, rgba(61,31,51,0.06) 0%, rgba(45,74,46,0.04) 100%);">
           <svg viewBox="0 0 40 40" fill="none">
             <rect x="8" y="16" width="24" height="16" rx="2" fill="none" stroke="#3D1F33" stroke-width="0.8" opacity="0.4"/>
             <rect x="6" y="12" width="28" height="6" rx="1.5" fill="none" stroke="#3D1F33" stroke-width="0.8" opacity="0.4"/>
@@ -508,20 +898,28 @@
       </div>
     </div>
 
-    <a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20order%20from%20The%20Old%20Plum%20House%20Christmas%20Collection%202026." target="_blank" rel="noopener">
+    <a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I'd%20like%20to%20order%20from%20The%20Old%20Plum%20House%20Christmas%20Collection%202026." target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Order on WhatsApp
     </a>
+
+    <div class="gift-tags">
+      <div class="gift-tag">Baked especially for you.</div>
+      <div class="gift-tag">Some traditions are meant to be shared.</div>
+    </div>
   </div>
 </section>
 
 <div class="sep"></div>
 
-<!-- ═══ HOW IT WORKS ═══ -->
-<section class="section">
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section class="section section--warm">
   <div class="wrap">
-    <p class="section-label">How It Works</p>
-    <h2>From Order to Your Door</h2>
+    <div class="frame-title">
+      <p class="section-label">How It Works</p>
+      <h2>From Order to Your Door</h2>
+      <p class="section-intro">Simple. Personal. Handcrafted for you.</p>
+    </div>
 
     <div class="steps">
       <div class="step">
@@ -534,8 +932,8 @@
       <div class="step">
         <div class="step-num">2</div>
         <div class="step-text">
-          <h3>Message Us</h3>
-          <p>Tap the WhatsApp button and tell us what you'd like. We'll confirm your order.</p>
+          <h3>Message Us on WhatsApp</h3>
+          <p>Tell us what you'd like. We'll confirm your order and details.</p>
         </div>
       </div>
       <div class="step">
@@ -573,12 +971,36 @@
 
 <div class="sep"></div>
 
-<!-- ═══ ABOUT ═══ -->
-<section class="section">
-  <div class="wrap">
-    <p class="section-label">Our Story</p>
-    <h2>About Us</h2>
-    <div class="about-box">
+<!-- ═══════════════════ ABOUT ═══════════════════ -->
+<section class="section section--cream">
+  <div class="bot-pat">
+    <svg width="100%" height="100%" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" fill="none" style="opacity:0.035;">
+      <ellipse cx="380" cy="60" rx="18" ry="9" fill="#2D4A2E" transform="rotate(30 380 60)"/>
+      <ellipse cx="20" cy="100" rx="16" ry="8" fill="#4A7A4C" transform="rotate(-25 20 100)"/>
+      <ellipse cx="370" cy="200" rx="14" ry="7" fill="#2D4A2E" transform="rotate(20 370 200)"/>
+      <ellipse cx="30" cy="300" rx="20" ry="10" fill="#4A7A4C" transform="rotate(-15 30 300)"/>
+      <ellipse cx="390" cy="340" rx="5" ry="6.5" fill="#3D1F33"/>
+      <ellipse cx="15" cy="200" rx="5.5" ry="7" fill="#5C2D4A"/>
+    </svg>
+  </div>
+  <div class="wrap" style="position:relative; z-index:2;">
+    <div class="frame-title">
+      <p class="section-label">Our Story</p>
+      <h2>About Us</h2>
+    </div>
+
+    <div class="about-frame">
+      <!-- Botanical plum illustration -->
+      <svg class="about-plum" width="60" height="60" viewBox="0 0 60 60" fill="none">
+        <ellipse cx="30" cy="28" rx="10" ry="12" fill="#3D1F33" opacity="0.6"/>
+        <ellipse cx="22" cy="32" rx="8" ry="9.5" fill="#5C2D4A" opacity="0.45"/>
+        <ellipse cx="38" cy="31" rx="8.5" ry="10" fill="#5C2D4A" opacity="0.45"/>
+        <path d="M28 17 Q30 12, 32 17" stroke="#2D4A2E" stroke-width="0.8" fill="none"/>
+        <path d="M30 14 Q34 11, 36 16" stroke="#2D4A2E" stroke-width="1" fill="#4A7A4C" fill-opacity="0.5"/>
+        <path d="M30 14 Q26 12, 24 17" stroke="#2D4A2E" stroke-width="0.8" fill="#2D4A2E" fill-opacity="0.35"/>
+        <path d="M14 40 Q10 38, 8 42 Q6 46, 12 45" stroke="#4A7A4C" stroke-width="0.8" fill="#4A7A4C" fill-opacity="0.3"/>
+        <path d="M46 38 Q50 36, 52 40 Q54 44, 48 43" stroke="#4A7A4C" stroke-width="0.8" fill="#4A7A4C" fill-opacity="0.3"/>
+      </svg>
       <p>At The Old Plum House, we believe that some traditions are worth keeping. Inspired by timeless recipes and the warmth of old-fashioned kitchens, we bake our plum cakes with care, using the finest ingredients and a touch of love.</p>
       <p>Because every cake carries a story, and every slice brings people closer.</p>
       <p class="about-sign">A Little Taste of Tradition.</p>
@@ -586,31 +1008,57 @@
   </div>
 </section>
 
-<!-- ═══ ORDER CTA ═══ -->
+<!-- ═══════════════════ ORDER CTA ═══════════════════ -->
 <section class="cta-dark">
-  <div class="wrap">
+  <div class="tex"></div>
+  <!-- Botanical corners -->
+  <svg class="hero-corner hero-corner--tl" width="80" height="120" viewBox="0 0 80 120" fill="none" style="opacity:0.1;">
+    <path d="M5 115 Q8 80, 12 55 Q16 35, 28 15" stroke="#6B9A6C" stroke-width="1" fill="none"/>
+    <ellipse cx="10" cy="85" rx="10" ry="5" fill="#4A7A4C" transform="rotate(-25 10 85)"/>
+    <ellipse cx="14" cy="60" rx="9" ry="4.5" fill="#6B9A6C" transform="rotate(-30 14 60)"/>
+    <ellipse cx="20" cy="38" rx="8" ry="4" fill="#4A7A4C" transform="rotate(-40 20 38)"/>
+    <ellipse cx="8" cy="100" rx="8" ry="4" fill="#6B9A6C" transform="rotate(-15 8 100)"/>
+  </svg>
+  <svg class="hero-corner hero-corner--br" width="80" height="120" viewBox="0 0 80 120" fill="none" style="opacity:0.1;">
+    <path d="M5 115 Q8 80, 12 55 Q16 35, 28 15" stroke="#6B9A6C" stroke-width="1" fill="none"/>
+    <ellipse cx="10" cy="85" rx="10" ry="5" fill="#4A7A4C" transform="rotate(-25 10 85)"/>
+    <ellipse cx="14" cy="60" rx="9" ry="4.5" fill="#6B9A6C" transform="rotate(-30 14 60)"/>
+    <ellipse cx="20" cy="38" rx="8" ry="4" fill="#4A7A4C" transform="rotate(-40 20 38)"/>
+    <ellipse cx="8" cy="100" rx="8" ry="4" fill="#6B9A6C" transform="rotate(-15 8 100)"/>
+  </svg>
+  <div class="wrap cta-inner">
     <h2>Fresh-Baked. <em>Made to Order.</em></h2>
-    <p>Message us on WhatsApp to place your order.</p>
-    <p class="phone">+91 XXXXX XXXXX</p>
-    <a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20order%20from%20The%20Old%20Plum%20House." target="_blank" rel="noopener" style="margin-top:1rem;">
+    <div class="orn" style="margin:0.5rem 0;"><i style="background:linear-gradient(90deg, transparent, rgba(201,173,106,0.4), transparent);"></i><b style="color:#C9AD6A;">&#10047;</b><i style="background:linear-gradient(90deg, transparent, rgba(201,173,106,0.4), transparent);"></i></div>
+    <div class="cta-frame">
+      <p>Message us on WhatsApp to place your order.</p>
+      <p class="phone">+91 XXXXX XXXXX</p>
+    </div>
+    <a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I'd%20like%20to%20order%20from%20The%20Old%20Plum%20House." target="_blank" rel="noopener" style="margin-top:1.2rem;">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Order Now
     </a>
   </div>
 </section>
 
-<!-- ═══ FOOTER ═══ -->
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
 <footer class="footer">
-  <svg class="footer-logo" viewBox="0 0 80 80" fill="none">
-    <ellipse cx="40" cy="38" rx="12" ry="14" fill="#FAF4E8" opacity="0.7"/>
-    <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#E5D8C0" opacity="0.5"/>
-    <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#E5D8C0" opacity="0.5"/>
-    <path d="M40 22 Q44 19, 46 24" stroke="#6B9A6C" stroke-width="1.2" fill="#6B9A6C" fill-opacity="0.4"/>
-    <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="5.5" fill="#C9AD6A" letter-spacing="0.08em" font-weight="700">OPH</text>
-  </svg>
-  <p class="footer-name">The Old Plum House</p>
-  <p class="footer-tag">A Little Taste of Tradition.</p>
-  <p class="footer-loc">AHMEDABAD, GUJARAT &middot; EST. 2026</p>
+  <div class="tex"></div>
+  <div class="footer-inner">
+    <svg class="footer-logo" viewBox="0 0 80 80" fill="none">
+      <ellipse cx="40" cy="38" rx="12" ry="14" fill="#FAF4E8" opacity="0.7"/>
+      <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#E5D8C0" opacity="0.5"/>
+      <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#E5D8C0" opacity="0.5"/>
+      <path d="M40 22 Q44 19, 46 24" stroke="#6B9A6C" stroke-width="1.2" fill="#6B9A6C" fill-opacity="0.4"/>
+      <path d="M40 22 Q36 20, 34 25" stroke="#4A7A4C" stroke-width="1" fill="#4A7A4C" fill-opacity="0.3"/>
+      <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="5.5" fill="#C9AD6A" letter-spacing="0.08em" font-weight="700">OPH</text>
+    </svg>
+    <p class="footer-name">The Old Plum House</p>
+    <p class="footer-tag">A Little Taste of Tradition.</p>
+    <div class="pillars">
+      <span>Handcrafted</span><i></i><span>Traditional</span><i></i><span>Personal</span>
+    </div>
+    <p class="footer-loc">AHMEDABAD, GUJARAT &middot; EST. 2026</p>
+  </div>
 </footer>
 
 </body>
