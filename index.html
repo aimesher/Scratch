@@ -1,0 +1,725 @@
+<title>The Old Plum House</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+
+  :root {
+    --plum-deep: #4A1942;
+    --plum-mid: #6B2D5B;
+    --plum-light: #9B6B8A;
+    --gold: #B8860B;
+    --gold-light: #D4A843;
+    --cream: #FAF7F2;
+    --paper: #FFFDF9;
+    --walnut: #2C1810;
+    --walnut-soft: #5C4033;
+    --rose-mist: #E8D5DC;
+    --border: rgba(74,25,66,0.12);
+
+    --bg: var(--paper);
+    --bg-section: var(--cream);
+    --text: var(--walnut);
+    --text-soft: var(--walnut-soft);
+    --accent: var(--plum-deep);
+    --accent-mid: var(--plum-mid);
+    --accent-light: var(--plum-light);
+    --highlight: var(--gold);
+    --highlight-light: var(--gold-light);
+    --surface: #fff;
+    --surface-border: var(--border);
+    --cta-bg: var(--plum-deep);
+    --cta-text: #fff;
+    --ornament: var(--plum-light);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1A1118;
+      --bg-section: #221520;
+      --text: #E8DDE0;
+      --text-soft: #B8A0AA;
+      --accent: #C898B8;
+      --accent-mid: #9B6B8A;
+      --accent-light: #6B4560;
+      --highlight: #D4A843;
+      --highlight-light: #B8860B;
+      --surface: #2A1D28;
+      --surface-border: rgba(200,152,184,0.15);
+      --cta-bg: #C898B8;
+      --cta-text: #1A1118;
+      --ornament: #6B4560;
+      --cream: #221520;
+      --paper: #1A1118;
+      --rose-mist: #3A2530;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1A1118;
+    --bg-section: #221520;
+    --text: #E8DDE0;
+    --text-soft: #B8A0AA;
+    --accent: #C898B8;
+    --accent-mid: #9B6B8A;
+    --accent-light: #6B4560;
+    --highlight: #D4A843;
+    --highlight-light: #B8860B;
+    --surface: #2A1D28;
+    --surface-border: rgba(200,152,184,0.15);
+    --cta-bg: #C898B8;
+    --cta-text: #1A1118;
+    --ornament: #6B4560;
+    --cream: #221520;
+    --paper: #1A1118;
+    --rose-mist: #3A2530;
+    color-scheme: dark;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 18px;
+    line-height: 1.7;
+    padding-inline: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrapper {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    text-wrap: balance;
+    line-height: 1.2;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+  }
+
+  .hero-crest {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-crest svg {
+    width: 80px;
+    height: 80px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.3rem;
+  }
+
+  .tagline {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--highlight);
+    letter-spacing: 0.04em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-soft);
+  }
+
+  /* ── Ornamental divider ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 1.5rem 0;
+  }
+
+  .divider-line {
+    height: 1px;
+    width: 60px;
+    background: var(--ornament);
+    opacity: 0.5;
+  }
+
+  .divider-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--highlight);
+    opacity: 0.7;
+  }
+
+  /* ── Product card ── */
+  .product-section {
+    background: var(--bg-section);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    border: 1px solid var(--surface-border);
+  }
+
+  .product-label {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--highlight);
+    margin-bottom: 0.5rem;
+  }
+
+  .product-name {
+    font-size: clamp(1.5rem, 4.5vw, 1.9rem);
+    color: var(--accent);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .product-desc {
+    color: var(--text-soft);
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+    max-width: 55ch;
+  }
+
+  .product-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-item {
+    padding: 0.8rem 1rem;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+  }
+
+  .detail-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-soft);
+    font-family: 'Playfair Display', Georgia, serif;
+    margin-bottom: 0.2rem;
+  }
+
+  .detail-value {
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .ingredients {
+    font-size: 0.95rem;
+    color: var(--text-soft);
+    font-style: italic;
+    padding-top: 1rem;
+    border-top: 1px solid var(--surface-border);
+  }
+
+  /* ── Menu items ── */
+  .menu-section {
+    padding: 1rem 0;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    text-align: center;
+  }
+
+  .menu-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 1rem 1.2rem;
+    background: var(--bg-section);
+    border-radius: 10px;
+    border: 1px solid var(--surface-border);
+    gap: 1rem;
+  }
+
+  .menu-item-info {
+    flex: 1;
+  }
+
+  .menu-item-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .menu-item-note {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  .menu-item-price {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.1rem;
+    color: var(--highlight);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Order CTA ── */
+  .order-section {
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  .order-section h2 {
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .order-note {
+    color: var(--text-soft);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    max-width: 45ch;
+    margin-inline: auto;
+  }
+
+  .whatsapp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #25D366;
+    color: #fff;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.9rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(37,211,102,0.25);
+    letter-spacing: 0.02em;
+  }
+
+  .whatsapp-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(37,211,102,0.35);
+  }
+
+  .whatsapp-btn svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .order-alt {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-soft);
+  }
+
+  .order-alt a {
+    color: var(--highlight);
+    text-decoration: none;
+    border-bottom: 1px solid var(--highlight);
+  }
+
+  .phone-number {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-variant-numeric: tabular-nums;
+    user-select: all;
+  }
+
+  /* ── How it works ── */
+  .steps {
+    display: grid;
+    gap: 1rem;
+    padding: 0.5rem 0 1rem;
+  }
+
+  .step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--highlight);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 28px;
+    opacity: 0.7;
+  }
+
+  .step-text {
+    padding-top: 0.15rem;
+  }
+
+  .step-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 0.1rem;
+  }
+
+  .step-desc {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+  }
+
+  /* ── About ── */
+  .about-section {
+    background: var(--bg-section);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    border: 1px solid var(--surface-border);
+  }
+
+  .about-section h2 {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .about-text {
+    color: var(--text-soft);
+    font-size: 1rem;
+    max-width: 55ch;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .about-text + .about-text {
+    margin-top: 0.8rem;
+  }
+
+  /* ── Delivery info ── */
+  .delivery-section {
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .delivery-section h2 {
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+
+  .delivery-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  .badge {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.45rem 1rem;
+    border-radius: 50px;
+    border: 1px solid var(--surface-border);
+    color: var(--text-soft);
+    background: var(--surface);
+  }
+
+  .badge--highlight {
+    border-color: var(--highlight);
+    color: var(--highlight);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 2rem 0 2.5rem;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+  }
+
+  .footer-brand {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+
+  .footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .footer-social a {
+    color: var(--text-soft);
+    text-decoration: none;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+
+  .footer-social a:hover {
+    color: var(--accent);
+  }
+
+  .footer-note {
+    margin-top: 0.8rem;
+    font-size: 0.75rem;
+    font-style: italic;
+    opacity: 0.6;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .product-details {
+      grid-template-columns: 1fr;
+    }
+    .product-section, .about-section {
+      padding: 1.5rem 1.2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .whatsapp-btn {
+      transition: none;
+    }
+  }
+</style>
+
+<div class="wrapper">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-crest">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>
+        <circle cx="40" cy="40" r="32" stroke="var(--highlight)" stroke-width="0.8" opacity="0.3"/>
+        <path d="M40 18 C44 26, 52 30, 52 38 C52 46, 46 52, 40 52 C34 52, 28 46, 28 38 C28 30, 36 26, 40 18Z" fill="var(--accent)" opacity="0.8"/>
+        <path d="M38 30 Q40 24, 42 30" stroke="var(--highlight)" stroke-width="1" fill="none" opacity="0.6"/>
+        <path d="M34 36 Q40 32, 46 36" stroke="var(--bg)" stroke-width="0.6" fill="none" opacity="0.4"/>
+        <ellipse cx="40" cy="42" rx="6" ry="5" fill="var(--highlight)" opacity="0.3"/>
+        <text x="40" y="67" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7" fill="var(--accent)" letter-spacing="0.12em" opacity="0.7">EST. 2026</text>
+      </svg>
+    </div>
+    <h1>The Old Plum House</h1>
+    <p class="tagline">A Little Taste of Tradition</p>
+    <p class="hero-subtitle">Signature Victorian Plum Cake &middot; Handcrafted in Small Batches</p>
+  </header>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <!-- Signature Product -->
+  <section class="product-section">
+    <p class="product-label">Our Signature</p>
+    <h2 class="product-name">Victorian Plum Cake</h2>
+    <p class="product-desc">
+      A rich, dark fruit cake made with the finest plums, aged spices, and a
+      generous measure of tradition. Each cake is hand-mixed, slow-baked, and
+      matured to develop deep, complex flavours that honour the original Victorian recipe.
+    </p>
+    <div class="product-details">
+      <div class="detail-item">
+        <p class="detail-label">Weight</p>
+        <p class="detail-value">500g / 1kg</p>
+      </div>
+      <div class="detail-item">
+        <p class="detail-label">Shelf Life</p>
+        <p class="detail-value">4 Weeks</p>
+      </div>
+      <div class="detail-item">
+        <p class="detail-label">Preparation</p>
+        <p class="detail-value">3 Days</p>
+      </div>
+      <div class="detail-item">
+        <p class="detail-label">Serves</p>
+        <p class="detail-value">6 &ndash; 12</p>
+      </div>
+    </div>
+    <p class="ingredients">
+      Plums, butter, brown sugar, free-range eggs, mixed dried fruit,
+      cinnamon, nutmeg, cloves, vanilla, unbleached flour
+    </p>
+  </section>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <!-- Menu -->
+  <section class="menu-section">
+    <h2 class="section-title">The Menu</h2>
+    <div class="menu-grid">
+      <div class="menu-item">
+        <div class="menu-item-info">
+          <p class="menu-item-name">Victorian Plum Cake &mdash; Half</p>
+          <p class="menu-item-note">500g &middot; Serves 6</p>
+        </div>
+        <p class="menu-item-price">&rupee;650</p>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-info">
+          <p class="menu-item-name">Victorian Plum Cake &mdash; Full</p>
+          <p class="menu-item-note">1kg &middot; Serves 12</p>
+        </div>
+        <p class="menu-item-price">&rupee;1,200</p>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-info">
+          <p class="menu-item-name">Mini Plum Loaves</p>
+          <p class="menu-item-note">Pack of 4 &middot; Gift-ready</p>
+        </div>
+        <p class="menu-item-price">&rupee;450</p>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-info">
+          <p class="menu-item-name">Plum Cake Slices</p>
+          <p class="menu-item-note">Box of 6 &middot; Individually wrapped</p>
+        </div>
+        <p class="menu-item-price">&rupee;350</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <!-- How to Order -->
+  <section class="order-section">
+    <h2>Place Your Order</h2>
+    <p class="order-note">
+      We take orders through WhatsApp. Tell us what you'd like,
+      and we'll confirm availability and delivery.
+    </p>
+
+    <a class="whatsapp-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I'd%20like%20to%20order%20from%20The%20Old%20Plum%20House." target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Order on WhatsApp
+    </a>
+
+    <p class="order-alt">
+      Or call us: <span class="phone-number">+91 XXXXX XXXXX</span>
+    </p>
+  </section>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <!-- How it works -->
+  <section>
+    <h2 class="section-title">How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
+        <div class="step-text">
+          <p class="step-title">Send us a message</p>
+          <p class="step-desc">Tell us what you'd like and when you need it. We need at least 3 days for preparation.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div class="step-text">
+          <p class="step-title">We confirm &amp; bake</p>
+          <p class="step-desc">We'll confirm your order, share the total, and begin hand-crafting your cake.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div class="step-text">
+          <p class="step-title">Pick up or delivery</p>
+          <p class="step-desc">Collect from our kitchen in Ahmedabad, or we deliver across the city.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <!-- Delivery -->
+  <section class="delivery-section">
+    <h2>Delivery in Ahmedabad</h2>
+    <div class="delivery-badges">
+      <span class="badge">Satellite</span>
+      <span class="badge">Bodakdev</span>
+      <span class="badge">Vastrapur</span>
+      <span class="badge">Prahlad Nagar</span>
+      <span class="badge">S.G. Highway</span>
+      <span class="badge">Navrangpura</span>
+      <span class="badge">Thaltej</span>
+      <span class="badge badge--highlight">All Ahmedabad</span>
+    </div>
+  </section>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <!-- About -->
+  <section class="about-section">
+    <h2>Our Story</h2>
+    <p class="about-text">
+      The Old Plum House was born from a family recipe passed down through
+      generations. We bake the way it was always done &mdash; by hand, in small
+      batches, with no shortcuts and no compromises.
+    </p>
+    <p class="about-text">
+      Every cake is made with real butter, farm-fresh eggs, and plums selected
+      at the peak of their season. No preservatives. No artificial flavours.
+      Just honest baking.
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-brand">The Old Plum House</p>
+    <p>Ahmedabad, Gujarat</p>
+    <div class="footer-social">
+      <a href="#">Instagram</a>
+      <a href="#">YouTube</a>
+      <a href="#">WhatsApp</a>
+    </div>
+    <p class="footer-note">All cakes are baked fresh to order. Prices may vary for custom requests.</p>
+  </footer>
+
+</div>
