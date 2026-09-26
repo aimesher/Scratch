@@ -1,76 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Old Plum House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
-
   :root {
-    --plum-deep: #4A1942;
-    --plum-mid: #6B2D5B;
-    --plum-light: #9B6B8A;
-    --gold: #B8860B;
-    --gold-light: #D4A843;
-    --cream: #FAF7F2;
-    --paper: #FFFDF9;
-    --walnut: #2C1810;
-    --walnut-soft: #5C4033;
-    --rose-mist: #E8D5DC;
-    --border: rgba(74,25,66,0.12);
+    --plum: #3D1F33;
+    --plum-rich: #5C2D4A;
+    --plum-soft: #8A5A72;
+    --gold: #B89B58;
+    --gold-warm: #C9AD6A;
+    --gold-pale: #D9C48A;
+    --cream: #F2E8D5;
+    --cream-light: #FAF4E8;
+    --cream-deep: #E5D8C0;
+    --forest: #2D4A2E;
+    --forest-mid: #4A7A4C;
+    --brown: #5A3E2A;
+    --brown-text: #3A2818;
 
-    --bg: var(--paper);
-    --bg-section: var(--cream);
-    --text: var(--walnut);
-    --text-soft: var(--walnut-soft);
-    --accent: var(--plum-deep);
-    --accent-mid: var(--plum-mid);
-    --accent-light: var(--plum-light);
-    --highlight: var(--gold);
-    --highlight-light: var(--gold-light);
-    --surface: #fff;
-    --surface-border: var(--border);
-    --cta-bg: var(--plum-deep);
-    --cta-text: #fff;
-    --ornament: var(--plum-light);
+    --bg: var(--cream-light);
+    --text: var(--brown-text);
+    --text-mid: var(--brown);
+    --text-soft: #7A6650;
+    --surface: #FFFCF5;
+    --border: rgba(61,31,51,0.08);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #1A1118;
-      --bg-section: #221520;
-      --text: #E8DDE0;
-      --text-soft: #B8A0AA;
-      --accent: #C898B8;
-      --accent-mid: #9B6B8A;
-      --accent-light: #6B4560;
-      --highlight: #D4A843;
-      --highlight-light: #B8860B;
-      --surface: #2A1D28;
-      --surface-border: rgba(200,152,184,0.15);
-      --cta-bg: #C898B8;
-      --cta-text: #1A1118;
-      --ornament: #6B4560;
-      --cream: #221520;
-      --paper: #1A1118;
-      --rose-mist: #3A2530;
+      --bg: #1A1210;
+      --text: #E5D8C0;
+      --text-mid: #C4AA88;
+      --text-soft: #9A8068;
+      --surface: #241A15;
+      --border: rgba(196,138,154,0.12);
+      --cream: #241A15;
+      --cream-light: #1A1210;
+      --cream-deep: #2E221A;
+      --plum: #C48A9A;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #1A1118;
-    --bg-section: #221520;
-    --text: #E8DDE0;
-    --text-soft: #B8A0AA;
-    --accent: #C898B8;
-    --accent-mid: #9B6B8A;
-    --accent-light: #6B4560;
-    --highlight: #D4A843;
-    --highlight-light: #B8860B;
-    --surface: #2A1D28;
-    --surface-border: rgba(200,152,184,0.15);
-    --cta-bg: #C898B8;
-    --cta-text: #1A1118;
-    --ornament: #6B4560;
-    --cream: #221520;
-    --paper: #1A1118;
-    --rose-mist: #3A2530;
+    --bg: #1A1210;
+    --text: #E5D8C0;
+    --text-mid: #C4AA88;
+    --text-soft: #9A8068;
+    --surface: #241A15;
+    --border: rgba(196,138,154,0.12);
+    --cream: #241A15;
+    --cream-light: #1A1210;
+    --cream-deep: #2E221A;
+    --plum: #C48A9A;
     color-scheme: dark;
   }
 
@@ -79,17 +65,13 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-    font-size: 18px;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 17px;
     line-height: 1.7;
-    padding-inline: 16px;
     -webkit-font-smoothing: antialiased;
   }
 
-  .wrapper {
-    max-width: 640px;
-    margin: 0 auto;
-  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 16px; }
 
   h1, h2, h3 {
     font-family: 'Playfair Display', Georgia, serif;
@@ -99,627 +81,537 @@
 
   /* ── Hero ── */
   .hero {
+    background: linear-gradient(175deg, #3D1F33 0%, #2D1A25 40%, #1A1210 100%);
+    padding: 3rem 16px 2.5rem;
     text-align: center;
-    padding: 3rem 0 2rem;
+    position: relative;
+    overflow: hidden;
   }
 
-  .hero-crest {
-    display: inline-block;
-    margin-bottom: 1.5rem;
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(184,155,88,0.08) 0%, transparent 60%);
   }
 
-  .hero-crest svg {
-    width: 80px;
-    height: 80px;
-  }
+  .hero-content { position: relative; max-width: 480px; margin: 0 auto; }
+
+  .hero-logo { width: 180px; height: auto; margin-bottom: 1.2rem; }
 
   .hero h1 {
-    font-size: clamp(2rem, 6vw, 2.8rem);
-    color: var(--accent);
+    color: #FAF4E8;
+    font-size: 1.8rem;
     font-weight: 700;
-    letter-spacing: 0.02em;
     margin-bottom: 0.3rem;
   }
 
-  .tagline {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+  .hero-tagline {
+    font-family: 'Cormorant', Georgia, serif;
+    color: var(--gold-warm);
+    font-size: 1.1rem;
     font-style: italic;
-    font-size: 1.15rem;
-    color: var(--highlight);
-    letter-spacing: 0.04em;
+    font-weight: 300;
     margin-bottom: 1.5rem;
   }
 
-  .hero-subtitle {
+  .hero-sub {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.85rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--text-soft);
+    letter-spacing: 0.2em;
+    color: rgba(250,244,232,0.5);
   }
 
-  /* ── Ornamental divider ── */
-  .divider {
+  .orn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    padding: 1.5rem 0;
-  }
-
-  .divider-line {
-    height: 1px;
-    width: 60px;
-    background: var(--ornament);
-    opacity: 0.5;
-  }
-
-  .divider-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--highlight);
-    opacity: 0.7;
-  }
-
-  /* ── Product card ── */
-  .product-section {
-    background: var(--bg-section);
-    border-radius: 12px;
-    padding: 2rem 1.5rem;
-    border: 1px solid var(--surface-border);
-  }
-
-  .product-label {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--highlight);
-    margin-bottom: 0.5rem;
-  }
-
-  .product-name {
-    font-size: clamp(1.5rem, 4.5vw, 1.9rem);
-    color: var(--accent);
-    margin-bottom: 1rem;
-    font-weight: 600;
-  }
-
-  .product-desc {
-    color: var(--text-soft);
-    font-size: 1.05rem;
-    margin-bottom: 1.5rem;
-    max-width: 55ch;
-  }
-
-  .product-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .detail-item {
-    padding: 0.8rem 1rem;
-    background: var(--surface);
-    border-radius: 8px;
-    border: 1px solid var(--surface-border);
-  }
-
-  .detail-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--text-soft);
-    font-family: 'Playfair Display', Georgia, serif;
-    margin-bottom: 0.2rem;
-  }
-
-  .detail-value {
-    font-size: 1.1rem;
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  .ingredients {
-    font-size: 0.95rem;
-    color: var(--text-soft);
-    font-style: italic;
-    padding-top: 1rem;
-    border-top: 1px solid var(--surface-border);
-  }
-
-  /* ── Menu items ── */
-  .menu-section {
-    padding: 1rem 0;
-  }
-
-  .section-title {
-    font-size: 1.4rem;
-    color: var(--accent);
-    margin-bottom: 1.2rem;
-    text-align: center;
-  }
-
-  .menu-grid {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .menu-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 1rem 1.2rem;
-    background: var(--bg-section);
-    border-radius: 10px;
-    border: 1px solid var(--surface-border);
-    gap: 1rem;
-  }
-
-  .menu-item-info {
-    flex: 1;
-  }
-
-  .menu-item-name {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.05rem;
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  .menu-item-note {
-    font-size: 0.85rem;
-    color: var(--text-soft);
-    font-style: italic;
-  }
-
-  .menu-item-price {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.1rem;
-    color: var(--highlight);
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  /* ── Order CTA ── */
-  .order-section {
-    text-align: center;
-    padding: 2rem 0;
-  }
-
-  .order-section h2 {
-    font-size: 1.5rem;
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-  }
-
-  .order-note {
-    color: var(--text-soft);
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-    max-width: 45ch;
-    margin-inline: auto;
-  }
-
-  .whatsapp-btn {
-    display: inline-flex;
-    align-items: center;
     gap: 10px;
-    background: #25D366;
-    color: #fff;
+    padding: 0.6rem 0;
+  }
+
+  .orn i {
+    width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    display: block;
+  }
+
+  .orn b {
+    font-style: normal; font-weight: normal;
+    color: var(--gold); font-size: 10px; line-height: 1; opacity: 0.6;
+  }
+
+  /* ── Section ── */
+  .section { padding: 2.5rem 16px; }
+
+  .section-label {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding: 0.9rem 2rem;
-    border-radius: 50px;
-    text-decoration: none;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 16px rgba(37,211,102,0.25);
-    letter-spacing: 0.02em;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 0.3rem;
   }
 
-  .whatsapp-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(37,211,102,0.35);
+  .section h2 {
+    text-align: center;
+    color: var(--plum);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
   }
 
-  .whatsapp-btn svg {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-  }
+  /* ── Product cards ── */
+  .product-list { display: flex; flex-direction: column; gap: 0.8rem; }
 
-  .order-alt {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    color: var(--text-soft);
-  }
-
-  .order-alt a {
-    color: var(--highlight);
-    text-decoration: none;
-    border-bottom: 1px solid var(--highlight);
-  }
-
-  .phone-number {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-variant-numeric: tabular-nums;
-    user-select: all;
-  }
-
-  /* ── How it works ── */
-  .steps {
-    display: grid;
-    gap: 1rem;
-    padding: 0.5rem 0 1rem;
-  }
-
-  .step {
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.3rem;
     display: flex;
     gap: 1rem;
     align-items: flex-start;
   }
 
-  .step-num {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.8rem;
-    color: var(--highlight);
-    line-height: 1;
+  .product-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    width: 28px;
-    opacity: 0.7;
   }
 
-  .step-text {
-    padding-top: 0.15rem;
-  }
+  .product-icon svg { width: 30px; height: 30px; }
 
-  .step-title {
+  .product-name {
     font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 600;
     font-size: 1rem;
+    font-weight: 600;
+    color: var(--plum);
+    margin-bottom: 0.15rem;
+  }
+
+  .product-desc {
+    font-family: 'Cormorant', Georgia, serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    line-height: 1.4;
+  }
+
+  .product-badge {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.52rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    border: 1px solid rgba(184,155,88,0.3);
+    border-radius: 20px;
+    padding: 0.2rem 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    margin-left: auto;
+  }
+
+  /* ── How it works ── */
+  .steps { display: flex; flex-direction: column; gap: 1rem; }
+
+  .step { display: flex; gap: 1rem; align-items: flex-start; }
+
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--cream-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--plum);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .step-num {
+      background: #2E221A;
+      color: var(--gold-warm);
+    }
+  }
+
+  .step-text h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text);
     margin-bottom: 0.1rem;
   }
 
-  .step-desc {
-    font-size: 0.9rem;
-    color: var(--text-soft);
+  .step-text p { font-size: 0.88rem; color: var(--text-soft); }
+
+  /* ── WhatsApp CTA ── */
+  .wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #25D366;
+    color: #fff;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.9rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    margin: 1.5rem auto 0;
+    max-width: 320px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(37,211,102,0.25);
   }
+
+  .wa-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(37,211,102,0.3); }
+  .wa-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ── Delivery badges ── */
+  .delivery-strip {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .delivery-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    color: var(--text-mid);
+  }
+
+  .delivery-pill svg { width: 14px; height: 14px; color: var(--forest-mid); flex-shrink: 0; }
 
   /* ── About ── */
-  .about-section {
-    background: var(--bg-section);
-    border-radius: 12px;
-    padding: 2rem 1.5rem;
-    border: 1px solid var(--surface-border);
-  }
-
-  .about-section h2 {
-    font-size: 1.4rem;
-    color: var(--accent);
-    margin-bottom: 1rem;
+  .about-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
     text-align: center;
   }
 
-  .about-text {
-    color: var(--text-soft);
-    font-size: 1rem;
-    max-width: 55ch;
-    margin-inline: auto;
-    text-align: center;
-  }
-
-  .about-text + .about-text {
-    margin-top: 0.8rem;
-  }
-
-  /* ── Delivery info ── */
-  .delivery-section {
-    text-align: center;
-    padding: 1rem 0;
-  }
-
-  .delivery-section h2 {
-    font-size: 1.3rem;
-    color: var(--accent);
+  .about-box p {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.7;
     margin-bottom: 0.8rem;
   }
 
-  .delivery-badges {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem;
+  .about-box p:last-child { margin-bottom: 0; }
+
+  .about-sign {
+    font-family: 'Cormorant', Georgia, serif;
+    font-style: italic;
+    color: var(--text-mid);
+    font-size: 1rem;
   }
 
-  .badge {
+  /* ── CTA dark ── */
+  .cta-dark {
+    background: linear-gradient(175deg, #2D4A2E 0%, #1A2E1B 50%, #1A1210 100%);
+    padding: 2.5rem 16px;
+    text-align: center;
+  }
+
+  .cta-dark h2 {
+    color: #FAF4E8;
+    font-size: 1.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .cta-dark h2 em { color: var(--gold-warm); font-style: italic; }
+
+  .cta-dark p {
+    color: rgba(250,244,232,0.6);
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .cta-dark .phone {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 0.45rem 1rem;
-    border-radius: 50px;
-    border: 1px solid var(--surface-border);
-    color: var(--text-soft);
-    background: var(--surface);
-  }
-
-  .badge--highlight {
-    border-color: var(--highlight);
-    color: var(--highlight);
+    color: var(--gold-warm);
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    margin: 0.5rem 0;
   }
 
   /* ── Footer ── */
   .footer {
+    background: #3D1F33;
+    padding: 2rem 16px;
     text-align: center;
-    padding: 2rem 0 2.5rem;
-    font-size: 0.82rem;
-    color: var(--text-soft);
   }
 
-  .footer-brand {
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .footer { background: #0E0A08; }
+    :root:not([data-theme="light"]) .hero { background: linear-gradient(175deg, #241A15 0%, #1A1210 100%); }
+  }
+
+  .footer-logo { width: 60px; height: auto; margin-bottom: 0.8rem; opacity: 0.8; }
+
+  .footer-name {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1rem;
-    color: var(--accent);
-    margin-bottom: 0.3rem;
+    color: #FAF4E8;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
   }
 
-  .footer-social {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 1rem;
-  }
-
-  .footer-social a {
-    color: var(--text-soft);
-    text-decoration: none;
-    font-size: 0.82rem;
-    letter-spacing: 0.05em;
-    transition: color 0.2s;
-  }
-
-  .footer-social a:hover {
-    color: var(--accent);
-  }
-
-  .footer-note {
-    margin-top: 0.8rem;
-    font-size: 0.75rem;
+  .footer-tag {
+    font-family: 'Cormorant', Georgia, serif;
+    color: var(--gold-warm);
     font-style: italic;
-    opacity: 0.6;
+    font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.7;
   }
 
-  /* ── Responsive ── */
-  @media (max-width: 480px) {
-    .product-details {
-      grid-template-columns: 1fr;
-    }
-    .product-section, .about-section {
-      padding: 1.5rem 1.2rem;
-    }
+  .footer-loc {
+    font-size: 0.72rem;
+    color: rgba(250,244,232,0.35);
+    letter-spacing: 0.08em;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .whatsapp-btn {
-      transition: none;
-    }
+  .sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
   }
 </style>
+</head>
+<body>
 
-<div class="wrapper">
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-content">
+    <svg class="hero-logo" viewBox="0 0 180 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M90 6 C115 6, 140 10, 155 20 Q170 30, 174 50 L176 80 Q177 105, 176 125 L174 145 Q170 170, 155 185 Q140 198, 90 204 Q40 198, 25 185 Q10 170, 6 145 L4 125 Q3 105, 4 80 L6 50 Q10 30, 25 20 C40 10, 65 6, 90 6 Z" fill="none" stroke="#B89B58" stroke-width="1.2" opacity="0.5"/>
+      <g transform="translate(65, 22)" opacity="0.6">
+        <rect x="8" y="16" width="34" height="22" fill="#FAF4E8" rx="1"/>
+        <path d="M4 16 L25 2 L46 16 Z" fill="#FAF4E8" opacity="0.8"/>
+        <rect x="18" y="22" width="14" height="16" fill="#3D1F33" rx="0.5" opacity="0.4"/>
+        <rect x="21" y="6" width="8" height="10" fill="#FAF4E8" rx="0.5" opacity="0.7"/>
+      </g>
+      <text x="90" y="68" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="8" fill="#FAF4E8" letter-spacing="0.12em" font-weight="700">THE OLD</text>
+      <text x="90" y="90" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="22" fill="#FAF4E8" letter-spacing="0.04em" font-weight="800">PLUM</text>
+      <text x="90" y="106" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="11" fill="#FAF4E8" letter-spacing="0.1em" font-weight="700">HOUSE</text>
+      <line x1="50" y1="114" x2="130" y2="114" stroke="#C9AD6A" stroke-width="0.5" opacity="0.4"/>
+      <text x="90" y="128" text-anchor="middle" font-family="'Cormorant',Georgia,serif" font-size="9" font-style="italic" fill="#C9AD6A" letter-spacing="0.03em" font-weight="300">A Little Taste of Tradition.</text>
+      <ellipse cx="90" cy="150" rx="8" ry="9" fill="#FAF4E8" opacity="0.7"/>
+      <ellipse cx="80" cy="154" rx="6" ry="7" fill="#E5D8C0" opacity="0.5"/>
+      <ellipse cx="100" cy="153" rx="6.5" ry="7.5" fill="#E5D8C0" opacity="0.5"/>
+      <path d="M88 142 Q90 138, 92 142" stroke="#6B9A6C" stroke-width="0.8" fill="none"/>
+      <path d="M90 140 Q93 138, 95 142" stroke="#4A7A4C" stroke-width="1" fill="#6B9A6C" fill-opacity="0.4"/>
+      <text x="90" y="178" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="4.5" fill="#C9AD6A" letter-spacing="0.2em" opacity="0.5">EST. 2026 · AHMEDABAD</text>
+    </svg>
 
-  <!-- Hero -->
-  <header class="hero">
-    <div class="hero-crest">
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="40" cy="40" r="38" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>
-        <circle cx="40" cy="40" r="32" stroke="var(--highlight)" stroke-width="0.8" opacity="0.3"/>
-        <path d="M40 18 C44 26, 52 30, 52 38 C52 46, 46 52, 40 52 C34 52, 28 46, 28 38 C28 30, 36 26, 40 18Z" fill="var(--accent)" opacity="0.8"/>
-        <path d="M38 30 Q40 24, 42 30" stroke="var(--highlight)" stroke-width="1" fill="none" opacity="0.6"/>
-        <path d="M34 36 Q40 32, 46 36" stroke="var(--bg)" stroke-width="0.6" fill="none" opacity="0.4"/>
-        <ellipse cx="40" cy="42" rx="6" ry="5" fill="var(--highlight)" opacity="0.3"/>
-        <text x="40" y="67" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7" fill="var(--accent)" letter-spacing="0.12em" opacity="0.7">EST. 2026</text>
-      </svg>
-    </div>
     <h1>The Old Plum House</h1>
-    <p class="tagline">A Little Taste of Tradition</p>
-    <p class="hero-subtitle">Signature Victorian Plum Cake &middot; Handcrafted in Small Batches</p>
-  </header>
-
-  <div class="divider">
-    <span class="divider-line"></span>
-    <span class="divider-dot"></span>
-    <span class="divider-line"></span>
+    <p class="hero-tagline">A Little Taste of Tradition.</p>
+    <div class="orn"><i></i><b>&#10047;</b><i></i></div>
+    <p class="hero-sub">Signature Victorian Plum Cake &middot; Handcrafted in Small Batches</p>
   </div>
+</section>
 
-  <!-- Signature Product -->
-  <section class="product-section">
-    <p class="product-label">Our Signature</p>
-    <h2 class="product-name">Victorian Plum Cake</h2>
-    <p class="product-desc">
-      A rich, dark fruit cake made with the finest plums, aged spices, and a
-      generous measure of tradition. Each cake is hand-mixed, slow-baked, and
-      matured to develop deep, complex flavours that honour the original Victorian recipe.
-    </p>
-    <div class="product-details">
-      <div class="detail-item">
-        <p class="detail-label">Weight</p>
-        <p class="detail-value">500g / 1kg</p>
+<!-- ═══ CHRISTMAS COLLECTION ═══ -->
+<section class="section">
+  <div class="wrap">
+    <p class="section-label">Christmas Collection 2026</p>
+    <h2>The Menu</h2>
+
+    <div class="product-list">
+      <div class="product-card">
+        <div class="product-icon" style="background:rgba(61,31,51,0.08);">
+          <svg viewBox="0 0 40 40" fill="none">
+            <ellipse cx="20" cy="18" rx="8" ry="9" fill="#3D1F33" opacity="0.7"/>
+            <ellipse cx="16" cy="22" rx="6" ry="7" fill="#5C2D4A" opacity="0.5"/>
+            <ellipse cx="24" cy="21" rx="6" ry="7" fill="#5C2D4A" opacity="0.5"/>
+            <path d="M19 10 Q20 7, 21 10" stroke="#2D4A2E" stroke-width="0.8" fill="none"/>
+            <path d="M20 8 Q22 6, 24 9" stroke="#2D4A2E" stroke-width="1" fill="#4A7A4C" fill-opacity="0.5"/>
+            <text x="20" y="36" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="3.5" fill="#B89B58" letter-spacing="0.06em" font-weight="700">OPH</text>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="product-name">The Signature Victorian Plum Cake</p>
+          <p class="product-desc">Handcrafted in Small Batches</p>
+        </div>
+        <span class="product-badge">Signature</span>
       </div>
-      <div class="detail-item">
-        <p class="detail-label">Shelf Life</p>
-        <p class="detail-value">4 Weeks</p>
+
+      <div class="product-card">
+        <div class="product-icon" style="background:rgba(45,74,46,0.08);">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="12" fill="none" stroke="#2D4A2E" stroke-width="0.8" opacity="0.4"/>
+            <path d="M14 22 Q14 14, 20 11 Q26 14, 26 22 Q26 28, 20 30 Q14 28, 14 22Z" fill="#3D1F33" opacity="0.5"/>
+            <path d="M18 12 Q20 8, 22 12" stroke="#2D4A2E" stroke-width="0.8" fill="none"/>
+            <path d="M20 9 Q23 7, 25 11" stroke="#2D4A2E" stroke-width="1" fill="#4A7A4C" fill-opacity="0.5"/>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="product-name">Classic Christmas Plum Cake</p>
+          <p class="product-desc">Rich &bull; Fruity &bull; Traditionally Spiced</p>
+        </div>
+        <span class="product-badge">Festive</span>
       </div>
-      <div class="detail-item">
-        <p class="detail-label">Preparation</p>
-        <p class="detail-value">3 Days</p>
+
+      <div class="product-card">
+        <div class="product-icon" style="background:rgba(184,155,88,0.1);">
+          <svg viewBox="0 0 40 40" fill="none">
+            <rect x="8" y="10" width="24" height="20" rx="3" fill="none" stroke="#B89B58" stroke-width="0.8" opacity="0.5"/>
+            <line x1="8" y1="16" x2="32" y2="16" stroke="#B89B58" stroke-width="0.5" opacity="0.3"/>
+            <ellipse cx="20" cy="24" rx="5" ry="4" fill="#3D1F33" opacity="0.4"/>
+            <circle cx="16" cy="24" r="2" fill="#5C2D4A" opacity="0.3"/>
+            <circle cx="24" cy="24" r="2" fill="#5C2D4A" opacity="0.3"/>
+            <text x="20" y="13.5" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="3" fill="#B89B58" letter-spacing="0.1em">RESERVE</text>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="product-name">The Festive Reserve</p>
+          <p class="product-desc">Premium Fruit &amp; Nut Christmas Cake</p>
+        </div>
+        <span class="product-badge">Premium</span>
       </div>
-      <div class="detail-item">
-        <p class="detail-label">Serves</p>
-        <p class="detail-value">6 &ndash; 12</p>
+
+      <div class="product-card">
+        <div class="product-icon" style="background:rgba(61,31,51,0.06);">
+          <svg viewBox="0 0 40 40" fill="none">
+            <rect x="8" y="16" width="24" height="16" rx="2" fill="none" stroke="#3D1F33" stroke-width="0.8" opacity="0.4"/>
+            <rect x="6" y="12" width="28" height="6" rx="1.5" fill="none" stroke="#3D1F33" stroke-width="0.8" opacity="0.4"/>
+            <line x1="20" y1="12" x2="20" y2="32" stroke="#B89B58" stroke-width="0.8" opacity="0.4"/>
+            <path d="M20 12 Q16 8, 12 10" stroke="#5C2D4A" stroke-width="0.8" fill="none"/>
+            <path d="M20 12 Q24 8, 28 10" stroke="#5C2D4A" stroke-width="0.8" fill="none"/>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="product-name">The Old Plum House Gift Box</p>
+          <p class="product-desc">Made for Gifting &amp; Sharing</p>
+        </div>
+        <span class="product-badge">Gift</span>
       </div>
     </div>
-    <p class="ingredients">
-      Plums, butter, brown sugar, free-range eggs, mixed dried fruit,
-      cinnamon, nutmeg, cloves, vanilla, unbleached flour
-    </p>
-  </section>
 
-  <div class="divider">
-    <span class="divider-line"></span>
-    <span class="divider-dot"></span>
-    <span class="divider-line"></span>
-  </div>
-
-  <!-- Menu -->
-  <section class="menu-section">
-    <h2 class="section-title">The Menu</h2>
-    <div class="menu-grid">
-      <div class="menu-item">
-        <div class="menu-item-info">
-          <p class="menu-item-name">Victorian Plum Cake &mdash; Half</p>
-          <p class="menu-item-note">500g &middot; Serves 6</p>
-        </div>
-        <p class="menu-item-price">&rupee;650</p>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-info">
-          <p class="menu-item-name">Victorian Plum Cake &mdash; Full</p>
-          <p class="menu-item-note">1kg &middot; Serves 12</p>
-        </div>
-        <p class="menu-item-price">&rupee;1,200</p>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-info">
-          <p class="menu-item-name">Mini Plum Loaves</p>
-          <p class="menu-item-note">Pack of 4 &middot; Gift-ready</p>
-        </div>
-        <p class="menu-item-price">&rupee;450</p>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-info">
-          <p class="menu-item-name">Plum Cake Slices</p>
-          <p class="menu-item-note">Box of 6 &middot; Individually wrapped</p>
-        </div>
-        <p class="menu-item-price">&rupee;350</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider">
-    <span class="divider-line"></span>
-    <span class="divider-dot"></span>
-    <span class="divider-line"></span>
-  </div>
-
-  <!-- How to Order -->
-  <section class="order-section">
-    <h2>Place Your Order</h2>
-    <p class="order-note">
-      We take orders through WhatsApp. Tell us what you'd like,
-      and we'll confirm availability and delivery.
-    </p>
-
-    <a class="whatsapp-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I'd%20like%20to%20order%20from%20The%20Old%20Plum%20House." target="_blank" rel="noopener">
+    <a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20order%20from%20The%20Old%20Plum%20House%20Christmas%20Collection%202026." target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Order on WhatsApp
     </a>
-
-    <p class="order-alt">
-      Or call us: <span class="phone-number">+91 XXXXX XXXXX</span>
-    </p>
-  </section>
-
-  <div class="divider">
-    <span class="divider-line"></span>
-    <span class="divider-dot"></span>
-    <span class="divider-line"></span>
   </div>
+</section>
 
-  <!-- How it works -->
-  <section>
-    <h2 class="section-title">How It Works</h2>
+<div class="sep"></div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="section">
+  <div class="wrap">
+    <p class="section-label">How It Works</p>
+    <h2>From Order to Your Door</h2>
+
     <div class="steps">
       <div class="step">
-        <span class="step-num">1</span>
+        <div class="step-num">1</div>
         <div class="step-text">
-          <p class="step-title">Send us a message</p>
-          <p class="step-desc">Tell us what you'd like and when you need it. We need at least 3 days for preparation.</p>
+          <h3>Browse &amp; Choose</h3>
+          <p>Pick your favourite from the Christmas Collection above.</p>
         </div>
       </div>
       <div class="step">
-        <span class="step-num">2</span>
+        <div class="step-num">2</div>
         <div class="step-text">
-          <p class="step-title">We confirm &amp; bake</p>
-          <p class="step-desc">We'll confirm your order, share the total, and begin hand-crafting your cake.</p>
+          <h3>Message Us</h3>
+          <p>Tap the WhatsApp button and tell us what you'd like. We'll confirm your order.</p>
         </div>
       </div>
       <div class="step">
-        <span class="step-num">3</span>
+        <div class="step-num">3</div>
         <div class="step-text">
-          <p class="step-title">Pick up or delivery</p>
-          <p class="step-desc">Collect from our kitchen in Ahmedabad, or we deliver across the city.</p>
+          <h3>We Bake Fresh</h3>
+          <p>Your cake is handcrafted in a small batch, using the finest ingredients.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <h3>Delivered to You</h3>
+          <p>3 days from order to your door. Delivery across Ahmedabad.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <div class="divider">
-    <span class="divider-line"></span>
-    <span class="divider-dot"></span>
-    <span class="divider-line"></span>
-  </div>
-
-  <!-- Delivery -->
-  <section class="delivery-section">
-    <h2>Delivery in Ahmedabad</h2>
-    <div class="delivery-badges">
-      <span class="badge">Satellite</span>
-      <span class="badge">Bodakdev</span>
-      <span class="badge">Vastrapur</span>
-      <span class="badge">Prahlad Nagar</span>
-      <span class="badge">S.G. Highway</span>
-      <span class="badge">Navrangpura</span>
-      <span class="badge">Thaltej</span>
-      <span class="badge badge--highlight">All Ahmedabad</span>
+    <div class="delivery-strip">
+      <div class="delivery-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Ahmedabad
+      </div>
+      <div class="delivery-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        3-Day Turnaround
+      </div>
+      <div class="delivery-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Fresh &amp; Handcrafted
+      </div>
     </div>
-  </section>
-
-  <div class="divider">
-    <span class="divider-line"></span>
-    <span class="divider-dot"></span>
-    <span class="divider-line"></span>
   </div>
+</section>
 
-  <!-- About -->
-  <section class="about-section">
-    <h2>Our Story</h2>
-    <p class="about-text">
-      The Old Plum House was born from a family recipe passed down through
-      generations. We bake the way it was always done &mdash; by hand, in small
-      batches, with no shortcuts and no compromises.
-    </p>
-    <p class="about-text">
-      Every cake is made with real butter, farm-fresh eggs, and plums selected
-      at the peak of their season. No preservatives. No artificial flavours.
-      Just honest baking.
-    </p>
-  </section>
+<div class="sep"></div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p class="footer-brand">The Old Plum House</p>
-    <p>Ahmedabad, Gujarat</p>
-    <div class="footer-social">
-      <a href="#">Instagram</a>
-      <a href="#">YouTube</a>
-      <a href="#">WhatsApp</a>
+<!-- ═══ ABOUT ═══ -->
+<section class="section">
+  <div class="wrap">
+    <p class="section-label">Our Story</p>
+    <h2>About Us</h2>
+    <div class="about-box">
+      <p>At The Old Plum House, we believe that some traditions are worth keeping. Inspired by timeless recipes and the warmth of old-fashioned kitchens, we bake our plum cakes with care, using the finest ingredients and a touch of love.</p>
+      <p>Because every cake carries a story, and every slice brings people closer.</p>
+      <p class="about-sign">A Little Taste of Tradition.</p>
     </div>
-    <p class="footer-note">All cakes are baked fresh to order. Prices may vary for custom requests.</p>
-  </footer>
+  </div>
+</section>
 
-</div>
+<!-- ═══ ORDER CTA ═══ -->
+<section class="cta-dark">
+  <div class="wrap">
+    <h2>Fresh-Baked. <em>Made to Order.</em></h2>
+    <p>Message us on WhatsApp to place your order.</p>
+    <p class="phone">+91 XXXXX XXXXX</p>
+    <a class="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20order%20from%20The%20Old%20Plum%20House." target="_blank" rel="noopener" style="margin-top:1rem;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Order Now
+    </a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <svg class="footer-logo" viewBox="0 0 80 80" fill="none">
+    <ellipse cx="40" cy="38" rx="12" ry="14" fill="#FAF4E8" opacity="0.7"/>
+    <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#E5D8C0" opacity="0.5"/>
+    <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#E5D8C0" opacity="0.5"/>
+    <path d="M40 22 Q44 19, 46 24" stroke="#6B9A6C" stroke-width="1.2" fill="#6B9A6C" fill-opacity="0.4"/>
+    <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="5.5" fill="#C9AD6A" letter-spacing="0.08em" font-weight="700">OPH</text>
+  </svg>
+  <p class="footer-name">The Old Plum House</p>
+  <p class="footer-tag">A Little Taste of Tradition.</p>
+  <p class="footer-loc">AHMEDABAD, GUJARAT &middot; EST. 2026</p>
+</footer>
+
+</body>
+</html>

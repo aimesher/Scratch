@@ -1,83 +1,75 @@
 <title>Old Plum House Brand</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap');
 
   :root {
-    --ruby: #A8183A;
-    --ruby-bright: #C4253F;
-    --ruby-deep: #8B1230;
-    --honey: #D4940A;
-    --honey-bright: #EDAA12;
-    --honey-pale: #F5D470;
-    --ivory: #FFFDF5;
-    --warm-white: #FFF8EC;
-    --champagne: #F5ECD7;
-    --espresso: #1E0F08;
-    --mahogany: #4A2520;
-    --forest: #2D5A3A;
-    --forest-light: #4A8B5C;
-    --blush: #F7E0E5;
+    --plum: #3D1F33;
+    --plum-rich: #5C2D4A;
+    --plum-soft: #8A5A72;
+    --gold-muted: #B89B58;
+    --gold-warm: #C9AD6A;
+    --gold-pale: #D9C48A;
+    --cream: #F2E8D5;
+    --cream-light: #FAF4E8;
+    --cream-deep: #E5D8C0;
+    --forest: #2D4A2E;
+    --forest-mid: #4A7A4C;
+    --forest-light: #6B9A6C;
+    --brown-warm: #5A3E2A;
+    --brown-text: #3A2818;
 
-    --bg: var(--ivory);
-    --text: var(--espresso);
-    --text-mid: var(--mahogany);
-    --text-soft: #7A5A50;
-    --accent: var(--ruby);
-    --accent-bright: var(--ruby-bright);
-    --gold: var(--honey);
-    --gold-bright: var(--honey-bright);
-    --surface: #fff;
-    --border: rgba(168,24,58,0.1);
+    --bg: var(--cream-light);
+    --text: var(--brown-text);
+    --text-mid: var(--brown-warm);
+    --text-soft: #7A6650;
+    --accent: var(--plum);
+    --highlight: var(--gold-muted);
+    --surface: #FFFCF5;
+    --border: rgba(61,31,51,0.1);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #140A08;
-      --text: #F5ECD7;
-      --text-mid: #D4B8A8;
-      --text-soft: #A08878;
-      --accent: #E8506A;
-      --accent-bright: #F06878;
-      --gold: #EDAA12;
-      --gold-bright: #F5D470;
-      --surface: #1E1210;
-      --border: rgba(232,80,106,0.12);
-      --ivory: #140A08;
-      --warm-white: #1E1210;
-      --champagne: #2A1A14;
-      --blush: #2A1518;
+      --bg: #1A1210;
+      --text: #E5D8C0;
+      --text-mid: #C4AA88;
+      --text-soft: #9A8068;
+      --accent: #C48A9A;
+      --highlight: #C9AD6A;
+      --surface: #241A15;
+      --border: rgba(196,138,154,0.1);
+      --cream: #241A15;
+      --cream-light: #1A1210;
+      --cream-deep: #2E221A;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #140A08;
-    --text: #F5ECD7;
-    --text-mid: #D4B8A8;
-    --text-soft: #A08878;
-    --accent: #E8506A;
-    --accent-bright: #F06878;
-    --gold: #EDAA12;
-    --gold-bright: #F5D470;
-    --surface: #1E1210;
-    --border: rgba(232,80,106,0.12);
-    --ivory: #140A08;
-    --warm-white: #1E1210;
-    --champagne: #2A1A14;
-    --blush: #2A1518;
+    --bg: #1A1210;
+    --text: #E5D8C0;
+    --text-mid: #C4AA88;
+    --text-soft: #9A8068;
+    --accent: #C48A9A;
+    --highlight: #C9AD6A;
+    --surface: #241A15;
+    --border: rgba(196,138,154,0.1);
+    --cream: #241A15;
+    --cream-light: #1A1210;
+    --cream-deep: #2E221A;
     color-scheme: dark;
   }
 
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'EB Garamond', Georgia, serif;
     font-size: 17px;
-    line-height: 1.65;
+    line-height: 1.7;
     padding-inline: 16px;
     padding-block: 1rem;
   }
 
-  .wrap { max-width: 720px; margin: 0 auto; }
+  .wrap { max-width: 700px; margin: 0 auto; }
 
   h1, h2, h3 {
     font-family: 'Playfair Display', Georgia, serif;
@@ -85,97 +77,122 @@
     line-height: 1.2;
   }
 
-  .page-header {
+  .page-head {
     text-align: center;
-    padding: 2rem 0 1.5rem;
+    padding: 2rem 0 0.5rem;
   }
 
-  .page-header h1 {
-    font-size: 1.8rem;
+  .page-head h1 {
+    font-size: 1.6rem;
     color: var(--accent);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
+    font-weight: 700;
   }
 
-  .page-header p {
+  .page-head p {
     font-size: 0.9rem;
     color: var(--text-soft);
     font-style: italic;
   }
 
-  .section { margin: 2.5rem 0; }
+  .sec { margin: 2.5rem 0; }
 
-  .section-label {
+  .sec-label {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
-    letter-spacing: 0.22em;
-    color: var(--gold);
-    margin-bottom: 1.2rem;
+    letter-spacing: 0.25em;
+    color: var(--highlight);
+    margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
-  /* ── Logo display ── */
-  .logo-showcase {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
+  /* ── Ornamental divider ── */
+  .orn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0.8rem 0;
+    margin: 1.2rem 0;
   }
 
-  .logo-showcase--full {
-    grid-column: 1 / -1;
+  .orn i {
+    width: 50px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--highlight), transparent);
+    display: block;
   }
 
-  @media (max-width: 520px) {
-    .logo-showcase { grid-template-columns: 1fr; }
+  .orn b {
+    font-style: normal;
+    font-weight: normal;
+    color: var(--forest);
+    font-size: 14px;
+    line-height: 1;
   }
 
-  .logo-frame {
+  /* ── Logo frames ── */
+  .logo-main {
     border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+  }
+
+  .logo-main-inner {
     padding: 2.5rem 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 280px;
-    border: 1px solid var(--border);
-    position: relative;
+    min-height: 360px;
   }
 
-  .logo-frame svg { width: 100%; max-width: 300px; height: auto; }
+  .logo-main-inner svg { width: 100%; max-width: 340px; height: auto; }
 
-  .logo-frame--ivory { background: var(--ivory); }
-  .logo-frame--dark { background: #1E0F08; }
-  .logo-frame--ruby { background: linear-gradient(135deg, #A8183A, #8B1230); }
-  .logo-frame--gold { background: linear-gradient(135deg, #D4940A, #B07A08); }
+  .logo-main--cream { background: var(--cream); }
+  .logo-main--plum { background: var(--plum); }
 
-  .frame-label {
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    right: 0;
+  .logo-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 520px) { .logo-pair { grid-template-columns: 1fr; } }
+
+  .logo-sm {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  .logo-sm svg { width: 100%; max-width: 200px; height: auto; }
+
+  .frame-cap {
     text-align: center;
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     color: var(--text-soft);
     font-style: italic;
-    opacity: 0.7;
+    margin-top: 0.4rem;
+    margin-bottom: 1rem;
   }
 
-  .logo-frame--dark .frame-label,
-  .logo-frame--ruby .frame-label,
-  .logo-frame--gold .frame-label { color: rgba(255,255,255,0.5); }
-
-  /* ── Icon mark ── */
+  /* ── Icons ── */
   .icon-strip {
     display: flex;
     gap: 1.5rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
   }
 
-  .icon-box {
-    text-align: center;
-  }
+  .icon-box { text-align: center; }
 
   .icon-ring {
     width: 72px;
@@ -185,68 +202,51 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 0.4rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   }
 
-  .icon-ring svg { width: 48px; height: 48px; }
+  .icon-ring svg { width: 50px; height: 50px; }
 
   .icon-box span {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     color: var(--text-soft);
     letter-spacing: 0.04em;
   }
 
   /* ── Palette ── */
-  .palette-grid {
+  .pal {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.8rem;
   }
 
-  .swatch {
+  @media (max-width: 480px) { .pal { grid-template-columns: repeat(2, 1fr); } }
+
+  .sw {
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
 
-  .swatch-top { height: 75px; }
+  .sw-top { height: 72px; }
+  .sw-bot { padding: 0.5rem 0.6rem; background: var(--surface); }
+  .sw-name { font-family: 'Playfair Display', Georgia, serif; font-size: 0.68rem; font-weight: 600; color: var(--text); letter-spacing: 0.04em; }
+  .sw-hex { font-size: 0.75rem; color: var(--text-soft); font-variant-numeric: tabular-nums; }
 
-  .swatch-bot {
-    padding: 0.55rem 0.7rem;
-    background: var(--surface);
-  }
-
-  .swatch-name {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .swatch-hex {
-    font-family: 'Libre Caslon Text', Georgia, serif;
-    font-size: 0.78rem;
-    color: var(--text-soft);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ── Type ── */
+  /* ── Type specimens ── */
   .type-card {
     padding: 1.5rem;
     background: var(--surface);
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1px solid var(--border);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
   }
 
   .type-role {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--gold);
+    letter-spacing: 0.2em;
+    color: var(--highlight);
     margin-bottom: 0.5rem;
     font-family: 'Playfair Display', Georgia, serif;
   }
@@ -256,20 +256,38 @@
     font-size: 2.2rem;
     color: var(--accent);
     line-height: 1.1;
-    margin-bottom: 0.3rem;
+    font-weight: 700;
+  }
+
+  .type-tagline {
+    font-family: 'Cormorant', Georgia, serif;
+    font-size: 1.5rem;
+    color: var(--text-mid);
+    font-style: italic;
+    font-weight: 300;
   }
 
   .type-body {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.2rem;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.1rem;
     color: var(--text);
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
-  .type-util {
-    font-family: 'Libre Caslon Text', Georgia, serif;
-    font-size: 0.88rem;
-    color: var(--text-mid);
+  .type-product {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .type-support {
+    font-family: 'Cormorant', Georgia, serif;
+    font-size: 1rem;
+    color: var(--text-soft);
+    font-style: italic;
   }
 
   .type-meta {
@@ -277,15 +295,62 @@
     color: var(--text-soft);
     margin-top: 0.5rem;
     font-style: italic;
+    font-family: 'EB Garamond', Georgia, serif;
+  }
+
+  /* ── Products ── */
+  .prod-grid {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .prod-card {
+    padding: 1.2rem 1.4rem;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .prod-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+  }
+
+  .prod-desc {
+    font-family: 'Cormorant', Georgia, serif;
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  .prod-tag {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--highlight);
+    white-space: nowrap;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--highlight);
+    border-radius: 20px;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
   }
 
   /* ── Taglines ── */
-  .tag-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .tag-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
   .tag-row {
-    padding: 0.85rem 1.2rem;
+    padding: 0.8rem 1.2rem;
     background: var(--surface);
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
@@ -294,54 +359,50 @@
   }
 
   .tag-text {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Cormorant', Georgia, serif;
     font-style: italic;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     color: var(--text);
   }
 
   .tag-use {
-    font-size: 0.62rem;
-    color: var(--accent);
+    font-size: 0.58rem;
+    color: var(--highlight);
     white-space: nowrap;
     font-family: 'Playfair Display', Georgia, serif;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    opacity: 0.7;
   }
 
   /* ── Voice ── */
-  .voice-row {
+  .voice-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0.8rem;
+    text-align: center;
   }
 
-  @media (max-width: 520px) { .voice-row { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .voice-grid { grid-template-columns: 1fr; } }
 
-  .voice-item {
-    padding: 1.1rem 1.3rem;
+  .voice-pill {
+    padding: 1rem;
     background: var(--surface);
     border-radius: 12px;
     border: 1px solid var(--border);
   }
 
-  .voice-name {
+  .voice-word {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
     color: var(--accent);
     font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
-
-  .voice-copy {
-    font-size: 0.88rem;
-    color: var(--text-soft);
   }
 
   /* ── Social ── */
   .social-card {
-    padding: 1.3rem 1.5rem;
+    padding: 1.3rem 1.4rem;
     background: var(--surface);
     border-radius: 12px;
     border: 1px solid var(--border);
@@ -350,10 +411,10 @@
 
   .social-where {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--gold);
+    letter-spacing: 0.2em;
+    color: var(--highlight);
     margin-bottom: 0.5rem;
   }
 
@@ -364,368 +425,299 @@
   }
 
   .social-note {
-    font-family: 'Libre Caslon Text', Georgia, serif;
     font-size: 0.82rem;
     color: var(--text-soft);
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
+    font-style: italic;
   }
 
-  /* ── Info box ── */
-  .info-box {
+  /* ── Info ── */
+  .note-box {
     padding: 1.1rem 1.3rem;
     background: var(--surface);
     border-radius: 12px;
     border: 1px solid var(--border);
-    margin-top: 1.2rem;
+    margin-top: 1rem;
   }
 
-  .info-box p {
+  .note-box p {
     font-size: 0.88rem;
     color: var(--text-soft);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.45rem;
   }
 
-  .info-box p:last-child { margin-bottom: 0; }
+  .note-box p:last-child { margin-bottom: 0; }
+  .note-box strong { color: var(--text); }
 
-  .info-box strong { color: var(--text); }
-
-  /* ── Divider ── */
-  .sep {
+  /* ── Gift tags ── */
+  .gift-tags {
     display: flex;
-    align-items: center;
+    gap: 1rem;
     justify-content: center;
-    gap: 12px;
-    padding: 0.8rem 0;
-    margin: 1.5rem 0;
+    flex-wrap: wrap;
+    margin-top: 1rem;
   }
 
-  .sep i {
-    width: 55px; height: 1.5px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    display: block;
+  .gift-tag {
+    background: var(--cream);
+    border: 1px solid var(--cream-deep);
+    border-radius: 4px 12px 12px 4px;
+    padding: 0.8rem 1.2rem 0.8rem 1.5rem;
+    position: relative;
+    font-family: 'Cormorant', Georgia, serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--text-mid);
+    max-width: 180px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
 
-  .sep b {
-    width: 7px; height: 7px;
-    border: 1.5px solid var(--gold);
-    transform: rotate(45deg);
-    display: block;
+  .gift-tag::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--text-soft);
+    opacity: 0.4;
   }
 </style>
 
 <div class="wrap">
 
-  <header class="page-header">
+  <header class="page-head">
     <h1>The Old Plum House</h1>
     <p>Brand Identity &amp; Style Guide</p>
   </header>
 
   <!-- ═══════ PRIMARY LOGO ═══════ -->
-  <section class="section">
-    <p class="section-label">Primary Logo &mdash; The Crest</p>
+  <section class="sec">
+    <p class="sec-label">Primary Logo</p>
 
-    <div class="logo-showcase">
+    <!-- Cream background -->
+    <div class="logo-main">
+      <div class="logo-main-inner logo-main--cream">
+        <svg viewBox="0 0 340 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="frameGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#B89B58"/>
+              <stop offset="50%" stop-color="#C9AD6A"/>
+              <stop offset="100%" stop-color="#B89B58"/>
+            </linearGradient>
+          </defs>
 
-      <!-- On ivory -->
-      <div class="logo-showcase--full" style="grid-column: 1 / -1;">
-        <div class="logo-frame logo-frame--ivory" style="min-height:380px;">
-          <svg viewBox="0 0 360 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- ── Ornate Victorian frame ── -->
+          <!-- Outer scalloped border -->
+          <path d="M170 16 C210 16, 250 22, 278 38 Q306 54, 314 90 L318 150 Q320 190, 318 220 L314 260 Q306 310, 270 340 Q240 368, 170 384 Q100 368, 70 340 Q34 310, 26 260 L22 220 Q20 190, 22 150 L26 90 Q34 54, 62 38 C90 22, 130 16, 170 16 Z" fill="#F2E8D5" stroke="url(#frameGrad)" stroke-width="2.5"/>
 
-            <!-- ── Outer shield shape ── -->
-            <path d="M180 12 C240 12, 310 30, 320 80 L320 200 C320 280, 270 350, 180 388 C90 350, 40 280, 40 200 L40 80 C50 30, 120 12, 180 12 Z" fill="none" stroke="#A8183A" stroke-width="2.5"/>
-            <path d="M180 20 C235 20, 302 36, 312 82 L312 198 C312 274, 264 342, 180 378 C96 342, 48 274, 48 198 L48 82 C58 36, 125 20, 180 20 Z" fill="none" stroke="#D4940A" stroke-width="1"/>
+          <!-- Inner frame line -->
+          <path d="M170 28 C206 28, 242 34, 268 48 Q292 62, 300 94 L303 148 Q305 184, 303 214 L300 254 Q292 300, 260 328 Q234 352, 170 366 Q106 352, 80 328 Q48 300, 40 254 L37 214 Q35 184, 37 148 L40 94 Q48 62, 72 48 C98 34, 134 28, 170 28 Z" fill="none" stroke="#B89B58" stroke-width="0.8" opacity="0.5"/>
 
-            <!-- ── Inner shield fill with gradient ── -->
-            <defs>
-              <linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#FFFDF5"/>
-                <stop offset="100%" stop-color="#F5ECD7"/>
-              </linearGradient>
-              <linearGradient id="cakeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#8B1230"/>
-                <stop offset="40%" stop-color="#A8183A"/>
-                <stop offset="100%" stop-color="#6A0E25"/>
-              </linearGradient>
-              <radialGradient id="plumShine" cx="35%" cy="30%">
-                <stop offset="0%" stop-color="#D4506A" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="#6A0E25" stop-opacity="0"/>
-              </radialGradient>
-              <linearGradient id="glazeGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#D4940A" stop-opacity="0.2"/>
-                <stop offset="50%" stop-color="#EDAA12" stop-opacity="0.5"/>
-                <stop offset="100%" stop-color="#D4940A" stop-opacity="0.2"/>
-              </linearGradient>
-              <linearGradient id="bannerGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#A8183A"/>
-                <stop offset="100%" stop-color="#8B1230"/>
-              </linearGradient>
-            </defs>
+          <!-- ── Top decorative scrollwork ── -->
+          <path d="M130 30 Q125 22, 118 25 Q112 28, 118 34 Q110 28, 105 32 Q100 38, 108 42 Q115 46, 125 38 Z" fill="#2D4A2E" opacity="0.5"/>
+          <path d="M210 30 Q215 22, 222 25 Q228 28, 222 34 Q230 28, 235 32 Q240 38, 232 42 Q225 46, 215 38 Z" fill="#2D4A2E" opacity="0.5"/>
 
-            <path d="M180 26 C232 26, 296 40, 306 84 L306 196 C306 270, 260 336, 180 370 C100 336, 54 270, 54 196 L54 84 C64 40, 128 26, 180 26 Z" fill="url(#shieldGrad)"/>
+          <!-- Top center plum ornament -->
+          <ellipse cx="170" cy="22" rx="8" ry="9" fill="#3D1F33" opacity="0.8"/>
+          <ellipse cx="168" cy="20" rx="3" ry="2" fill="#5C2D4A" opacity="0.3"/>
+          <path d="M168 14 Q170 10, 172 14" stroke="#2D4A2E" stroke-width="0.8" fill="none"/>
+          <path d="M170 12 Q174 10, 176 14" stroke="#2D4A2E" stroke-width="1" fill="#4A7A4C" fill-opacity="0.5"/>
 
-            <!-- ── Decorative corner scrollwork ── -->
-            <!-- Top left -->
-            <path d="M80 55 C75 48, 68 50, 72 58 C65 52, 58 56, 65 63 Q70 68, 78 62 Q84 58, 80 55 Z" fill="#D4940A" opacity="0.6"/>
-            <path d="M85 50 Q80 42, 74 46" stroke="#D4940A" stroke-width="0.8" fill="none" opacity="0.4"/>
-            <!-- Top right -->
-            <path d="M280 55 C285 48, 292 50, 288 58 C295 52, 302 56, 295 63 Q290 68, 282 62 Q276 58, 280 55 Z" fill="#D4940A" opacity="0.6"/>
-            <path d="M275 50 Q280 42, 286 46" stroke="#D4940A" stroke-width="0.8" fill="none" opacity="0.4"/>
+          <!-- ── Left botanical branch ── -->
+          <g opacity="0.65">
+            <path d="M52 100 Q48 130, 44 160 Q40 190, 42 220 Q44 245, 50 270" stroke="#2D4A2E" stroke-width="1.2" fill="none"/>
+            <ellipse cx="46" cy="112" rx="8" ry="5" fill="#2D4A2E" opacity="0.5" transform="rotate(-30 46 112)"/>
+            <ellipse cx="42" cy="130" rx="9" ry="5.5" fill="#4A7A4C" opacity="0.4" transform="rotate(-20 42 130)"/>
+            <ellipse cx="40" cy="150" rx="8.5" ry="5" fill="#2D4A2E" opacity="0.45" transform="rotate(-10 40 150)"/>
+            <ellipse cx="39" cy="172" rx="9" ry="5.5" fill="#4A7A4C" opacity="0.4" transform="rotate(-5 39 172)"/>
+            <ellipse cx="40" cy="194" rx="8" ry="5" fill="#2D4A2E" opacity="0.4" transform="rotate(5 40 194)"/>
+            <ellipse cx="42" cy="215" rx="8.5" ry="5.5" fill="#4A7A4C" opacity="0.38" transform="rotate(10 42 215)"/>
+            <ellipse cx="44" cy="236" rx="8" ry="5" fill="#2D4A2E" opacity="0.35" transform="rotate(15 44 236)"/>
+            <!-- Plums on left branch -->
+            <ellipse cx="50" cy="145" rx="6" ry="7" fill="#3D1F33" opacity="0.6"/>
+            <ellipse cx="48" cy="200" rx="5.5" ry="6.5" fill="#5C2D4A" opacity="0.5"/>
+            <ellipse cx="52" cy="250" rx="5" ry="6" fill="#3D1F33" opacity="0.5"/>
+          </g>
 
-            <!-- ── Crown at top ── -->
-            <path d="M155 42 L160 30 L168 38 L175 24 L180 35 L185 24 L192 38 L200 30 L205 42 Z" fill="#D4940A" stroke="#B07A08" stroke-width="0.6"/>
-            <circle cx="175" cy="24" r="2" fill="#A8183A"/>
-            <circle cx="180" cy="22" r="2.5" fill="#A8183A"/>
-            <circle cx="185" cy="24" r="2" fill="#A8183A"/>
-            <path d="M158 42 L202 42" stroke="#B07A08" stroke-width="1"/>
-            <circle cx="180" cy="42" r="1.5" fill="#D4940A"/>
+          <!-- ── Right botanical branch ── -->
+          <g opacity="0.65">
+            <path d="M288 100 Q292 130, 296 160 Q300 190, 298 220 Q296 245, 290 270" stroke="#2D4A2E" stroke-width="1.2" fill="none"/>
+            <ellipse cx="294" cy="112" rx="8" ry="5" fill="#2D4A2E" opacity="0.5" transform="rotate(30 294 112)"/>
+            <ellipse cx="298" cy="130" rx="9" ry="5.5" fill="#4A7A4C" opacity="0.4" transform="rotate(20 298 130)"/>
+            <ellipse cx="300" cy="150" rx="8.5" ry="5" fill="#2D4A2E" opacity="0.45" transform="rotate(10 300 150)"/>
+            <ellipse cx="301" cy="172" rx="9" ry="5.5" fill="#4A7A4C" opacity="0.4" transform="rotate(5 301 172)"/>
+            <ellipse cx="300" cy="194" rx="8" ry="5" fill="#2D4A2E" opacity="0.4" transform="rotate(-5 300 194)"/>
+            <ellipse cx="298" cy="215" rx="8.5" ry="5.5" fill="#4A7A4C" opacity="0.38" transform="rotate(-10 298 215)"/>
+            <ellipse cx="296" cy="236" rx="8" ry="5" fill="#2D4A2E" opacity="0.35" transform="rotate(-15 296 236)"/>
+            <!-- Plums on right branch -->
+            <ellipse cx="290" cy="145" rx="6" ry="7" fill="#3D1F33" opacity="0.6"/>
+            <ellipse cx="292" cy="200" rx="5.5" ry="6.5" fill="#5C2D4A" opacity="0.5"/>
+            <ellipse cx="288" cy="250" rx="5" ry="6" fill="#3D1F33" opacity="0.5"/>
+          </g>
 
-            <!-- ── Laurel wreath left ── -->
-            <g opacity="0.7">
-              <path d="M90 120 Q85 110, 82 100" stroke="#2D5A3A" stroke-width="1.2" fill="none"/>
-              <ellipse cx="82" cy="108" rx="5" ry="8" fill="#2D5A3A" opacity="0.6" transform="rotate(-20 82 108)"/>
-              <ellipse cx="85" cy="118" rx="5" ry="8" fill="#4A8B5C" opacity="0.5" transform="rotate(-10 85 118)"/>
-              <ellipse cx="80" cy="98" rx="4.5" ry="7" fill="#2D5A3A" opacity="0.5" transform="rotate(-30 80 98)"/>
-              <path d="M88 140 Q82 128, 80 118" stroke="#2D5A3A" stroke-width="1" fill="none"/>
-              <ellipse cx="82" cy="130" rx="5" ry="7.5" fill="#4A8B5C" opacity="0.5" transform="rotate(-5 82 130)"/>
-              <ellipse cx="83" cy="140" rx="5" ry="7" fill="#2D5A3A" opacity="0.5" transform="rotate(5 83 140)"/>
-              <path d="M92 160 Q86 148, 85 140" stroke="#2D5A3A" stroke-width="1" fill="none"/>
-              <ellipse cx="87" cy="152" rx="5" ry="7" fill="#4A8B5C" opacity="0.45" transform="rotate(10 87 152)"/>
-              <ellipse cx="90" cy="162" rx="4.5" ry="6.5" fill="#2D5A3A" opacity="0.45" transform="rotate(15 90 162)"/>
-            </g>
+          <!-- ── Small Victorian house silhouette ── -->
+          <g transform="translate(140, 48)" opacity="0.55">
+            <rect x="10" y="20" width="40" height="28" fill="#3D1F33" rx="1"/>
+            <path d="M5 20 L30 2 L55 20 Z" fill="#5C2D4A"/>
+            <rect x="22" y="28" width="16" height="20" fill="#F2E8D5" rx="1"/>
+            <path d="M22 38 L38 38" stroke="#3D1F33" stroke-width="0.5"/>
+            <path d="M30 28 L30 48" stroke="#3D1F33" stroke-width="0.5"/>
+            <rect x="14" y="28" width="6" height="8" fill="#F2E8D5" rx="0.5"/>
+            <rect x="40" y="28" width="6" height="8" fill="#F2E8D5" rx="0.5"/>
+            <rect x="26" y="6" width="8" height="14" fill="#5C2D4A" rx="0.5"/>
+            <path d="M27 6 L30 2 L33 6" fill="#3D1F33"/>
+          </g>
 
-            <!-- ── Laurel wreath right ── -->
-            <g opacity="0.7">
-              <path d="M270 120 Q275 110, 278 100" stroke="#2D5A3A" stroke-width="1.2" fill="none"/>
-              <ellipse cx="278" cy="108" rx="5" ry="8" fill="#2D5A3A" opacity="0.6" transform="rotate(20 278 108)"/>
-              <ellipse cx="275" cy="118" rx="5" ry="8" fill="#4A8B5C" opacity="0.5" transform="rotate(10 275 118)"/>
-              <ellipse cx="280" cy="98" rx="4.5" ry="7" fill="#2D5A3A" opacity="0.5" transform="rotate(30 280 98)"/>
-              <path d="M272 140 Q278 128, 280 118" stroke="#2D5A3A" stroke-width="1" fill="none"/>
-              <ellipse cx="278" cy="130" rx="5" ry="7.5" fill="#4A8B5C" opacity="0.5" transform="rotate(5 278 130)"/>
-              <ellipse cx="277" cy="140" rx="5" ry="7" fill="#2D5A3A" opacity="0.5" transform="rotate(-5 277 140)"/>
-              <path d="M268 160 Q274 148, 275 140" stroke="#2D5A3A" stroke-width="1" fill="none"/>
-              <ellipse cx="273" cy="152" rx="5" ry="7" fill="#4A8B5C" opacity="0.45" transform="rotate(-10 273 152)"/>
-              <ellipse cx="270" cy="162" rx="4.5" ry="6.5" fill="#2D5A3A" opacity="0.45" transform="rotate(-15 270 162)"/>
-            </g>
+          <!-- ── Gold ornamental line under house ── -->
+          <line x1="110" y1="102" x2="230" y2="102" stroke="#B89B58" stroke-width="0.6" opacity="0.5"/>
+          <circle cx="170" cy="102" r="2" fill="#B89B58" opacity="0.4"/>
 
-            <!-- ── Ornamental top text arc ── -->
-            <text x="180" y="72" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="9" fill="#A8183A" letter-spacing="0.28em" font-weight="600">SIGNATURE VICTORIAN</text>
+          <!-- ═══ THE OLD PLUM HOUSE text ═══ -->
+          <text x="170" y="132" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="14" fill="#3D1F33" letter-spacing="0.12em" font-weight="700">THE OLD</text>
+          <text x="170" y="170" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="32" fill="#3D1F33" letter-spacing="0.04em" font-weight="800">PLUM</text>
+          <text x="170" y="198" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="18" fill="#3D1F33" letter-spacing="0.1em" font-weight="700">HOUSE</text>
 
-            <!-- ── Cake stand / pedestal ── -->
-            <rect x="120" y="240" width="120" height="5" rx="2.5" fill="#D4940A" opacity="0.7"/>
-            <rect x="135" y="245" width="90" height="4" rx="2" fill="#B07A08" opacity="0.5"/>
-            <rect x="155" y="249" width="50" height="3" rx="1.5" fill="#D4940A" opacity="0.35"/>
-            <ellipse cx="180" cy="240" rx="65" ry="5" fill="#D4940A" opacity="0.15"/>
+          <!-- Gold ornamental line -->
+          <line x1="100" y1="210" x2="240" y2="210" stroke="#B89B58" stroke-width="0.6" opacity="0.5"/>
+          <path d="M160 207 L170 203 L180 207" stroke="#B89B58" stroke-width="0.6" fill="none" opacity="0.5"/>
 
-            <!-- ── The plum cake ── -->
-            <path d="M115 240 Q115 190, 130 165 Q142 145, 165 132 Q175 127, 180 125 Q185 127, 195 132 Q218 145, 230 165 Q245 190, 245 240 Z" fill="url(#cakeGrad)"/>
+          <!-- Tagline -->
+          <text x="170" y="232" text-anchor="middle" font-family="'Cormorant', Georgia, serif" font-size="14" font-style="italic" fill="#5A3E2A" letter-spacing="0.03em" font-weight="300">A Little Taste of Tradition.</text>
 
-            <!-- Cake texture — horizontal score lines -->
-            <path d="M122 220 Q150 213, 180 211 Q210 213, 238 220" stroke="#6A0E25" stroke-width="0.7" fill="none" opacity="0.5"/>
-            <path d="M120 205 Q150 196, 180 194 Q210 196, 240 205" stroke="#6A0E25" stroke-width="0.6" fill="none" opacity="0.4"/>
-            <path d="M124 190 Q150 182, 180 180 Q210 182, 236 190" stroke="#6A0E25" stroke-width="0.5" fill="none" opacity="0.35"/>
+          <!-- ── Central plum cluster ── -->
+          <!-- Main plum -->
+          <ellipse cx="170" cy="268" rx="14" ry="16" fill="#3D1F33"/>
+          <ellipse cx="167" cy="264" rx="5" ry="3.5" fill="#5C2D4A" opacity="0.35"/>
+          <path d="M167 254 Q170 248, 173 254" stroke="#2D4A2E" stroke-width="1" fill="none"/>
+          <path d="M170 250 Q175 247, 177 252" stroke="#2D4A2E" stroke-width="1.2" fill="#4A7A4C" fill-opacity="0.55"/>
+          <path d="M170 250 Q165 248, 163 253" stroke="#2D4A2E" stroke-width="1" fill="#2D4A2E" fill-opacity="0.4"/>
 
-            <!-- Golden glaze drip on top -->
-            <path d="M135 160 Q145 140, 165 133 Q175 128, 180 126 Q185 128, 195 133 Q215 140, 225 160 Q215 148, 195 140 Q180 135, 165 140 Q145 148, 135 160 Z" fill="url(#glazeGrad)"/>
+          <!-- Left plum -->
+          <ellipse cx="148" cy="274" rx="11" ry="13" fill="#5C2D4A" opacity="0.85"/>
+          <ellipse cx="146" cy="271" rx="4" ry="2.8" fill="#8A5A72" opacity="0.25"/>
 
-            <!-- Glaze drips -->
-            <path d="M145 160 Q143 168, 145 172" stroke="#EDAA12" stroke-width="2" fill="none" opacity="0.4" stroke-linecap="round"/>
-            <path d="M215 158 Q217 167, 215 173" stroke="#EDAA12" stroke-width="2" fill="none" opacity="0.35" stroke-linecap="round"/>
-            <path d="M195 155 Q196 162, 194 166" stroke="#EDAA12" stroke-width="1.5" fill="none" opacity="0.3" stroke-linecap="round"/>
+          <!-- Right plum -->
+          <ellipse cx="192" cy="272" rx="11.5" ry="13.5" fill="#5C2D4A" opacity="0.85"/>
+          <ellipse cx="190" cy="269" rx="4" ry="2.8" fill="#8A5A72" opacity="0.25"/>
 
-            <!-- ── Large centre plum ── -->
-            <ellipse cx="180" cy="195" rx="14" ry="15" fill="#8B1230"/>
-            <ellipse cx="180" cy="195" rx="14" ry="15" fill="url(#plumShine)"/>
-            <path d="M176 182 Q180 176, 184 182" stroke="#6A0E25" stroke-width="1" fill="none"/>
-            <ellipse cx="178" cy="191" rx="5" ry="3.5" fill="#C4253F" opacity="0.25"/>
-            <path d="M180 180 Q183 176, 186 179" stroke="#2D5A3A" stroke-width="1.2" fill="#4A8B5C" fill-opacity="0.6"/>
+          <!-- Small leaves between plums -->
+          <path d="M158 258 Q162 252, 166 256" stroke="#2D4A2E" stroke-width="0.8" fill="#4A7A4C" fill-opacity="0.4"/>
+          <path d="M174 256 Q178 250, 182 254" stroke="#2D4A2E" stroke-width="0.8" fill="#4A7A4C" fill-opacity="0.4"/>
 
-            <!-- ── Left plum ── -->
-            <ellipse cx="152" cy="200" rx="12" ry="13" fill="#A8183A"/>
-            <ellipse cx="152" cy="200" rx="12" ry="13" fill="url(#plumShine)"/>
-            <path d="M149 189 Q152 184, 155 189" stroke="#6A0E25" stroke-width="0.9" fill="none"/>
-            <ellipse cx="150" cy="197" rx="4" ry="3" fill="#C4253F" opacity="0.2"/>
-            <path d="M152 187 Q155 183, 157 186" stroke="#2D5A3A" stroke-width="1" fill="#4A8B5C" fill-opacity="0.5"/>
+          <!-- ── Bottom scrollwork ── -->
+          <path d="M120 310 Q110 305, 105 312 Q100 320, 112 318 Q108 324, 115 326 Q122 328, 125 320 Z" fill="#2D4A2E" opacity="0.35"/>
+          <path d="M220 310 Q230 305, 235 312 Q240 320, 228 318 Q232 324, 225 326 Q218 328, 215 320 Z" fill="#2D4A2E" opacity="0.35"/>
 
-            <!-- ── Right plum ── -->
-            <ellipse cx="208" cy="198" rx="11.5" ry="12.5" fill="#A8183A"/>
-            <ellipse cx="208" cy="198" rx="11.5" ry="12.5" fill="url(#plumShine)"/>
-            <path d="M205 187 Q208 182, 211 187" stroke="#6A0E25" stroke-width="0.9" fill="none"/>
-            <ellipse cx="206" cy="195" rx="4" ry="2.8" fill="#C4253F" opacity="0.2"/>
-            <path d="M208 185 Q211 181, 213 184" stroke="#2D5A3A" stroke-width="1" fill="#4A8B5C" fill-opacity="0.5"/>
+          <!-- Bottom text -->
+          <text x="170" y="320" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7.5" fill="#B89B58" letter-spacing="0.22em">SIGNATURE VICTORIAN PLUM CAKE</text>
 
-            <!-- ── Bottom-left plum ── -->
-            <ellipse cx="163" cy="222" rx="10" ry="11" fill="#8B1230" opacity="0.9"/>
-            <ellipse cx="163" cy="222" rx="10" ry="11" fill="url(#plumShine)"/>
-            <path d="M161 213 Q163 209, 165 213" stroke="#6A0E25" stroke-width="0.8" fill="none"/>
+          <line x1="110" y1="330" x2="230" y2="330" stroke="#B89B58" stroke-width="0.4" opacity="0.4"/>
 
-            <!-- ── Bottom-right plum ── -->
-            <ellipse cx="198" cy="220" rx="10.5" ry="11.5" fill="#8B1230" opacity="0.9"/>
-            <ellipse cx="198" cy="220" rx="10.5" ry="11.5" fill="url(#plumShine)"/>
-            <path d="M196 210 Q198 206, 200 210" stroke="#6A0E25" stroke-width="0.8" fill="none"/>
+          <text x="170" y="346" text-anchor="middle" font-family="'Cormorant', Georgia, serif" font-size="10" font-style="italic" fill="#5A3E2A" letter-spacing="0.04em">Handcrafted in Small Batches.</text>
 
-            <!-- ── Small decorative plums / berries on sides ── -->
-            <circle cx="134" cy="215" r="5" fill="#A8183A" opacity="0.7"/>
-            <circle cx="226" cy="212" r="5" fill="#A8183A" opacity="0.7"/>
-            <circle cx="140" cy="228" r="3.5" fill="#8B1230" opacity="0.5"/>
-            <circle cx="222" cy="226" r="3.5" fill="#8B1230" opacity="0.5"/>
+          <text x="170" y="365" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7" fill="#B89B58" letter-spacing="0.2em" opacity="0.6">EST. 2026 &middot; AHMEDABAD</text>
 
-            <!-- ── Horizontal gold line separator ── -->
-            <line x1="95" y1="270" x2="265" y2="270" stroke="#D4940A" stroke-width="0.8" opacity="0.5"/>
-            <rect x="170" y="267" width="20" height="6" rx="3" fill="var(--ivory)" stroke="#D4940A" stroke-width="0.6"/>
-            <circle cx="180" cy="270" r="1.5" fill="#D4940A"/>
-
-            <!-- ── Banner ribbon ── -->
-            <path d="M85 286 L110 280 L250 280 L275 286 L270 292 L250 288 L110 288 L90 292 Z" fill="url(#bannerGrad)"/>
-            <path d="M85 286 L90 292 L110 288 L110 280 Z" fill="#6A0E25"/>
-            <path d="M275 286 L270 292 L250 288 L250 280 Z" fill="#6A0E25"/>
-            <text x="180" y="287" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="9.5" fill="#F5D470" letter-spacing="0.25em" font-weight="700">PLUM CAKE</text>
-
-            <!-- ── Main brand name ── -->
-            <text x="180" y="315" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="22" fill="#A8183A" letter-spacing="0.06em" font-weight="800">THE OLD PLUM HOUSE</text>
-
-            <!-- Gold decorative line -->
-            <line x1="100" y1="325" x2="260" y2="325" stroke="#D4940A" stroke-width="0.8" opacity="0.5"/>
-            <path d="M170 322 L180 318 L190 322" stroke="#D4940A" stroke-width="0.8" fill="none" opacity="0.6"/>
-
-            <!-- Tagline -->
-            <text x="180" y="344" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="12.5" font-style="italic" fill="#4A2520" letter-spacing="0.05em">A Little Taste of Tradition</text>
-
-            <!-- Est. line -->
-            <text x="180" y="365" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="8" fill="#D4940A" letter-spacing="0.25em" opacity="0.7">&#8212;  EST. 2026  &#8212;</text>
-
-            <!-- ── Handcrafted badge ── -->
-            <text x="180" y="383" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7" fill="#7A5A50" letter-spacing="0.2em">HANDCRAFTED IN SMALL BATCHES</text>
-
-            <!-- Bottom decorative dots -->
-            <circle cx="167" cy="394" r="1.2" fill="#D4940A" opacity="0.4"/>
-            <circle cx="180" cy="394" r="1.5" fill="#D4940A" opacity="0.5"/>
-            <circle cx="193" cy="394" r="1.2" fill="#D4940A" opacity="0.4"/>
-
-          </svg>
-          <span class="frame-label">Primary crest on ivory</span>
-        </div>
+          <!-- Bottom corner flourishes -->
+          <path d="M80 340 Q72 338, 70 344 Q68 350, 76 348" stroke="#B89B58" stroke-width="0.6" fill="none" opacity="0.3"/>
+          <path d="M260 340 Q268 338, 270 344 Q272 350, 264 348" stroke="#B89B58" stroke-width="0.6" fill="none" opacity="0.3"/>
+        </svg>
       </div>
+    </div>
+    <p class="frame-cap">Primary logo on antique cream</p>
 
-      <!-- Dark variant -->
+    <!-- Dark variant -->
+    <div class="logo-pair">
       <div>
-        <div class="logo-frame logo-frame--dark" style="min-height:260px;">
-          <svg viewBox="0 0 360 420" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M180 12 C240 12, 310 30, 320 80 L320 200 C320 280, 270 350, 180 388 C90 350, 40 280, 40 200 L40 80 C50 30, 120 12, 180 12 Z" fill="none" stroke="#E8506A" stroke-width="2.5" opacity="0.7"/>
-            <path d="M180 20 C235 20, 302 36, 312 82 L312 198 C312 274, 264 342, 180 378 C96 342, 48 274, 48 198 L48 82 C58 36, 125 20, 180 20 Z" fill="none" stroke="#EDAA12" stroke-width="1" opacity="0.5"/>
-            <path d="M180 26 C232 26, 296 40, 306 84 L306 196 C306 270, 260 336, 180 370 C100 336, 54 270, 54 196 L54 84 C64 40, 128 26, 180 26 Z" fill="#1E0F08" opacity="0.9"/>
-            <path d="M80 55 C75 48, 68 50, 72 58 C65 52, 58 56, 65 63 Q70 68, 78 62 Q84 58, 80 55 Z" fill="#EDAA12" opacity="0.4"/>
-            <path d="M280 55 C285 48, 292 50, 288 58 C295 52, 302 56, 295 63 Q290 68, 282 62 Q276 58, 280 55 Z" fill="#EDAA12" opacity="0.4"/>
-            <path d="M155 42 L160 30 L168 38 L175 24 L180 35 L185 24 L192 38 L200 30 L205 42 Z" fill="#EDAA12" stroke="#D4940A" stroke-width="0.6"/>
-            <circle cx="175" cy="24" r="2" fill="#E8506A"/>
-            <circle cx="180" cy="22" r="2.5" fill="#E8506A"/>
-            <circle cx="185" cy="24" r="2" fill="#E8506A"/>
-            <path d="M158 42 L202 42" stroke="#D4940A" stroke-width="1"/>
-            <text x="180" y="72" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="9" fill="#E8506A" letter-spacing="0.28em" font-weight="600" opacity="0.8">SIGNATURE VICTORIAN</text>
-            <g opacity="0.5">
-              <ellipse cx="82" cy="108" rx="5" ry="8" fill="#4A8B5C" opacity="0.5" transform="rotate(-20 82 108)"/>
-              <ellipse cx="85" cy="118" rx="5" ry="8" fill="#4A8B5C" opacity="0.4" transform="rotate(-10 85 118)"/>
-              <ellipse cx="82" cy="130" rx="5" ry="7.5" fill="#4A8B5C" opacity="0.4" transform="rotate(-5 82 130)"/>
-              <ellipse cx="87" cy="152" rx="5" ry="7" fill="#4A8B5C" opacity="0.35" transform="rotate(10 87 152)"/>
-              <ellipse cx="278" cy="108" rx="5" ry="8" fill="#4A8B5C" opacity="0.5" transform="rotate(20 278 108)"/>
-              <ellipse cx="275" cy="118" rx="5" ry="8" fill="#4A8B5C" opacity="0.4" transform="rotate(10 275 118)"/>
-              <ellipse cx="278" cy="130" rx="5" ry="7.5" fill="#4A8B5C" opacity="0.4" transform="rotate(5 278 130)"/>
-              <ellipse cx="273" cy="152" rx="5" ry="7" fill="#4A8B5C" opacity="0.35" transform="rotate(-10 273 152)"/>
-            </g>
-            <rect x="120" y="240" width="120" height="5" rx="2.5" fill="#EDAA12" opacity="0.5"/>
-            <rect x="135" y="245" width="90" height="4" rx="2" fill="#D4940A" opacity="0.35"/>
-            <path d="M115 240 Q115 190, 130 165 Q142 145, 165 132 Q175 127, 180 125 Q185 127, 195 132 Q218 145, 230 165 Q245 190, 245 240 Z" fill="#E8506A" opacity="0.6"/>
-            <path d="M135 160 Q145 140, 165 133 Q175 128, 180 126 Q185 128, 195 133 Q215 140, 225 160 Q215 148, 195 140 Q180 135, 165 140 Q145 148, 135 160 Z" fill="#EDAA12" opacity="0.25"/>
-            <ellipse cx="180" cy="195" rx="14" ry="15" fill="#F06878" opacity="0.7"/>
-            <ellipse cx="152" cy="200" rx="12" ry="13" fill="#E8506A" opacity="0.65"/>
-            <ellipse cx="208" cy="198" rx="11.5" ry="12.5" fill="#E8506A" opacity="0.65"/>
-            <ellipse cx="163" cy="222" rx="10" ry="11" fill="#F06878" opacity="0.5"/>
-            <ellipse cx="198" cy="220" rx="10.5" ry="11.5" fill="#F06878" opacity="0.5"/>
-            <path d="M85 286 L110 280 L250 280 L275 286 L270 292 L250 288 L110 288 L90 292 Z" fill="#E8506A" opacity="0.7"/>
-            <text x="180" y="287" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="9.5" fill="#F5D470" letter-spacing="0.25em" font-weight="700">PLUM CAKE</text>
-            <text x="180" y="315" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="22" fill="#F5ECD7" letter-spacing="0.06em" font-weight="800">THE OLD PLUM HOUSE</text>
-            <line x1="100" y1="325" x2="260" y2="325" stroke="#EDAA12" stroke-width="0.8" opacity="0.35"/>
-            <text x="180" y="344" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="12.5" font-style="italic" fill="#D4B8A8" letter-spacing="0.05em">A Little Taste of Tradition</text>
-            <text x="180" y="365" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="8" fill="#EDAA12" letter-spacing="0.25em" opacity="0.6">&#8212;  EST. 2026  &#8212;</text>
-            <text x="180" y="383" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7" fill="#A08878" letter-spacing="0.2em">HANDCRAFTED IN SMALL BATCHES</text>
+        <div class="logo-sm" style="background:#3D1F33;">
+          <svg viewBox="60 100 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="170" y="155" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="11" fill="#F2E8D5" letter-spacing="0.12em" font-weight="700">THE OLD</text>
+            <text x="170" y="188" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="30" fill="#F2E8D5" letter-spacing="0.04em" font-weight="800">PLUM</text>
+            <text x="170" y="212" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="16" fill="#F2E8D5" letter-spacing="0.1em" font-weight="700">HOUSE</text>
+            <line x1="110" y1="222" x2="230" y2="222" stroke="#C9AD6A" stroke-width="0.6" opacity="0.4"/>
+            <text x="170" y="240" text-anchor="middle" font-family="'Cormorant', Georgia, serif" font-size="12" font-style="italic" fill="#C9AD6A" letter-spacing="0.03em" font-weight="300">A Little Taste of Tradition.</text>
+            <ellipse cx="170" cy="268" rx="9" ry="10" fill="#5C2D4A"/>
+            <ellipse cx="155" cy="272" rx="7" ry="8" fill="#8A5A72" opacity="0.6"/>
+            <ellipse cx="185" cy="271" rx="7.5" ry="8.5" fill="#8A5A72" opacity="0.6"/>
+            <path d="M168 259 Q170 255, 172 259" stroke="#4A7A4C" stroke-width="0.8" fill="none"/>
+            <path d="M170 256 Q173 254, 175 258" stroke="#4A7A4C" stroke-width="1" fill="#6B9A6C" fill-opacity="0.4"/>
+            <text x="170" y="298" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="6" fill="#C9AD6A" letter-spacing="0.2em" opacity="0.6">EST. 2026</text>
           </svg>
-          <span class="frame-label">On dark</span>
         </div>
+        <p class="frame-cap">On deep plum</p>
       </div>
-
-      <!-- Ruby background -->
       <div>
-        <div class="logo-frame logo-frame--ruby" style="min-height:260px;">
-          <svg viewBox="90 255 180 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text x="180" y="287" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="9.5" fill="#F5D470" letter-spacing="0.25em" font-weight="700">SIGNATURE VICTORIAN PLUM CAKE</text>
-            <line x1="100" y1="295" x2="260" y2="295" stroke="#F5D470" stroke-width="0.6" opacity="0.3"/>
-            <text x="180" y="318" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="20" fill="#FFFDF5" letter-spacing="0.06em" font-weight="800">THE OLD PLUM HOUSE</text>
-            <line x1="110" y1="328" x2="250" y2="328" stroke="#F5D470" stroke-width="0.6" opacity="0.3"/>
-            <text x="180" y="348" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="12" font-style="italic" fill="#F5D470" letter-spacing="0.05em">A Little Taste of Tradition</text>
-            <text x="180" y="372" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="7.5" fill="#FFFDF5" letter-spacing="0.2em" opacity="0.6">HANDCRAFTED IN SMALL BATCHES &middot; EST. 2026</text>
+        <div class="logo-sm" style="background:#2D4A2E;">
+          <svg viewBox="60 100 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="170" y="155" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="11" fill="#F2E8D5" letter-spacing="0.12em" font-weight="700">THE OLD</text>
+            <text x="170" y="188" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="30" fill="#F2E8D5" letter-spacing="0.04em" font-weight="800">PLUM</text>
+            <text x="170" y="212" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="16" fill="#F2E8D5" letter-spacing="0.1em" font-weight="700">HOUSE</text>
+            <line x1="110" y1="222" x2="230" y2="222" stroke="#C9AD6A" stroke-width="0.6" opacity="0.4"/>
+            <text x="170" y="240" text-anchor="middle" font-family="'Cormorant', Georgia, serif" font-size="12" font-style="italic" fill="#C9AD6A" letter-spacing="0.03em" font-weight="300">A Little Taste of Tradition.</text>
+            <ellipse cx="170" cy="268" rx="9" ry="10" fill="#3D1F33"/>
+            <ellipse cx="155" cy="272" rx="7" ry="8" fill="#5C2D4A" opacity="0.7"/>
+            <ellipse cx="185" cy="271" rx="7.5" ry="8.5" fill="#5C2D4A" opacity="0.7"/>
+            <path d="M170 256 Q173 254, 175 258" stroke="#6B9A6C" stroke-width="1" fill="#6B9A6C" fill-opacity="0.4"/>
+            <text x="170" y="298" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="6" fill="#C9AD6A" letter-spacing="0.2em" opacity="0.6">EST. 2026</text>
           </svg>
-          <span class="frame-label">Wordmark on ruby</span>
         </div>
+        <p class="frame-cap">On forest green</p>
       </div>
-
     </div>
 
-    <!-- Icon marks -->
-    <p class="section-label" style="margin-top:2.5rem;">Icon Mark &mdash; Profile Pictures &amp; Favicons</p>
+    <!-- Profile icons -->
+    <p class="sec-label" style="margin-top:2rem;">Icon Mark</p>
     <div class="icon-strip">
       <div class="icon-box">
-        <div class="icon-ring" style="background:#FFFDF5; border:2px solid #A8183A;">
+        <div class="icon-ring" style="background:#F2E8D5; border:2px solid #3D1F33;">
           <svg viewBox="0 0 80 80" fill="none">
-            <path d="M22 60 Q22 38, 30 27 Q36 19, 40 16 Q44 19, 50 27 Q58 38, 58 60 Z" fill="#A8183A"/>
-            <path d="M30 30 Q36 22, 40 19 Q44 22, 50 30 Q44 26, 40 24 Q36 26, 30 30 Z" fill="#EDAA12" opacity="0.4"/>
-            <ellipse cx="40" cy="44" rx="7" ry="7.5" fill="#8B1230"/>
-            <ellipse cx="40" cy="44" rx="7" ry="7.5" fill="#C4253F" opacity="0.25"/>
-            <ellipse cx="32" cy="47" rx="5.5" ry="6" fill="#A8183A" opacity="0.9"/>
-            <ellipse cx="48" cy="46" rx="5.5" ry="6" fill="#A8183A" opacity="0.9"/>
-            <ellipse cx="36" cy="55" rx="5" ry="5.5" fill="#8B1230" opacity="0.8"/>
-            <ellipse cx="44" cy="54" rx="5" ry="5.5" fill="#8B1230" opacity="0.8"/>
-            <path d="M40 36 Q42 33, 44 36" stroke="#2D5A3A" stroke-width="1" fill="#4A8B5C" fill-opacity="0.6"/>
-            <rect x="25" y="60" width="30" height="3" rx="1.5" fill="#D4940A" opacity="0.6"/>
+            <ellipse cx="40" cy="38" rx="12" ry="14" fill="#3D1F33"/>
+            <ellipse cx="38" cy="35" rx="4.5" ry="3" fill="#5C2D4A" opacity="0.3"/>
+            <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#5C2D4A" opacity="0.8"/>
+            <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#5C2D4A" opacity="0.8"/>
+            <path d="M38 25 Q40 20, 42 25" stroke="#2D4A2E" stroke-width="1" fill="none"/>
+            <path d="M40 22 Q44 19, 46 24" stroke="#2D4A2E" stroke-width="1.2" fill="#4A7A4C" fill-opacity="0.6"/>
+            <path d="M40 22 Q36 20, 34 25" stroke="#2D4A2E" stroke-width="1" fill="#2D4A2E" fill-opacity="0.45"/>
+            <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="5.5" fill="#3D1F33" letter-spacing="0.08em" font-weight="700">OPH</text>
           </svg>
         </div>
-        <span>Ivory</span>
+        <span>Cream</span>
       </div>
       <div class="icon-box">
-        <div class="icon-ring" style="background:#A8183A;">
+        <div class="icon-ring" style="background:#3D1F33;">
           <svg viewBox="0 0 80 80" fill="none">
-            <path d="M22 60 Q22 38, 30 27 Q36 19, 40 16 Q44 19, 50 27 Q58 38, 58 60 Z" fill="#FFFDF5" opacity="0.9"/>
-            <path d="M30 30 Q36 22, 40 19 Q44 22, 50 30 Q44 26, 40 24 Q36 26, 30 30 Z" fill="#F5D470" opacity="0.4"/>
-            <ellipse cx="40" cy="44" rx="7" ry="7.5" fill="#A8183A" opacity="0.6"/>
-            <ellipse cx="32" cy="47" rx="5.5" ry="6" fill="#8B1230" opacity="0.5"/>
-            <ellipse cx="48" cy="46" rx="5.5" ry="6" fill="#8B1230" opacity="0.5"/>
-            <ellipse cx="36" cy="55" rx="5" ry="5.5" fill="#A8183A" opacity="0.4"/>
-            <ellipse cx="44" cy="54" rx="5" ry="5.5" fill="#A8183A" opacity="0.4"/>
-            <rect x="25" y="60" width="30" height="3" rx="1.5" fill="#F5D470" opacity="0.5"/>
+            <ellipse cx="40" cy="38" rx="12" ry="14" fill="#F2E8D5" opacity="0.85"/>
+            <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#E5D8C0" opacity="0.7"/>
+            <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#E5D8C0" opacity="0.7"/>
+            <path d="M40 22 Q44 19, 46 24" stroke="#6B9A6C" stroke-width="1.2" fill="#6B9A6C" fill-opacity="0.5"/>
+            <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="5.5" fill="#C9AD6A" letter-spacing="0.08em" font-weight="700">OPH</text>
           </svg>
         </div>
-        <span>Ruby</span>
+        <span>Plum</span>
       </div>
       <div class="icon-box">
-        <div class="icon-ring" style="background:#1E0F08;">
+        <div class="icon-ring" style="background:#2D4A2E;">
           <svg viewBox="0 0 80 80" fill="none">
-            <path d="M22 60 Q22 38, 30 27 Q36 19, 40 16 Q44 19, 50 27 Q58 38, 58 60 Z" fill="#E8506A" opacity="0.7"/>
-            <path d="M30 30 Q36 22, 40 19 Q44 22, 50 30 Q44 26, 40 24 Q36 26, 30 30 Z" fill="#EDAA12" opacity="0.3"/>
-            <ellipse cx="40" cy="44" rx="7" ry="7.5" fill="#F06878" opacity="0.5"/>
-            <ellipse cx="32" cy="47" rx="5.5" ry="6" fill="#E8506A" opacity="0.5"/>
-            <ellipse cx="48" cy="46" rx="5.5" ry="6" fill="#E8506A" opacity="0.5"/>
-            <rect x="25" y="60" width="30" height="3" rx="1.5" fill="#EDAA12" opacity="0.45"/>
+            <ellipse cx="40" cy="38" rx="12" ry="14" fill="#F2E8D5" opacity="0.8"/>
+            <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#E5D8C0" opacity="0.65"/>
+            <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#E5D8C0" opacity="0.65"/>
+            <path d="M40 22 Q44 19, 46 24" stroke="#C9AD6A" stroke-width="1.2" fill="#C9AD6A" fill-opacity="0.4"/>
+            <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="5.5" fill="#C9AD6A" letter-spacing="0.08em" font-weight="700">OPH</text>
           </svg>
         </div>
-        <span>Dark</span>
+        <span>Forest</span>
       </div>
       <div class="icon-box">
         <div class="icon-ring" style="background:#25D366;">
           <svg viewBox="0 0 80 80" fill="none">
-            <path d="M22 60 Q22 38, 30 27 Q36 19, 40 16 Q44 19, 50 27 Q58 38, 58 60 Z" fill="#fff" opacity="0.92"/>
-            <path d="M30 30 Q36 22, 40 19 Q44 22, 50 30 Q44 26, 40 24 Q36 26, 30 30 Z" fill="#D4940A" opacity="0.4"/>
-            <ellipse cx="40" cy="44" rx="7" ry="7.5" fill="#A8183A" opacity="0.5"/>
-            <ellipse cx="32" cy="47" rx="5.5" ry="6" fill="#8B1230" opacity="0.4"/>
-            <ellipse cx="48" cy="46" rx="5.5" ry="6" fill="#8B1230" opacity="0.4"/>
-            <rect x="25" y="60" width="30" height="3" rx="1.5" fill="#D4940A" opacity="0.5"/>
+            <ellipse cx="40" cy="38" rx="12" ry="14" fill="#fff" opacity="0.9"/>
+            <ellipse cx="30" cy="42" rx="9" ry="10.5" fill="#fff" opacity="0.7"/>
+            <ellipse cx="50" cy="41" rx="9.5" ry="11" fill="#fff" opacity="0.7"/>
+            <path d="M40 22 Q44 19, 46 24" stroke="#2D4A2E" stroke-width="1.2" fill="#2D4A2E" fill-opacity="0.5"/>
+            <text x="40" y="68" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="5.5" fill="#3D1F33" letter-spacing="0.08em" font-weight="700">OPH</text>
           </svg>
         </div>
         <span>WhatsApp</span>
@@ -733,151 +725,189 @@
     </div>
   </section>
 
-  <div class="sep"><i></i><b></b><i></i></div>
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
 
   <!-- ═══════ COLOURS ═══════ -->
-  <section class="section">
-    <p class="section-label">Colour Palette</p>
-    <div class="palette-grid">
-      <div class="swatch"><div class="swatch-top" style="background:#A8183A;"></div><div class="swatch-bot"><p class="swatch-name">Ruby</p><p class="swatch-hex">#A8183A</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#C4253F;"></div><div class="swatch-bot"><p class="swatch-name">Ruby Bright</p><p class="swatch-hex">#C4253F</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#D4940A;"></div><div class="swatch-bot"><p class="swatch-name">Honey Gold</p><p class="swatch-hex">#D4940A</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#EDAA12;"></div><div class="swatch-bot"><p class="swatch-name">Bright Gold</p><p class="swatch-hex">#EDAA12</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#2D5A3A;"></div><div class="swatch-bot"><p class="swatch-name">Forest</p><p class="swatch-hex">#2D5A3A</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#1E0F08;"></div><div class="swatch-bot"><p class="swatch-name">Espresso</p><p class="swatch-hex">#1E0F08</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#FFFDF5;"></div><div class="swatch-bot"><p class="swatch-name">Ivory</p><p class="swatch-hex">#FFFDF5</p></div></div>
-      <div class="swatch"><div class="swatch-top" style="background:#F5ECD7;"></div><div class="swatch-bot"><p class="swatch-name">Champagne</p><p class="swatch-hex">#F5ECD7</p></div></div>
+  <section class="sec">
+    <p class="sec-label">Our Colours</p>
+    <div class="pal">
+      <div class="sw"><div class="sw-top" style="background:#3D1F33;"></div><div class="sw-bot"><p class="sw-name">Deep Plum</p><p class="sw-hex">#3D1F33</p></div></div>
+      <div class="sw"><div class="sw-top" style="background:#F2E8D5;"></div><div class="sw-bot"><p class="sw-name">Antique Cream</p><p class="sw-hex">#F2E8D5</p></div></div>
+      <div class="sw"><div class="sw-top" style="background:#B89B58;"></div><div class="sw-bot"><p class="sw-name">Muted Gold</p><p class="sw-hex">#B89B58</p></div></div>
+      <div class="sw"><div class="sw-top" style="background:#2D4A2E;"></div><div class="sw-bot"><p class="sw-name">Forest Green</p><p class="sw-hex">#2D4A2E</p></div></div>
     </div>
 
-    <div class="info-box">
+    <div class="note-box">
       <p class="type-role">Usage</p>
-      <p><strong>Ruby</strong> is the brand primary — headlines, the crest outline, key accents. It grabs attention on any feed.</p>
-      <p><strong>Honey Gold</strong> is the luxury signal — crown, cake stand, labels, decorative lines. Use it for premium emphasis.</p>
-      <p><strong>Forest</strong> is for leaf details and freshness cues only. Never as a primary.</p>
-      <p><strong>Ivory / Champagne</strong> are the light backgrounds. <strong>Espresso</strong> is body text.</p>
-      <p>WhatsApp green (#25D366) appears only on the order button.</p>
+      <p><strong>Deep Plum</strong> &mdash; brand name, headings, the logo frame, dark backgrounds for festive/premium pieces.</p>
+      <p><strong>Antique Cream</strong> &mdash; primary background, packaging fill, the warm base of everything.</p>
+      <p><strong>Muted Gold</strong> &mdash; ornamental lines, labels, product text, premium accents. Never loud.</p>
+      <p><strong>Forest Green</strong> &mdash; botanical illustrations, leaves, secondary backgrounds. The heritage/nature signal.</p>
     </div>
   </section>
 
-  <div class="sep"><i></i><b></b><i></i></div>
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
 
   <!-- ═══════ TYPOGRAPHY ═══════ -->
-  <section class="section">
-    <p class="section-label">Typography</p>
+  <section class="sec">
+    <p class="sec-label">Our Typography</p>
 
     <div class="type-card">
-      <p class="type-role">Display &mdash; Playfair Display</p>
-      <p class="type-big">The Old Plum House</p>
-      <p class="type-meta">Brand name, headlines, section titles, prices. Weights: 700&ndash;900 for impact, 400 italic for elegance.</p>
+      <p class="type-role">Main Logo Font &mdash; Playfair Display</p>
+      <p class="type-big">THE OLD<br>PLUM HOUSE</p>
+      <p class="type-meta">Brand name, headlines, product names, labels. Weights: 700&ndash;800, always uppercase for the brand name.</p>
     </div>
 
     <div class="type-card">
-      <p class="type-role">Body &mdash; Cormorant Garamond</p>
-      <p class="type-body">A rich, dark fruit cake made with the finest plums, aged spices, and a generous measure of tradition. Each cake is hand-mixed, slow-baked, and matured to develop deep, complex flavours that honour the original Victorian recipe.</p>
-      <p class="type-meta">Descriptions, story text, taglines. Warm and inviting at reading size.</p>
+      <p class="type-role">Tagline Font &mdash; Cormorant (Italic)</p>
+      <p class="type-tagline">A Little Taste of Tradition.</p>
+      <p class="type-meta">Taglines, supporting lines, gift tag messages. Weight 300&ndash;400 italic. Elegant and light.</p>
     </div>
 
     <div class="type-card">
-      <p class="type-role">Utility &mdash; Libre Caslon Text</p>
-      <p class="type-util">500g &middot; Serves 6 &middot; 3-day preparation &middot; &#8377;1,200 &middot; +91 98765 43210</p>
-      <p class="type-meta">Weights, prices, phone numbers, metadata. Slightly sturdier than the body text for small sizes.</p>
+      <p class="type-role">Product Font &mdash; Playfair Display (Spaced)</p>
+      <p class="type-product">Signature Victorian Plum Cake</p>
+      <p class="type-meta">Product names in uppercase with wide letter-spacing. Smaller size than headlines.</p>
+    </div>
+
+    <div class="type-card">
+      <p class="type-role">Supporting / Body &mdash; EB Garamond</p>
+      <p class="type-body">At The Old Plum House, we believe that some traditions are worth keeping. Inspired by timeless recipes and the warmth of old-fashioned kitchens, we bake our plum cakes with care, using the finest ingredients and a touch of love.</p>
+      <p class="type-meta">Body text, descriptions, story copy. Clean, warm, and readable.</p>
+    </div>
+
+    <div class="type-card">
+      <p class="type-role">Supporting Italic &mdash; Cormorant</p>
+      <p class="type-support">Handcrafted in Small Batches. &middot; Rich &bull; Fruity &bull; Traditionally Spiced</p>
+      <p class="type-meta">Sub-descriptions, ingredient lines, descriptive bullets.</p>
     </div>
   </section>
 
-  <div class="sep"><i></i><b></b><i></i></div>
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
 
-  <!-- ═══════ TAGLINES ═══════ -->
-  <section class="section">
-    <p class="section-label">Taglines &amp; Copy Lines</p>
+  <!-- ═══════ CHRISTMAS COLLECTION ═══════ -->
+  <section class="sec">
+    <p class="sec-label">Christmas Collection 2026</p>
+    <div class="prod-grid">
+      <div class="prod-card">
+        <div>
+          <p class="prod-name">The Signature Victorian Plum Cake</p>
+          <p class="prod-desc">Handcrafted in Small Batches</p>
+        </div>
+        <span class="prod-tag">Signature</span>
+      </div>
+      <div class="prod-card">
+        <div>
+          <p class="prod-name">Classic Christmas Plum Cake</p>
+          <p class="prod-desc">Rich &bull; Fruity &bull; Traditionally Spiced</p>
+        </div>
+        <span class="prod-tag">Festive</span>
+      </div>
+      <div class="prod-card">
+        <div>
+          <p class="prod-name">The Festive Reserve</p>
+          <p class="prod-desc">Premium Fruit &amp; Nut Christmas Cake</p>
+        </div>
+        <span class="prod-tag">Premium</span>
+      </div>
+      <div class="prod-card">
+        <div>
+          <p class="prod-name">The Old Plum House Gift Box</p>
+          <p class="prod-desc">Made for Gifting &amp; Sharing</p>
+        </div>
+        <span class="prod-tag">Gift</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
+
+  <!-- ═══════ COPY LINES ═══════ -->
+  <section class="sec">
+    <p class="sec-label">Taglines &amp; Copy</p>
     <div class="tag-list">
-      <div class="tag-row"><span class="tag-text">A Little Taste of Tradition</span><span class="tag-use">Primary</span></div>
-      <div class="tag-row"><span class="tag-text">Handcrafted in Small Batches</span><span class="tag-use">Subtitle</span></div>
-      <div class="tag-row"><span class="tag-text">Baked the Way It Was Always Done</span><span class="tag-use">Story</span></div>
-      <div class="tag-row"><span class="tag-text">No Shortcuts. No Compromises.</span><span class="tag-use">Reel Hook</span></div>
-      <div class="tag-row"><span class="tag-text">Fresh-Baked. Made to Order.</span><span class="tag-use">CTA</span></div>
-      <div class="tag-row"><span class="tag-text">From Our Kitchen to Your Table</span><span class="tag-use">Delivery</span></div>
-      <div class="tag-row"><span class="tag-text">One Bite and You'll Know</span><span class="tag-use">Viral Hook</span></div>
+      <div class="tag-row"><span class="tag-text">A Little Taste of Tradition.</span><span class="tag-use">Primary</span></div>
+      <div class="tag-row"><span class="tag-text">Handcrafted in Small Batches.</span><span class="tag-use">Subtitle</span></div>
+      <div class="tag-row"><span class="tag-text">Rich &bull; Fruity &bull; Traditionally Spiced</span><span class="tag-use">Product</span></div>
+      <div class="tag-row"><span class="tag-text">Baked especially for you.</span><span class="tag-use">Gift Tag</span></div>
+      <div class="tag-row"><span class="tag-text">Some traditions are meant to be shared.</span><span class="tag-use">Gift Tag</span></div>
+      <div class="tag-row"><span class="tag-text">Because every cake carries a story, and every slice brings people closer.</span><span class="tag-use">Story</span></div>
+    </div>
+
+    <div class="gift-tags">
+      <div class="gift-tag">Baked especially for you.</div>
+      <div class="gift-tag">Some traditions are meant to be shared.</div>
     </div>
   </section>
 
-  <div class="sep"><i></i><b></b><i></i></div>
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
 
   <!-- ═══════ VOICE ═══════ -->
-  <section class="section">
-    <p class="section-label">Brand Voice</p>
-    <div class="voice-row">
-      <div class="voice-item">
-        <p class="voice-name">Confident</p>
-        <p class="voice-copy">We know our cake is exceptional. No need to oversell it.</p>
-      </div>
-      <div class="voice-item">
-        <p class="voice-name">Warm</p>
-        <p class="voice-copy">Like the person who baked your cake is handing it to you.</p>
-      </div>
-      <div class="voice-item">
-        <p class="voice-name">Premium</p>
-        <p class="voice-copy">Small-batch, real ingredients, no shortcuts. The language matches the quality.</p>
-      </div>
-      <div class="voice-item">
-        <p class="voice-name">Bold</p>
-        <p class="voice-copy">Short, punchy lines for reels. Long, warm storytelling for captions.</p>
-      </div>
+  <section class="sec">
+    <p class="sec-label">Brand Pillars</p>
+    <div class="voice-grid">
+      <div class="voice-pill"><p class="voice-word">Handcrafted</p></div>
+      <div class="voice-pill"><p class="voice-word">Traditional</p></div>
+      <div class="voice-pill"><p class="voice-word">Personal</p></div>
     </div>
 
-    <div class="info-box">
-      <p class="type-role">Tone Examples</p>
-      <p><strong>Instagram caption:</strong> "Three days of slow baking. One cake worth waiting for. Order yours on WhatsApp."</p>
-      <p><strong>Reel text overlay:</strong> "REAL BUTTER. REAL PLUMS. NO PRESERVATIVES."</p>
-      <p><strong>WhatsApp reply:</strong> "Thank you for your order! Your cake will be ready by Thursday. We'll message you when it's out of the oven."</p>
-      <p><strong>YouTube Short hook:</strong> "This is what a cake looks like when you don't rush it."</p>
+    <div class="note-box">
+      <p class="type-role">Our Story (Template)</p>
+      <p style="font-family:'EB Garamond',Georgia,serif; font-size:0.95rem; color:var(--text); line-height:1.7;">
+        At The Old Plum House, we believe that some traditions are worth keeping. Inspired by timeless recipes and the warmth of old-fashioned kitchens, we bake our plum cakes with care, using the finest ingredients and a touch of love &mdash; because every cake carries a story, and every slice brings people closer.
+      </p>
+      <p style="font-family:'Cormorant',Georgia,serif; font-style:italic; font-size:1rem; color:var(--text-mid); margin-top:0.5rem;">A Little Taste of Tradition.</p>
     </div>
   </section>
 
-  <div class="sep"><i></i><b></b><i></i></div>
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
 
   <!-- ═══════ SOCIAL ═══════ -->
-  <section class="section">
-    <p class="section-label">Social Media Profiles</p>
+  <section class="sec">
+    <p class="sec-label">Social Profiles</p>
 
     <div class="social-card">
       <p class="social-where">Instagram Bio</p>
-      <p class="social-body">The Old Plum House
-A Little Taste of Tradition ✨
-Signature Victorian Plum Cake
-Handcrafted in Small Batches
-📍 Ahmedabad | Order 👇</p>
-      <p class="social-note">Suggested handle: @theoldplumhouse</p>
+      <p class="social-body">The Old Plum House 🍰
+A Little Taste of Tradition.
+✨ Signature Victorian Plum Cake
+🎄 Christmas &amp; Festive Bakes
+🤲 Handcrafted in Small Batches
+📍 Ahmedabad
+📩 Pre-orders via DM / WhatsApp 👇</p>
+      <p class="social-note">Handle: @theoldplumhouse</p>
     </div>
 
     <div class="social-card">
       <p class="social-where">YouTube Channel</p>
-      <p class="social-body">The Old Plum House — Signature Victorian Plum Cake
+      <p class="social-body">The Old Plum House &mdash; A Little Taste of Tradition.
 
-Watch how we bake. Real butter, farm-fresh eggs, no preservatives. Just honest baking, the way it was always done.
+Signature Victorian Plum Cake, handcrafted in small batches. Watch how we bake, see what goes into every cake. Finest ingredients, traditional methods, baked with love in Ahmedabad.
 
-Ahmedabad | Order on WhatsApp: +91 XXXXX XXXXX</p>
+Christmas Collection 2026 now available. Order via WhatsApp.</p>
     </div>
 
     <div class="social-card">
       <p class="social-where">WhatsApp Business</p>
       <p class="social-body">The Old Plum House 🍰
 Signature Victorian Plum Cake
-Made to order. Delivery across Ahmedabad.
-3 days from order to your door.</p>
+Handcrafted in Small Batches.
+Christmas Collection 2026 now available.
+Delivery across Ahmedabad.</p>
     </div>
   </section>
 
-  <div class="sep"><i></i><b></b><i></i></div>
+  <div class="orn"><i></i><b>&#10047;</b><i></i></div>
 
-  <!-- ═══════ USAGE ═══════ -->
-  <section class="section">
-    <p class="section-label">Usage Guidelines</p>
-    <div class="info-box">
-      <p><strong>Logo clear space:</strong> Keep at least the width of the crown above all sides of the crest.</p>
-      <p><strong>Minimum size:</strong> Full crest needs 160px width minimum. Icon mark works down to 32px.</p>
-      <p><strong>Never:</strong> Stretch, rotate, recolour with non-brand colours, or place on a busy photo without a solid backing.</p>
-      <p><strong>Photography:</strong> Warm golden-hour light, rich saturated tones. Show the cake's texture and the deep plum colour. Wooden boards, linen cloth, warm backdrops. No clinical white, no cool blue tones.</p>
-      <p><strong>Video / Reels:</strong> Close-up of cutting the cake. Steam rising. Glaze dripping. The reveal of the plum interior. Overhead pours. Hands-in-frame. Always warm colour grading.</p>
+  <!-- ═══════ GUIDELINES ═══════ -->
+  <section class="sec">
+    <p class="sec-label">Visual Guidelines</p>
+    <div class="note-box">
+      <p><strong>Photography:</strong> Warm, moody, golden-hour tones. Dark wooden surfaces, linen cloth, candlelight, pine branches for Christmas. Rich, saturated cake close-ups. Always warm colour grading, never cool or clinical.</p>
+      <p><strong>Packaging:</strong> Kraft/cream base with botanical plum branch illustrations in deep plum and forest green. Gold foil accents for premium lines. Gift tags tied with plum-coloured ribbon.</p>
+      <p><strong>Illustrations:</strong> Hand-drawn botanical style &mdash; plum branches with leaves and fruit. Victorian scrollwork and ornamental frames. Always in the four-colour palette.</p>
+      <p><strong>Video / Reels:</strong> Close-ups of mixing, pouring, slicing. Steam, texture, the reveal of dried fruit inside. Overhead shots on wooden boards. Warm, nostalgic colour grading. Text overlays in Playfair Display.</p>
+      <p><strong>Logo clear space:</strong> One plum-width of empty space around the logo on all sides.</p>
     </div>
   </section>
 
