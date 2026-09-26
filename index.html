@@ -1132,8 +1132,8 @@ function getPayload(cardId){
   switch(cardId){
     case 't2i':{const m=v('f-t2i-model');return{type:'image',endpoint:EP.t2i[m]||m,body:{prompt:v('f-t2i-prompt'),model:m,width:+v('f-t2i-w')||1024,height:+v('f-t2i-h')||1024,num_images:+v('f-t2i-n')||1,aspect_ratio:v('f-t2i-ar')}};}
     case 'i2i':{const m=v('f-i2i-model');return{type:'image',endpoint:EP.i2i[m]||m,body:{prompt:v('f-i2i-prompt'),model:m,image_url:v('f-i2i-img'),num_images:+v('f-i2i-n')||1}};}
-    case 't2v':{const m=v('f-t2v-model');return{type:'video',endpoint:EP.t2v[m]||m,body:{prompt:v('f-t2v-prompt'),model:m,duration:+v('f-t2v-dur')||5,aspect_ratio:v('f-t2v-ar')}};}
-    case 'i2v':{const m=v('f-i2v-model');return{type:'video',endpoint:EP.i2v[m]||m,body:{prompt:v('f-i2v-prompt'),model:m,image_url:v('f-i2v-img'),duration:+v('f-i2v-dur')||5,aspect_ratio:v('f-i2v-ar')}};}
+    case 't2v':{const m=v('f-t2v-model');const dur=+v('f-t2v-dur');return{type:'video',endpoint:EP.t2v[m]||m,body:{prompt:v('f-t2v-prompt'),model:m,duration:[5,6,10].includes(dur)?dur:6,aspect_ratio:v('f-t2v-ar')}};}
+    case 'i2v':{const m=v('f-i2v-model');const dur=+v('f-i2v-dur');return{type:'video',endpoint:EP.i2v[m]||m,body:{prompt:v('f-i2v-prompt'),model:m,image_url:v('f-i2v-img'),duration:[5,6,10].includes(dur)?dur:6,aspect_ratio:v('f-i2v-ar')}};}
     case 'music':return{type:'audio',endpoint:'suno-create-music',body:{prompt:v('f-music-prompt'),title:v('f-music-title'),tags:v('f-music-tags'),make_instrumental:document.getElementById('f-music-inst')?.classList.contains('on')||false}};
     case 'sfx':return{type:'audio',endpoint:'mmaudio-v2/text-to-audio',body:{prompt:v('f-sfx-prompt'),duration:+v('f-sfx-dur')||10}};
     case 'upscale':return{type:'image',endpoint:'ai-image-upscale',body:{image_url:v('f-upscale-img')}};
@@ -1405,7 +1405,7 @@ function restoreFormState(){
   try{const d=JSON.parse(ls('mu_forms')||'{}');
   for(const[k,val]of Object.entries(d)){
     if(k.endsWith('_tog')){const el=document.getElementById(k.slice(0,-4));if(el&&val==='1')el.classList.add('on')}
-    else{const el=document.getElementById(k);if(el)el.value=val}
+    else{const el=document.getElementById(k);if(el){if(el.tagName==='SELECT'&&![...el.options].some(o=>o.value===val))continue;el.value=val}}
   }}catch(e){}
 }
 function saveResultState(cardId,type,urls,payload,cost){
