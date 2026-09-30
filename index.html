@@ -1,17 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#101214" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)">
-<meta name="description" content="AI-powered video production pipeline using Google Gemini">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>VideoForge</title>
+<title>VideoForge Muted</title>
+<meta name="color-scheme" content="dark light">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 
 <style>
@@ -573,7 +561,7 @@ body {
       <div class="topbar-actions">
         <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
         <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
-        <button class="btn-new" onclick="navigate('project')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Project</button>
+        <button class="btn-new" onclick="newProject()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Project</button>
       </div>
     </div>
     <div class="content" id="page-content"></div>
@@ -584,6 +572,8 @@ body {
 // ── State ──
 const state = {
   page: 'project',
+  projectId: null,
+  projectName: '',
   step: 'topic',
   topic: '',
   desc: '',
@@ -599,18 +589,121 @@ const state = {
   videoMeta: null,
   apiKey: null,
   apiModel: 'gemini-2.5-pro',
-  theme: 'dark',          // 'dark', 'light', 'system'
-  accent: 'amber',        // 'amber', 'copper', 'sage', 'slate', 'rose'
+  theme: 'dark',
+  accent: 'amber',
   stats: {
     reqToday: 0,
-    reqDayLimit: 14400,   // AI Studio Pro: Gemini 2.5 Pro RPD
+    reqDayLimit: 14400,
     tokensUsed: 0,
-    tpmLimit: 4_000_000,  // AI Studio Pro: 4M TPM
+    tpmLimit: 4_000_000,
     imagesGen: 0,
-    imagesDayLimit: 100,  // Imagen 3 via AI Studio Pro
+    imagesDayLimit: 100,
     rpm: 0,
-    rpmLimit: 1000,       // AI Studio Pro: Gemini 2.5 Pro RPM
+    rpmLimit: 1000,
   },
+}
+
+// ── Project persistence ──
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7) }
+
+function getProjects() {
+  try { return JSON.parse(localStorage.getItem('vf_projects') || '[]') } catch(e) { return [] }
+}
+
+function saveProjects(list) {
+  try { localStorage.setItem('vf_projects', JSON.stringify(list)) } catch(e) {}
+}
+
+function saveCurrentProject() {
+  if (!state.projectId) state.projectId = genId()
+  if (!state.projectName && state.topic) state.projectName = state.topic.slice(0, 60)
+  if (!state.projectName) return
+  var projects = getProjects()
+  var data = {
+    id: state.projectId,
+    name: state.projectName,
+    topic: state.topic,
+    desc: state.desc,
+    format: state.format,
+    style: state.style,
+    model: state.model,
+    step: state.step,
+    research: state.research,
+    storyboard: state.storyboard.map(function(s) { return { id:s.id, title:s.title, desc:s.desc, dur:s.dur, prompt:s.prompt, status:s.status } }),
+    characters: state.characters.map(function(c) { return { name:c.name, role:c.role, desc:c.desc, traits:c.traits, prompt:c.prompt } }),
+    videoMeta: state.videoMeta,
+    completed: Array.from(state.completed),
+    updatedAt: Date.now(),
+    createdAt: null,
+  }
+  var idx = projects.findIndex(function(p) { return p.id === state.projectId })
+  if (idx >= 0) { data.createdAt = projects[idx].createdAt; projects[idx] = data }
+  else { data.createdAt = Date.now(); projects.unshift(data) }
+  saveProjects(projects)
+}
+
+function loadProject(id) {
+  var projects = getProjects()
+  var p = projects.find(function(proj) { return proj.id === id })
+  if (!p) return
+  state.projectId = p.id
+  state.projectName = p.name || ''
+  state.topic = p.topic || ''
+  state.desc = p.desc || ''
+  state.format = p.format || 'short'
+  state.style = p.style || 'cinematic'
+  state.model = p.model || 'nano-banana-pro'
+  state.step = p.step || 'topic'
+  state.research = p.research || []
+  state.storyboard = (p.storyboard || []).map(function(s) { return { id:s.id, title:s.title, desc:s.desc, dur:s.dur, prompt:s.prompt, status:s.status||'pending' } })
+  state.characters = (p.characters || []).map(function(c) { return { name:c.name, role:c.role, desc:c.desc, traits:c.traits||[], prompt:c.prompt } })
+  state.videoMeta = p.videoMeta || null
+  state.completed = new Set(p.completed || [])
+  state.logs = []
+  addLog('info', 'Loaded project: ' + state.projectName)
+  state.page = 'project'
+  buildNav(); render()
+}
+
+function deleteProject(id) {
+  var projects = getProjects().filter(function(p) { return p.id !== id })
+  saveProjects(projects)
+  if (state.projectId === id) resetProject()
+  render()
+}
+
+function resetProject() {
+  state.projectId = null
+  state.projectName = ''
+  state.step = 'topic'
+  state.topic = ''
+  state.desc = ''
+  state.format = 'short'
+  state.style = 'cinematic'
+  state.model = 'nano-banana-pro'
+  state.research = []
+  state.storyboard = []
+  state.characters = []
+  state.videoMeta = null
+  state.completed = new Set()
+  state.logs = []
+}
+
+function newProject() {
+  resetProject()
+  state.page = 'project'
+  buildNav(); render()
+}
+
+function formatTimeAgo(ts) {
+  var diff = Date.now() - ts
+  var mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return mins + 'm ago'
+  var hrs = Math.floor(mins / 60)
+  if (hrs < 24) return hrs + 'h ago'
+  var days = Math.floor(hrs / 24)
+  return days + 'd ago'
 }
 
 const STEPS = [
@@ -1002,7 +1095,9 @@ function extractJSON(text) {
 async function startResearch() {
   if (!state.topic.trim() || state.generating) return
   if (!state.apiKey) { addLog('error', 'No API key configured. Connect your AI Studio key first.'); render(); return }
-  state.generating = true; state.step = 'research'; state.completed.add('topic'); render()
+  if (!state.projectName) state.projectName = state.topic.slice(0, 60)
+  state.generating = true; state.step = 'research'; state.completed.add('topic')
+  saveCurrentProject(); render()
   const rName = state.apiModel || 'Gemini 2.5 Pro'
   addLog('info', 'Starting research on "' + state.topic + '" via ' + rName + '...'); render()
 
@@ -1018,6 +1113,7 @@ async function startResearch() {
     if (!Array.isArray(research) || research.length === 0) throw new Error('Invalid research format returned')
     state.research = research
     state.completed.add('research'); state.generating = false
+    saveCurrentProject()
     addLog('success', 'Research phase complete — ' + research.length + ' sections generated'); render()
   } catch (err) {
     state.generating = false
@@ -1045,6 +1141,7 @@ async function genStoryboard() {
     if (!Array.isArray(scenes) || scenes.length === 0) throw new Error('Invalid storyboard format')
     state.storyboard = scenes.map(function(s) { return Object.assign({}, s, { status: 'pending', img: null }) })
     state.completed.add('storyboard'); state.generating = false
+    saveCurrentProject()
     addLog('success', 'Storyboard generated — ' + scenes.length + ' scenes'); render()
   } catch (err) {
     state.generating = false
@@ -1070,6 +1167,7 @@ async function genCharacters() {
     if (!Array.isArray(chars) || chars.length === 0) throw new Error('Invalid character data')
     state.characters = chars.map(function(c) { return Object.assign({}, c, { img: null }) })
     state.completed.add('characters'); state.generating = false
+    saveCurrentProject()
     addLog('success', chars.length + ' character sheets created'); render()
   } catch (err) {
     state.generating = false
@@ -1110,6 +1208,7 @@ async function genImages() {
       }
     }
     state.completed.add('images'); state.generating = false
+    saveCurrentProject()
     addLog('success', 'Image generation complete — ' + state.stats.imagesGen + ' images via Nano Banana Pro'); render()
   } catch (err) {
     state.generating = false
@@ -1142,6 +1241,7 @@ async function assembleVideo() {
     await delay(400)
 
     state.completed.add('video'); state.generating = false
+    saveCurrentProject()
     addLog('success', '✦ Video assembled — ' + (state.videoMeta.total_duration || '1:00') + ' ready for preview'); render()
   } catch (err) {
     state.generating = false
@@ -1154,10 +1254,10 @@ function render() {
   const el = document.getElementById('page-content')
   const title = document.getElementById('page-title')
 
-  const titles = { project:'✦ New Video Project', dashboard:'Dashboard', usage:'Usage & Statistics', projects:'My Projects', 'images-lib':'Generated Images', 'chars-lib':'Character Library', settings:'Settings' }
-  title.textContent = titles[state.page] || 'VideoForge'
+  var pageTitle = state.page === 'project' ? (state.projectName || '✦ New Video Project') : { dashboard:'Dashboard', usage:'Usage & Statistics', projects:'My Projects', 'images-lib':'Generated Images', 'chars-lib':'Character Library', settings:'Settings' }[state.page] || 'VideoForge'
+  title.textContent = pageTitle
   const mTitle = document.querySelector('#mobile-header h1')
-  if (mTitle) mTitle.innerHTML = '<span style="color:var(--amber)">✦</span> ' + (titles[state.page] || 'VideoForge')
+  if (mTitle) mTitle.innerHTML = '<span style="color:var(--amber)">✦</span> ' + pageTitle
 
   // Update sidebar account
   const sEmail = document.getElementById('s-email')
@@ -1171,7 +1271,7 @@ function render() {
         <div class="card"><div class="card-body">
           <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">Quick Start</h3>
           <p style="font-size:12.5px;color:var(--text-2);line-height:1.55;margin-bottom:16px">Create a full video from a topic. AI handles research, storyboarding, character design, image generation, and final assembly.</p>
-          <button class="btn-new" onclick="navigate('project')">+ New Project</button>
+          <button class="btn-new" onclick="newProject()">+ New Project</button>
         </div></div>
         <div class="card"><div class="card-body">
           <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">Platform Status</h3>
@@ -1206,8 +1306,44 @@ function render() {
     buildNav(); return
   }
 
+  if (state.page === 'projects') {
+    var projects = getProjects()
+    if (!projects.length) {
+      el.innerHTML = '<div class="empty-state"><div style="font-size:42px;opacity:.15">◈</div><h4>No projects yet</h4><p>Start a new project to begin generating videos with AI.</p><button class="btn-new" style="margin-top:18px" onclick="newProject()">+ New Project</button></div>'
+    } else {
+      var cards = projects.map(function(p) {
+        var stepsCount = (p.completed || []).length
+        var pct = Math.round(stepsCount / 6 * 100)
+        var statusLabel = stepsCount === 6 ? 'Complete' : stepsCount === 0 ? 'Draft' : 'In Progress'
+        var statusCls = stepsCount === 6 ? 'badge-g' : stepsCount === 0 ? '' : 'badge-a'
+        return '<div class="card" style="margin-bottom:14px;cursor:pointer" onclick="loadProject(\'' + p.id + '\')">' +
+          '<div class="card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">' +
+            '<div style="flex:1;min-width:180px">' +
+              '<div style="font-size:14.5px;font-weight:600;margin-bottom:3px">' + (p.name || 'Untitled') + '</div>' +
+              '<div style="font-size:11.5px;color:var(--text-2)">' + (p.topic || 'No topic') + '</div>' +
+              '<div style="font-size:10.5px;color:var(--text-3);margin-top:4px">' + (p.style || 'cinematic') + ' · ' + (p.format || 'short') + ' · Updated ' + formatTimeAgo(p.updatedAt || p.createdAt) + '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<div style="width:80px">' +
+                '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-bottom:3px"><span>' + stepsCount + '/6</span><span>' + pct + '%</span></div>' +
+                '<div class="bar"><div class="bar-fill" style="width:' + pct + '%;background:' + (stepsCount === 6 ? 'var(--emerald)' : 'var(--amber)') + '"></div></div>' +
+              '</div>' +
+              '<span class="badge ' + statusCls + '" style="' + (!statusCls ? 'background:var(--bg-3);color:var(--text-3)' : '') + '">' + statusLabel + '</span>' +
+              '<button class="icon-btn" style="flex-shrink:0" onclick="event.stopPropagation();if(confirm(\'Delete this project?\'))deleteProject(\'' + p.id + '\')" title="Delete">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      }).join('')
+      el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><h3 style="font-size:16px;font-weight:700">' + projects.length + ' Project' + (projects.length !== 1 ? 's' : '') + '</h3><button class="btn-new" onclick="newProject()">+ New Project</button></div>' + cards
+    }
+    buildNav(); return
+  }
+
   if (state.page !== 'project') {
-    el.innerHTML = `<div class="empty-state"><div style="font-size:42px;opacity:.15">◈</div><h4>${state.page==='projects'?'No projects yet':state.page==='images-lib'?'No generated images':state.page==='chars-lib'?'No characters saved':'Coming soon'}</h4><p>Start a new project to begin generating videos with AI.</p><button class="btn-new" style="margin-top:18px" onclick="navigate('project')">+ New Project</button></div>`
+    var emptyLabel = state.page==='images-lib'?'No generated images':state.page==='chars-lib'?'No characters saved':'Coming soon'
+    el.innerHTML = '<div class="empty-state"><div style="font-size:42px;opacity:.15">◈</div><h4>' + emptyLabel + '</h4><p>Start a new project to begin generating videos with AI.</p><button class="btn-new" style="margin-top:18px" onclick="newProject()">+ New Project</button></div>'
     buildNav(); return
   }
 
@@ -1220,6 +1356,7 @@ function render() {
       <div class="card">
         <div class="card-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" style="width:17px;height:17px"><path d="m15 4-1.2 2.4L11.4 7.6l2.4 1.2L15 11.2l1.2-2.4 2.4-1.2-2.4-1.2z"/><path d="m8 16-1.2 2.4L4.4 19.6l2.4 1.2L8 23.2l1.2-2.4 2.4-1.2-2.4-1.2z"/></svg> Start a New Video</h3></div>
         <div class="card-body">
+          <div class="fg"><label>Project Name</label><input id="name-input" placeholder="My Awesome Video" value="${state.projectName}" oninput="state.projectName=this.value"></div>
           <div class="fg"><label>Topic / Subject</label><input id="topic-input" placeholder="e.g. The History of Brutalist Architecture" value="${state.topic}" oninput="state.topic=this.value"></div>
           <div class="fg"><label>Description & Direction</label><textarea id="desc-input" placeholder="Describe the angle, mood, target audience, or any specific points to cover..." oninput="state.desc=this.value">${state.desc}</textarea></div>
           <div class="fg-row">
