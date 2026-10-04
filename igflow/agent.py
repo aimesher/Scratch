@@ -305,6 +305,7 @@ Return one JSON object, no prose:
   "continuity_note": "what must match between the end of one shot and the start of the next",
   "on_screen_text": ["lines to add in Instagram's editor, with timing"],
   "caption": "ready to post, first line is a hook, matches the account voice",
+  "youtube_title": "title for YouTube Shorts, under 70 characters, no hashtags",
   "hashtags": ["without the # symbol"],
   "music_note": "optional trending-audio or music direction, or empty"
 }}]}}"""
@@ -395,6 +396,8 @@ def render_brief(post_id: str, post: dict, master: dict[str, str]) -> str:
         "",
         "## Caption",
         post["caption"],
+        "",
+        f"**YouTube Shorts title:** {post.get('youtube_title') or post['title']}",
         "",
         " ".join("#" + t.lstrip("#") for t in post["hashtags"]),
     ]

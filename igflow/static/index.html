@@ -130,6 +130,7 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
 .sec { margin-top: 22px; }
 .sec:first-child { margin-top: 0; }
 .sec h3 { margin: 0 0 4px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+.sec h3 em svg { width: 12px; height: 12px; }
 .sec h3 em { font-style: normal; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 12px; }
 .sec .sub { margin: 0 0 12px 30px; color: var(--muted); font-size: 13.5px; }
 .prompt { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; background: var(--surface-2); overflow: hidden; }
@@ -170,6 +171,11 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
 .mstep > div > span { color: var(--muted); font-size: 13.5px; }
 .mstep a.btn { text-decoration: none; color: inherit; }
 .mstep textarea { margin-top: 8px; min-height: 110px; background: var(--surface); }
+.platform { border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.platform.done { border-color: var(--green); background: var(--green-soft); }
+.platform h4 { margin: 0 0 4px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+.platform p { margin: 0 0 12px; color: var(--muted); font-size: 13.5px; }
+.platform a.btn { text-decoration: none; color: inherit; }
 details.help { margin-top: 6px; font-size: 14px; color: var(--muted); }
 details.help summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 details.help ol { padding-left: 20px; margin: 8px 0 0; }
@@ -198,7 +204,7 @@ details.help ol { padding-left: 20px; margin: 8px 0 0; }
   <aside class="side">
     <div class="brand"><div class="logo"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9z"/></svg></div><span>Reel Studio</span></div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">Runs on your computer.<br>Nothing is posted until you approve it.</div>
+    <div class="side-foot">Runs on your computer.<br>Nothing is posted without you.</div>
   </aside>
   <main class="main">
     <header class="top">
@@ -219,6 +225,7 @@ const ICON = {
   sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/>',
   copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
   upload: '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+  download: '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
   check: '<path d="M20 6L9 17l-5-5"/>',
   folder: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
   x: '<path d="M18 6L6 18M6 6l12 12"/>',
@@ -242,13 +249,13 @@ const PAGES = {
 };
 const ST = {
   briefed: ['Needs clips', 'amber'], assembling: ['Processing', 'blue'], review: ['Ready for review', 'violet'],
-  approved: ['Scheduled', 'green'], published: ['Published', 'green-solid'], rejected: ['Rejected', 'gray'], failed: ['Needs attention', 'red'],
+  approved: ['Approved', 'green'], published: ['Published', 'green-solid'], rejected: ['Rejected', 'gray'], failed: ['Needs attention', 'red'],
 };
-const STEPS = ['Brief', 'Clips', 'Review', 'Scheduled', 'Live'];
+const STEPS = ['Brief', 'Clips', 'Review', 'Approved', 'Posted'];
 const STAGE = { briefed: 1, assembling: 1, review: 2, approved: 3, published: 5 };
 const FILTERS = [
   ['all', 'All', () => true], ['need', 'Need clips', p => ['briefed', 'assembling'].includes(p.status)],
-  ['review', 'Ready for review', p => p.status === 'review'], ['scheduled', 'Scheduled', p => p.status === 'approved'],
+  ['review', 'Ready for review', p => p.status === 'review'], ['scheduled', 'Approved', p => p.status === 'approved'],
   ['published', 'Published', p => p.status === 'published'], ['problems', 'Needs attention', p => ['failed', 'rejected'].includes(p.status)],
 ];
 
@@ -316,10 +323,12 @@ const VIEWS = {
     if (c.review) todo.push(['eye', `${c.review} video${c.review > 1 ? 's' : ''} ready for review`, 'Watch, edit the caption and approve.', 'Review now', 'posts', 'review']);
     if (c.need) todo.push(['upload', `${c.need} post${c.need > 1 ? 's' : ''} waiting for clips`, 'Copy the prompts into Flow, then upload the clips here.', 'Add clips', 'posts', 'need']);
     if (h.master && !c.need && !c.review) todo.push(['sparkles', 'Plan your next posts', 'Ask the agent for fresh ideas and prompts.', 'Plan posts', 'create']);
-    if (h.ai && h.master && !h.instagram) todo.push(['send', 'Connect Instagram', 'Needed before anything can go live.', 'Connect', 'settings']);
+    const dueN = count(p => p.status === 'approved' && (!p.scheduled_at || new Date(p.scheduled_at) <= new Date()));
+    if (manualPublish() && dueN) todo.unshift(['send', `${dueN} post${dueN > 1 ? 's are' : ' is'} ready to post`, 'Download, copy the caption and post it. Takes a minute each.', 'Post now', 'posts', 'scheduled']);
+    if (!manualPublish() && h.ai && h.master && h.instagram === false) todo.push(['send', 'Connect Instagram', 'Needed before anything can go live.', 'Connect', 'settings']);
     return `
     <div class="grid g5" style="margin-bottom:18px">
-      ${[['Need clips', c.need, 'need'], ['Ready for review', c.review, 'review'], ['Scheduled', c.sched, 'scheduled'], ['Published', c.live, 'published'], ['Needs attention', c.bad, 'problems']]
+      ${[['Need clips', c.need, 'need'], ['Ready for review', c.review, 'review'], [manualPublish() ? 'Approved' : 'Scheduled', c.sched, 'scheduled'], ['Published', c.live, 'published'], ['Needs attention', c.bad, 'problems']]
         .map(([l, n, f]) => `<button class="stat" data-go="posts" data-filter="${f}"><div class="n">${n}</div><div class="l">${l}</div></button>`).join('')}
     </div>
     <div class="grid g2">
@@ -393,6 +402,17 @@ const VIEWS = {
         <div class="card"><h2>Your account</h2><p class="sub">The agent reads this before writing anything. Specific answers give better prompts.</p>
           ${B.map(([k, l]) => `<label class="f"><span>${l}</span><textarea data-brand="${k}" style="min-height:64px">${esc(s.brand[k])}</textarea></label>`).join('')}
         </div>
+        <div class="card"><h2>Publishing</h2><p class="sub">Where your videos go and who presses the button.</p>
+          <label class="f"><span>How do you publish?</span>
+            <select id="pub-method" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+              <option value="manual" ${s.publish.method === 'manual' ? 'selected' : ''}>I post it myself (no Meta or Facebook account needed)</option>
+              <option value="instagram_api" ${s.publish.method === 'instagram_api' ? 'selected' : ''}>Instagram API posts it for me (needs a Meta developer app)</option></select>
+            <small>Posting yourself takes about a minute per video. The dashboard downloads the file, copies the caption and opens the right page.</small></label>
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">Where do you post?</div>
+          <div class="row" style="gap:18px;margin-bottom:6px">
+            ${[['instagram', 'Instagram (Reels and Stories)'], ['youtube', 'YouTube Shorts']].map(([k, l]) => `<label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" data-platform-opt="${k}" ${s.publish.platforms.includes(k) ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--accent)">${l}</label>`).join('')}
+          </div>
+        </div>
         <div class="card"><h2>Video and posting</h2><p class="sub"></p>
           <div class="row" style="align-items:flex-start">
             <label class="f" style="flex:1"><span>Shortest video (seconds)</span><input type="number" min="1" max="60" id="min-s" value="${s.video.min_seconds}"></label>
@@ -411,7 +431,7 @@ const VIEWS = {
             <small>Copy and paste means you take the request to the Gemini or Claude app yourself and paste the answer back. Only the option you pick is used.</small></label>
           ${key('GEMINI_API_KEY', 'Gemini API key', 'password', 'Free at aistudio.google.com/apikey. The free tier has rate limits and Google may use free-tier content to improve its products.')}
           ${key('ANTHROPIC_API_KEY', 'Claude API key', 'password', 'Paid. Get one at console.anthropic.com.')}
-          ${key('IG_USER_ID', 'Instagram user ID', 'text', 'A number from your Meta developer app.')}
+          ${key('IG_USER_ID', 'Instagram user ID', 'text', 'Only needed if Instagram API posts for you. A number from your Meta developer app.')}
           ${key('IG_ACCESS_TOKEN', 'Instagram access token', 'password', 'Expires after 60 days. Paste a fresh one here when it does.')}
           <details class="help"><summary>How do I get the Instagram details?</summary><ol>
             <li>Switch your Instagram to a Business or Creator account.</li><li>Create an app at developers.facebook.com and add the Instagram API.</li>
@@ -422,6 +442,37 @@ const VIEWS = {
     </div>`;
   },
 };
+
+const manualPublish = () => (S.settings?.publish.method || 'manual') === 'manual';
+const tagLine = b => (b.hashtags || []).map(t => '#' + t).join(' ');
+const COPY = {
+  'ig-caption': b => `${b.caption}\n\n${tagLine(b)}`.trim(),
+  'yt-title': b => (b.youtube_title || b.hook || b.title).slice(0, 100),
+  'yt-desc': b => `${b.caption}\n\n${tagLine(b)} #Shorts`.trim(),
+};
+const PLATFORM_NAME = { instagram: 'Instagram', youtube: 'YouTube Shorts' };
+
+function postItSection(p) {
+  const id = esc(p.id), b = p.brief, dl = `<a class="btn sm" href="/media/${id}/final.mp4?download=1" download>${ic('download')}Download video</a>`;
+  const row = plat => {
+    const done = p.posted[plat];
+    const mark = done ? `<span class="badge green">${ic('check')}Posted ${fmtTime(done)}</span>` : `<button class="btn sm primary" data-act="posted" data-platform="${plat}" data-id="${id}">${ic('check')}I posted it</button>`;
+    if (plat === 'instagram' && p.format === 'story') return `<div class="platform ${done ? 'done' : ''}"><h4>Instagram Story</h4>
+      <p>Stories can only be posted from the Instagram phone app. Send the video to your phone (Google Drive, email or Nearby Share), then add it to your Story.</p>
+      <div class="row">${dl}<div class="spacer"></div>${mark}</div></div>`;
+    if (plat === 'instagram') return `<div class="platform ${done ? 'done' : ''}"><h4>Instagram Reel</h4>
+      <p>On instagram.com press Create, choose the video, keep the 9:16 crop, then paste the caption.</p>
+      <div class="row">${dl}<button class="btn sm" data-act="copy-text" data-what="ig-caption" data-id="${id}">${ic('copy')}Copy caption</button>
+        <a class="btn sm" href="https://www.instagram.com/" target="_blank" rel="noopener">Open Instagram</a><div class="spacer"></div>${mark}</div></div>`;
+    return `<div class="platform ${done ? 'done' : ''}"><h4>YouTube Shorts</h4>
+      <p>In YouTube Studio press Create, then Upload videos. A vertical video under 3 minutes becomes a Short by itself. You can schedule it under Visibility.</p>
+      <div class="row">${dl}<button class="btn sm" data-act="copy-text" data-what="yt-title" data-id="${id}">${ic('copy')}Copy title</button>
+        <button class="btn sm" data-act="copy-text" data-what="yt-desc" data-id="${id}">${ic('copy')}Copy description</button>
+        <a class="btn sm" href="https://studio.youtube.com/" target="_blank" rel="noopener">Open YouTube Studio</a><div class="spacer"></div>${mark}</div></div>`;
+  };
+  return `<div class="sec"><h3><em>${ic('send')}</em>Post it</h3><p class="sub">Download once, then follow each box. Press "I posted it" so the dashboard keeps track.</p>
+    ${p.platforms.map(row).join('')}</div>`;
+}
 
 function manualPanel(kind) {
   const M = S.manual, probs = M.problems[kind];
@@ -458,8 +509,11 @@ function postBody(p) {
   if (st === 'assembling') banner = `<div class="note blue">${ic('clock')}<div>Putting your clips together. This takes a few seconds.</div></div>`;
   if (st === 'failed') banner = `<div class="note red">${ic('alert')}<div><b>Something went wrong.</b> ${esc(p.error || '')}<div style="margin-top:10px"><button class="btn sm" data-act="redo" data-id="${id}">Start over with new clips</button> ${p.has_video ? `<button class="btn sm primary" data-act="approve" data-id="${id}">Try publishing again</button>` : ''}</div></div></div>`;
   if (st === 'rejected') banner = `<div class="note amber">${ic('x')}<div>You rejected this post. <button class="btn sm" data-act="redo" data-id="${id}">Start over with new clips</button></div></div>`;
-  if (st === 'published') banner = `<div class="note green">${ic('check')}<div>Published ${fmtTime(p.published_at)}. Instagram ID: ${esc(p.ig_media_id)}</div></div>`;
-  if (st === 'approved') banner = `<div class="note green">${ic('clock')}<div>Approved. Goes live ${p.scheduled_at && new Date(p.scheduled_at) > new Date() ? fmtTime(p.scheduled_at) : 'as soon as possible'}, as long as Auto-publish is on.</div></div>`;
+  if (st === 'published') banner = `<div class="note green">${ic('check')}<div>Published ${fmtTime(p.published_at)}.${p.ig_media_id ? ' Instagram ID: ' + esc(p.ig_media_id) : ''}</div></div>`;
+  const due = !p.scheduled_at || new Date(p.scheduled_at) <= new Date();
+  if (st === 'approved') banner = manualPublish()
+    ? `<div class="note green">${ic('clock')}<div>Approved. ${due ? '<b>Ready to post now.</b>' : 'Planned for ' + fmtTime(p.scheduled_at) + '.'} Post it with the boxes below.</div></div>`
+    : `<div class="note green">${ic('clock')}<div>Approved. Goes live ${due ? 'as soon as possible' : fmtTime(p.scheduled_at)}, as long as Auto-publish is on.</div></div>`;
   if (p.error && st === 'review') banner = `<div class="note amber">${ic('alert')}<div>${esc(p.error)}</div></div>`;
 
   const showPrompts = S.prompts[p.id] ?? st === 'briefed';
@@ -497,7 +551,7 @@ function postBody(p) {
         ${p.format === 'story' ? '<div class="note blue">' + ic('alert') + '<div>Stories do not carry captions through the API. Add polls, links and text in Instagram itself.</div></div>' : ''}
         ${b.on_screen_text?.length ? `<div class="note blue">${ic('eye')}<div><b>Add these in Instagram's editor:</b><br>${b.on_screen_text.map(esc).join('<br>')}</div></div>` : ''}
         ${editable ? `
-        <label class="f"><span>When should it go live?</span><input type="datetime-local" id="when-${id}"><small>Leave empty to publish as soon as possible.</small></label>
+        <label class="f"><span>${manualPublish() ? 'When do you plan to post it?' : 'When should it go live?'}</span><input type="datetime-local" id="when-${id}"><small>${manualPublish() ? 'Optional. The Overview page reminds you when it is due.' : 'Leave empty to publish as soon as possible.'}</small></label>
         <div class="row"><button class="btn primary" data-act="approve" data-id="${id}">${ic('check')}Approve</button>
           <button class="btn" data-act="save-caption" data-id="${id}">Save caption</button><div class="spacer"></div>
           <button class="btn" data-act="redo" data-id="${id}">${ic('refresh')}New clips</button>
@@ -505,7 +559,8 @@ function postBody(p) {
       </div></div></div>`;
   }
   const idea = `<div class="sec" style="margin-top:0"><div class="note blue" style="margin:0">${ic('sparkles')}<div><b>Idea:</b> ${esc(b.concept)}<br><b>Caption:</b> ${esc(b.caption)}</div></div></div>`;
-  return steps + banner + (['briefed', 'assembling'].includes(st) ? idea : '') + prompts + clips + review;
+  const postIt = manualPublish() && p.has_video && ['approved', 'published'].includes(st) ? postItSection(p) : '';
+  return steps + banner + (['briefed', 'assembling'].includes(st) ? idea : '') + postIt + prompts + clips + review;
 }
 
 // ---------- events ----------
@@ -539,6 +594,12 @@ document.addEventListener('click', async e => {
       catch { S.manual.text[kind] = r.text; keepInputs(render); }
     });
   }
+  if (act === 'copy-text') { const p = S.posts.find(x => x.id === id); await copyText(COPY[btn.dataset.what](p.brief)); return toast('Copied'); }
+  if (act === 'posted') return busy(btn, async () => {
+    const r = await api(`posts/${id}/posted`, { json: { platform: btn.dataset.platform } });
+    toast(r.remaining.length ? `Marked. Still to post: ${r.remaining.map(x => PLATFORM_NAME[x]).join(', ')}` : 'All done. Marked as published.');
+    await refresh();
+  });
   if (act === 'manual-copy-fix') { await copyText(S.manual.fix[btn.dataset.kind]); return toast('Copied. Paste it into the same chat.'); }
   if (act === 'manual-cancel') { S.manual.regen = false; return render(); }
   if (act === 'manual-submit') {
@@ -576,8 +637,9 @@ document.addEventListener('click', async e => {
     const brand = {}, keys = {};
     document.querySelectorAll('[data-brand]').forEach(el => brand[el.dataset.brand] = el.value);
     document.querySelectorAll('[data-key]').forEach(el => { if (el.value.trim()) keys[el.dataset.key] = el.value.trim(); });
-    await api('settings', { method: 'PUT', json: { brand, keys, video: { min_seconds: $('#min-s').value, max_seconds: $('#max-s').value }, instagram: { max_per_day: $('#per-day').value }, agent: { provider: $('#provider').value } } });
-    toast('Settings saved'); await load(['settings', 'health']); render();
+    await api('settings', { method: 'PUT', json: { brand, keys, video: { min_seconds: $('#min-s').value, max_seconds: $('#max-s').value }, instagram: { max_per_day: $('#per-day').value }, agent: { provider: $('#provider').value },
+      publish: { method: $('#pub-method').value, platforms: [...document.querySelectorAll('[data-platform-opt]:checked')].map(el => el.dataset.platformOpt) } } });
+    toast('Settings saved'); await load(['settings', 'health']); paintMode(); render();
   });
 });
 document.addEventListener('input', e => { if (e.target.id === 'plan-theme') S.plan.theme = e.target.value; });
@@ -613,6 +675,7 @@ window.addEventListener('dragover', e => e.preventDefault()); window.addEventLis
 
 // auto-publish switch
 async function setAuto(on) { const d = await api('automation', { json: { publish: on } }); paintAuto(d.publish); }
+function paintMode() { $('#auto').style.display = manualPublish() ? 'none' : ''; }
 function paintAuto(on) { const el = $('#auto'); el.classList.toggle('on', on); el.setAttribute('aria-checked', on); }
 $('#auto').addEventListener('click', () => setAuto(!$('#auto').classList.contains('on')).catch(e => toast(e.message, true)));
 $('#auto').addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); $('#auto').click(); } });
@@ -628,7 +691,7 @@ setInterval(async () => {
 
 window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (PAGES[p] && p !== S.page) go(p); });
 api('automation').then(d => paintAuto(d.publish)).catch(() => {});
-go(PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'overview');
+load(['settings']).catch(() => {}).finally(() => { paintMode(); go(PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'overview'); });
 </script>
 </body>
 </html>

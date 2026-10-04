@@ -1,11 +1,12 @@
 # Copy to config.yaml and edit. Every field under `brand` feeds the prompt agent.
 brand:
-  niche: "3D architectural visualization and BIM workflows, plus electronics tinkering"   # EDIT
-  audience: "Architecture students, junior visualizers, makers"                          # EDIT
-  voice: "Calm, precise, dry humour. Shows the work, explains the why in one sentence."  # EDIT
-  visual_style: "Photoreal, natural light, shallow depth of field, slow camera moves"    # EDIT
-  recurring_subjects: "A minimalist timber-and-glass house; a workbench with a soldering station"  # EDIT
-  avoid: "Cartoon looks, text in frame, hands with extra fingers, brand logos"           # EDIT
+  # Fill these in from the dashboard's Settings page. Specific answers give better prompts.
+  niche: ""               # what the account is about, e.g. "10-second kitchen hacks"
+  audience: ""            # who it is for
+  voice: ""               # how captions and voiceovers should sound
+  visual_style: ""        # how the videos should look
+  recurring_subjects: ""  # people, places or objects that appear again and again
+  avoid: ""               # things to keep out of every video
 
 video:
   min_seconds: 10
@@ -22,3 +23,7 @@ agent:
 
 instagram:
   max_per_day: 3
+
+publish:
+  method: manual                    # manual (you post, no Meta account needed) or instagram_api
+  platforms: [instagram, youtube]   # where you post: instagram, youtube (Shorts)

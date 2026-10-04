@@ -1,9 +1,9 @@
 # Reel Studio
 
-A dashboard for planning, assembling and publishing 10-12 second Instagram Reels and Stories. You generate the clips in Google Flow with your own plan. Everything around that is handled here, and nothing is posted until you approve it.
+A dashboard for planning, assembling and publishing 10-12 second Instagram Reels, Stories and YouTube Shorts. You generate the clips in Google Flow with your own plan. Everything around that is handled here, and nothing is posted until you approve it.
 
 ```
-Create (master prompt, plan)  ->  Flow (you)  ->  upload clips  ->  auto-assemble  ->  review  ->  approve  ->  publish
+Create (master prompt, plan)  ->  Flow (you)  ->  upload clips  ->  auto-assemble  ->  review  ->  approve  ->  post
 ```
 
 ## Install and start (Windows)
@@ -35,12 +35,15 @@ In **Create**, each step shows three boxes: **Copy request**, open Gemini or Cla
 1. **Posts**: open a post. Copy each prompt into Flow, shot by shot. For shot 2 onward, start from the last frame of the previous clip.
 2. Download the clips from Flow, then drop each into its slot on the post. No renaming. Optional music slot.
 3. When every clip is in, the studio joins them to 1080x1920, trims to your maximum length and shows the result.
-4. Watch it, edit the caption, pick a time, press **Approve**.
-5. With **Auto-publish** on, approved posts go live at their time, up to your daily limit.
+4. Watch it, edit the caption, optionally pick a time, press **Approve**.
+5. **Post it** boxes appear for Instagram and YouTube Shorts: *Download video*, *Copy caption* (or *Copy title* and *Copy description* for YouTube), *Open Instagram* or *Open YouTube Studio*. Post it, then press **I posted it**. When every platform is done the post shows as Published.
+6. Stories can only be posted from the Instagram phone app, so send the downloaded file to your phone.
 
-## Connecting Instagram
+Choose platforms under **Settings > Publishing**. No Meta, Facebook or Google developer account is needed for this.
 
-You need an Instagram Business or Creator account, a Meta developer app with the Instagram API (Instagram Login), your account added as a tester, and a token with content publishing permission. Paste the user ID and token in Settings. Tokens last 60 days.
+## Optional: let the dashboard post to Instagram itself
+
+In Settings > Publishing, choose *Instagram API posts it for me*. You need an Instagram Business or Creator account, a Meta developer app with the Instagram API (Instagram Login), your account added as a tester, and a token with content publishing permission. Paste the user ID and token in Settings. Tokens last 60 days. YouTube is always posted by you: Google keeps videos uploaded through its API private until the app passes an audit.
 
 **The publishing calls were written from memory of Meta's docs and have not been run against Instagram.** Test with a throwaway Story first. If it fails, the post is marked *Needs attention* and Meta's own error message is shown.
 

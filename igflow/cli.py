@@ -90,6 +90,8 @@ def cmd_watch(cfg: Config, args) -> None:
 
 
 def cmd_publish(cfg: Config, args) -> None:
+    if cfg["publish"]["method"] != "instagram_api":
+        raise SystemExit("Publishing method is 'manual': post from the dashboard's Posts page.")
     publish_due(cfg, _store(cfg), dry_run=args.dry_run, log=log)
 
 
@@ -100,7 +102,8 @@ def cmd_run(cfg: Config, args) -> None:
     while True:
         try:
             process_drops(cfg, store, log)
-            publish_due(cfg, store, log=log)
+            if cfg["publish"]["method"] == "instagram_api":
+                publish_due(cfg, store, log=log)
         except Exception as e:  # keep the daemon alive; the post itself is marked failed where relevant
             log(f"loop error: {e}")
         time.sleep(cfg["watcher"]["poll_seconds"])

@@ -30,6 +30,8 @@ DEFAULTS: dict = {
               "gemini_fallback_models": ["gemini-flash-lite-latest", "gemini-pro-latest"]},
     "watcher": {"poll_seconds": 5, "stable_seconds": 4},
     "instagram": {"api_version": "v23.0", "max_per_day": 3, "status_timeout_seconds": 300},
+    # manual: you post with the dashboard's help. instagram_api: the dashboard posts Reels/Stories itself.
+    "publish": {"method": "manual", "platforms": ["instagram", "youtube"]},
 }
 
 

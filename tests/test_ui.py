@@ -221,3 +221,63 @@ def test_manual_plan_roundtrip_with_fix_request(manual_server):
     assert code == 200 and len(body["ids"]) == 1
     posts = call(base, "/api/posts")[1]["posts"]
     assert posts[0]["status"] == "briefed" and "Photoreal" in posts[0]["brief"]["shots"][0]["flow_prompt"]
+
+
+# ---------- posting yourself (no Meta account) ----------
+
+def test_default_is_manual_publishing_without_instagram_check(server):
+    app, base = server
+    assert call(base, "/api/settings")[1]["publish"] == {"method": "manual", "platforms": ["instagram", "youtube"]}
+    assert "instagram" not in [c["id"] for c in call(base, "/api/health")[1]["checks"]]
+    assert not app.auto_publish_active()  # the background loop never posts in manual mode
+    payload = {"brand": {}, "video": {"min_seconds": 10, "max_seconds": 12}, "instagram": {"max_per_day": 3},
+               "publish": {"method": "instagram_api", "platforms": ["instagram"]}}
+    assert call(base, "/api/settings", payload, "PUT")[0] == 200
+    assert app.auto_publish_active()
+    assert "instagram" in [c["id"] for c in call(base, "/api/health")[1]["checks"]]
+    for bad in ({"method": "fax", "platforms": ["instagram"]}, {"method": "manual", "platforms": []}, {"method": "manual", "platforms": ["tiktok"]}):
+        assert call(base, "/api/settings", dict(payload, publish=bad), "PUT")[0] == 400
+
+
+def test_mark_posted_per_platform_then_published(server):
+    app, base = server
+    seed(app)
+    store = app.store()
+    store.update("p1", status="briefed")
+    store.close()
+    assert call(base, "/api/posts/p1/posted", {"platform": "instagram"})[0] == 400  # not approved yet
+    store = app.store()
+    store.update("p1", status="approved")
+    store.close()
+    assert call(base, "/api/posts/p1/posted", {"platform": "tiktok"})[0] == 400
+    code, body, _ = call(base, "/api/posts/p1/posted", {"platform": "instagram"})
+    assert code == 200 and body["remaining"] == ["youtube"]
+    post_row = call(base, "/api/posts")[1]["posts"][0]
+    assert post_row["status"] == "approved" and "instagram" in post_row["posted"]
+    assert call(base, "/api/posts/p1/posted", {"platform": "youtube"})[1]["remaining"] == []
+    assert call(base, "/api/posts")[1]["posts"][0]["status"] == "published"
+
+
+def test_story_only_needs_instagram(server):
+    app, base = server
+    store = app.store()
+    store.create("s1", "story", post())
+    store.update("s1", status="approved")
+    store.close()
+    assert call(base, "/api/posts")[1]["posts"][0]["platforms"] == ["instagram"]
+    assert call(base, "/api/posts/s1/posted", {"platform": "youtube"})[0] == 400
+    assert call(base, "/api/posts/s1/posted", {"platform": "instagram"})[1]["remaining"] == []
+
+
+def test_download_link_sends_attachment_header(server):
+    app, base = server
+    seed(app)
+    out = app.cfg.path("out") / "p1"
+    out.mkdir(parents=True)
+    make_clip(out / "final.mp4", 1)
+    store = app.store()
+    store.update("p1", status="approved", final_path=str(out / "final.mp4"))
+    store.close()
+    code, _, h = call(base, "/media/p1/final.mp4?download=1")
+    assert code == 200 and h["Content-Disposition"] == 'attachment; filename="p1.mp4"'
+    assert call(base, "/media/p1/final.mp4")[2].get("Content-Disposition") is None

@@ -61,13 +61,16 @@ class App:
                 store = self.store()
                 try:
                     process_drops(self.cfg, store, self.say)
-                    if self.publish_enabled:
+                    if self.auto_publish_active():
                         publish_due(self.cfg, store, log=self.say)
                 finally:
                     store.close()
             except Exception as e:  # keep the loop alive
                 self.say(f"Background error: {e}")
             self.stop.wait(self.cfg["watcher"]["poll_seconds"])
+
+    def auto_publish_active(self) -> bool:
+        return self.publish_enabled and self.cfg["publish"]["method"] == "instagram_api"
 
     # ----- views -----
 
@@ -96,6 +99,8 @@ class App:
             "ig_media_id": p["ig_media_id"], "error": p["error"], "files": files,
             "has_video": bool(final and final.exists()),
             "drop_folder": str(drop),
+            "platforms": actions.platforms_for(self.cfg, p["format"]),
+            "posted": p["brief"].get("posted", {}),
         }
 
     def ai_check(self) -> dict:
@@ -108,15 +113,15 @@ class App:
     def health(self) -> dict:
         brand = self.cfg["brand"]
         ig_ready = bool(os.environ.get("IG_USER_ID") and os.environ.get("IG_ACCESS_TOKEN"))
-        return {
-            "checks": [
+        checks = [
                 {"id": "ffmpeg", "label": "Video tools (ffmpeg) installed", "ok": bool(shutil.which("ffmpeg") and shutil.which("ffprobe")), "go": None},
                 {"id": "brand", "label": "Account profile filled in", "ok": bool(brand.get("niche") and brand.get("voice")), "go": "settings"},
                 self.ai_check(),
                 {"id": "master", "label": "Master prompt created", "ok": self.master_path().exists(), "go": "create"},
-                {"id": "instagram", "label": "Instagram connected", "ok": ig_ready, "go": "settings"},
-            ]
-        }
+        ]
+        if self.cfg["publish"]["method"] == "instagram_api":
+            checks.append({"id": "instagram", "label": "Instagram connected", "ok": ig_ready, "go": "settings"})
+        return {"checks": checks}
 
     def settings_view(self) -> dict:
         raw = self.cfg.raw
@@ -125,6 +130,7 @@ class App:
             "video": {"min_seconds": raw["video"]["min_seconds"], "max_seconds": raw["video"]["max_seconds"]},
             "instagram": {"max_per_day": raw["instagram"]["max_per_day"]},
             "agent": {"provider": self.provider()},
+            "publish": {"method": raw["publish"]["method"], "platforms": raw["publish"]["platforms"]},
             "keys": {k: {"set": bool(os.environ.get(k)), "hint": mask(os.environ.get(k)) if k != "IG_USER_ID" else (os.environ.get(k) or "")} for k in KEYS},
         }
 
@@ -148,6 +154,14 @@ class App:
         if provider not in PROVIDERS:
             raise ApiError("Choose Gemini, Claude or copy and paste as the prompt writer.")
         file_raw.setdefault("agent", {})["provider"] = provider
+        pub = data.get("publish") or {}
+        method = pub.get("method", self.cfg["publish"]["method"])
+        platforms = pub.get("platforms", self.cfg["publish"]["platforms"])
+        if method not in ("manual", "instagram_api"):
+            raise ApiError("Choose how you publish.")
+        if not isinstance(platforms, list) or not platforms or any(p not in actions.PLATFORMS for p in platforms):
+            raise ApiError("Pick at least one place to post: Instagram or YouTube.")
+        file_raw["publish"] = {"method": method, "platforms": [p for p in actions.PLATFORMS if p in platforms]}
         self.config_path.write_text(yaml.safe_dump(file_raw, sort_keys=False, allow_unicode=True))
         keys = {k: str(v).strip() for k, v in (data.get("keys") or {}).items() if k in KEYS and str(v).strip()}
         if keys:
@@ -244,7 +258,7 @@ def make_handler(app: App):
                 if method == "GET" and url.path == "/":
                     return self._file(STATIC / "index.html", "text/html; charset=utf-8")
                 if method == "GET" and (m := re.fullmatch(r"/media/([\w.-]+)/(final\.mp4|final\.jpg)", url.path)):
-                    return self._media(m.group(1), m.group(2))
+                    return self._media(m.group(1), m.group(2), "download" in parse_qs(url.query))
                 if not url.path.startswith("/api/"):
                     raise ApiError("Not found", 404)
                 self._json(self._api(method, url.path[5:], parse_qs(url.query)))
@@ -273,7 +287,7 @@ def make_handler(app: App):
             self.end_headers()
             self.wfile.write(data)
 
-        def _media(self, post_id: str, name: str):
+        def _media(self, post_id: str, name: str, download: bool = False):
             store = app.store()
             try:
                 post = store.get(post_id)
@@ -298,6 +312,8 @@ def make_handler(app: App):
             self.send_response(status)
             self.send_header("Content-Type", "video/mp4" if name.endswith("mp4") else "image/jpeg")
             self.send_header("Accept-Ranges", "bytes")
+            if download:
+                self.send_header("Content-Disposition", f'attachment; filename="{post_id}{path.suffix}"')
             self.send_header("Content-Length", str(end - start + 1))
             if status == 206:
                 self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
@@ -456,6 +472,10 @@ def make_handler(app: App):
                     if not brief["caption"]:
                         raise ApiError("Caption cannot be empty.")
                     store.update_brief(pid, brief)
+                elif action == "posted":
+                    remaining = actions.mark_posted(app.cfg, store, pid, str(body.get("platform", "")))
+                    app.say(f"{pid} marked as posted on {body.get('platform')}" + ("" if remaining else ", all done"))
+                    return {"remaining": remaining}
                 elif action == "folder":
                     return {"opened": open_folder(app.cfg.path("drop") / pid), "path": str(app.cfg.path("drop") / pid)}
                 else:
