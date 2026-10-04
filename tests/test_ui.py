@@ -136,3 +136,24 @@ def test_auto_publish_toggle(server):
     app, base = server
     assert call(base, "/api/automation", {"publish": False})[1] == {"publish": False}
     assert app.publish_enabled is False
+
+
+# ---------- Windows installer files (cannot be run here, so check what can be) ----------
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+@pytest.mark.parametrize("name", ["Install Reel Studio.bat", "Start Reel Studio.bat", "setup.ps1"])
+def test_windows_scripts_are_ascii_and_crlf(name):
+    raw = (ROOT / name).read_bytes()
+    raw.decode("ascii")  # PowerShell 5 misreads UTF-8 without a BOM
+    assert raw.count(b"\r\n") == raw.count(b"\n"), "needs CRLF line endings so batch labels work"
+
+
+def test_installer_points_at_real_files_and_this_branch():
+    ps1 = (ROOT / "setup.ps1").read_text()
+    bat = (ROOT / "Install Reel Studio.bat").read_text()
+    for needed in ("requirements.txt", "Start Reel Studio.bat"):
+        assert needed in ps1 and (ROOT / needed).exists()
+    assert "setup.ps1" in bat and 'BRANCH=claude/instagram-agentic-google-flow-9pjpec"' in bat
+    assert "%~dp0." in bat  # a trailing backslash before a closing quote would break the argument

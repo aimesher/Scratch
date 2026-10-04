@@ -1,19 +1,23 @@
 @echo off
-rem Double-click this file on Windows. First run takes a minute while it installs.
+rem Opens the Reel Studio dashboard. Run "Install Reel Studio.bat" first.
+title Reel Studio
 cd /d "%~dp0"
-where py >nul 2>nul
-if errorlevel 1 (
-  echo Python 3 is needed. Install it from python.org and tick "Add Python to PATH", then run this again.
+if not exist ".venv\Scripts\python.exe" (
+  echo Reel Studio is not installed yet. Double-click "Install Reel Studio.bat" first.
   pause
   exit /b 1
 )
 where ffmpeg >nul 2>nul
 if errorlevel 1 (
-  echo ffmpeg is needed. Open a terminal and run: winget install ffmpeg
+  echo ffmpeg was not found. Run "Install Reel Studio.bat" again to fix it.
   pause
   exit /b 1
 )
-if not exist .venv py -m venv .venv
-.venv\Scripts\pip install -q -r requirements.txt
-.venv\Scripts\python -m igflow ui
+if not exist ".venv\.installed" (
+  ".venv\Scripts\python.exe" -m pip install --quiet --disable-pip-version-check -r requirements.txt
+  echo ok> ".venv\.installed"
+)
+".venv\Scripts\python.exe" -m igflow ui
+echo.
+echo Reel Studio has stopped.
 pause

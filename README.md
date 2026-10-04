@@ -6,11 +6,17 @@ A dashboard for planning, assembling and publishing 10-12 second Instagram Reels
 Create (master prompt, plan)  ->  Flow (you)  ->  upload clips  ->  auto-assemble  ->  review  ->  approve  ->  publish
 ```
 
-## Start the dashboard
+## Install and start (Windows)
 
-1. Install [Python 3](https://python.org) and ffmpeg (Mac: `brew install ffmpeg`, Windows: `winget install ffmpeg`).
-2. Double-click **Start Reel Studio.command** (Mac), **Start Reel Studio.bat** (Windows) or run `./start.sh` (Linux).
-3. Your browser opens the dashboard. Keep the black window open while you work.
+1. Download **Install Reel Studio.bat** (or the whole repository as a ZIP) and double-click it. If Windows warns that it is from an unknown publisher, choose *More info*, then *Run anyway*.
+2. It downloads Reel Studio into `C:\Users\<you>\ReelStudio`, installs Python and ffmpeg if they are missing (Windows asks permission), installs the components and puts a **Reel Studio** shortcut on your desktop.
+3. From then on, double-click the desktop shortcut. Your browser opens the dashboard. Keep the black window open while you work.
+
+Running the installer again updates Reel Studio and keeps your settings, keys and posts.
+
+## Install and start (Mac and Linux)
+
+Install [Python 3](https://python.org) and ffmpeg (`brew install ffmpeg` on Mac), then double-click **Start Reel Studio.command** (Mac) or run `./start.sh` (Linux).
 
 Your files stay on your computer. The dashboard only listens on `127.0.0.1`, so nobody else on your network can reach it.
 
