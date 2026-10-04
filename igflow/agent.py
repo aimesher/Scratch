@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -65,38 +66,64 @@ def _ask_claude(cfg: Config, client, system: str, user: str) -> str:
 
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+RETRY_STATUS = {429, 500, 502, 503, 504}  # busy or rate-limited: worth waiting and trying again
+RETRY_DELAYS = (3, 8)  # seconds before the 2nd and 3rd attempt on each model
+_sleep = time.sleep
+
+
+def _gemini_post(http, cfg: Config, model: str, key: str, system: str, user: str):
+    """POST with waits between attempts. Returns the response, or None if the model stayed busy."""
+    for attempt in range(len(RETRY_DELAYS) + 1):
+        r = (http or requests).post(
+            GEMINI_URL.format(model=model),
+            headers={"x-goog-api-key": key},
+            json={
+                "systemInstruction": {"parts": [{"text": system}]},
+                "contents": [{"role": "user", "parts": [{"text": user}]}],
+                "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000},
+            },
+            timeout=180,
+        )
+        if r.status_code not in RETRY_STATUS:
+            return r
+        if attempt < len(RETRY_DELAYS):
+            wait = RETRY_DELAYS[attempt]
+            retry_after = (getattr(r, "headers", None) or {}).get("Retry-After", "")
+            if str(retry_after).isdigit():
+                wait = min(int(retry_after), 30)
+            _sleep(wait)
+    return r
 
 
 def _ask_gemini(cfg: Config, http, system: str, user: str) -> str:
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("GEMINI_API_KEY is not set.")
-    r = (http or requests).post(
-        GEMINI_URL.format(model=cfg["agent"]["gemini_model"]),
-        headers={"x-goog-api-key": key},
-        json={
-            "systemInstruction": {"parts": [{"text": system}]},
-            "contents": [{"role": "user", "parts": [{"text": user}]}],
-            "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000},
-        },
-        timeout=180,
-    )
-    if r.status_code == 429:
-        raise RuntimeError("Gemini's free tier is rate-limited. Wait a minute and try again.")
-    if r.status_code in (400, 403) and "API key" in r.text:
-        raise RuntimeError("Gemini rejected the API key. Check it in Settings.")
-    if r.status_code == 404:
-        raise RuntimeError(f"Gemini does not know the model '{cfg['agent']['gemini_model']}'. Change gemini_model in config.yaml.")
-    if r.status_code >= 400:
-        raise RuntimeError(f"Gemini error {r.status_code}: {r.text[:300]}")
-    data = r.json()
-    candidates = data.get("candidates") or []
-    if not candidates:
-        raise RuntimeError(f"Gemini returned no answer: {data.get('promptFeedback')}")
-    text = "".join(p.get("text", "") for p in candidates[0].get("content", {}).get("parts", []))
-    if not text:
-        raise RuntimeError(f"Gemini returned an empty answer (finish reason: {candidates[0].get('finishReason')}).")
-    return text
+    primary = cfg["agent"]["gemini_model"]
+    models = [primary] + [m for m in cfg["agent"].get("gemini_fallback_models", []) if m != primary]
+    last_status = None
+    for model in models:
+        r = _gemini_post(http, cfg, model, key, system, user)
+        last_status = r.status_code
+        if r.status_code in RETRY_STATUS or r.status_code == 404:
+            continue  # this model is busy or unknown: try the next one
+        if r.status_code in (400, 403) and "API key" in r.text:
+            raise RuntimeError("Gemini rejected the API key. Check it in Settings.")
+        if r.status_code >= 400:
+            raise RuntimeError(f"Gemini error {r.status_code}: {r.text[:300]}")
+        data = r.json()
+        candidates = data.get("candidates") or []
+        if not candidates:
+            raise RuntimeError(f"Gemini returned no answer: {data.get('promptFeedback')}")
+        text = "".join(p.get("text", "") for p in candidates[0].get("content", {}).get("parts", []))
+        if not text:
+            raise RuntimeError(f"Gemini returned an empty answer (finish reason: {candidates[0].get('finishReason')}).")
+        return text
+    if last_status == 429:
+        raise RuntimeError("Gemini's free-tier limit was reached on every model. Wait a few minutes and try again, or try tomorrow.")
+    if last_status == 404:
+        raise RuntimeError(f"Gemini does not know the model '{primary}'. Change gemini_model in config.yaml.")
+    raise RuntimeError("Gemini is overloaded right now: every model I tried was busy. Wait a few minutes and try again.")
 
 
 def _ask(cfg: Config, client, system: str, user: str) -> str:

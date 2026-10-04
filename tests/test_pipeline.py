@@ -219,18 +219,27 @@ def test_publish_due_honours_schedule_and_daily_limit(cfg, tmp_path):
 # ---------- Gemini provider ----------
 
 class FakeGemini:
-    def __init__(self, text=None, status=200, body=None):
-        self.calls, self.status = [], status
-        self.body = body if body is not None else {"candidates": [{"content": {"parts": [{"text": text}]}, "finishReason": "STOP"}]}
+    """`script` is a list of (status, body) answered in order; the last one repeats."""
+
+    def __init__(self, text=None, status=200, body=None, script=None):
+        ok = body if body is not None else {"candidates": [{"content": {"parts": [{"text": text}]}, "finishReason": "STOP"}]}
+        self.script = list(script) if script else [(status, ok)]
+        self.calls = []
 
     def post(self, url, **kw):
         self.calls.append((url, kw))
-        return SimpleNamespace(status_code=self.status, json=lambda: self.body, text=json.dumps(self.body))
+        status, body = self.script.pop(0) if len(self.script) > 1 else self.script[0]
+        return SimpleNamespace(status_code=status, json=lambda: body, text=json.dumps(body), headers={})
+
+
+def gemini_ok(text):
+    return {"candidates": [{"content": {"parts": [{"text": text}]}, "finishReason": "STOP"}]}
 
 
 @pytest.fixture
 def gcfg(tmp_path, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "g-key")
+    monkeypatch.setattr(agent, "_sleep", lambda s: None)
     return Config({"agent": {"provider": "gemini"}, "brand": {"niche": "archviz"}}, tmp_path)
 
 
@@ -247,11 +256,35 @@ def test_gemini_master_and_plan_use_json_mode_and_key_header(gcfg):
     assert store.get(ids[0])["status"] == "briefed"
 
 
-@pytest.mark.parametrize("status,text,expect", [
-    (429, "quota", "rate-limited"), (400, "API key not valid", "rejected the API key"), (404, "nope", "does not know the model")])
-def test_gemini_errors_are_readable(gcfg, status, text, expect):
+def test_gemini_retries_when_busy_then_succeeds_on_same_model(gcfg):
+    http = FakeGemini(script=[(503, {"error": "overloaded"}), (429, {"error": "slow down"}), (200, gemini_ok(json.dumps(MASTER)))])
+    agent.generate_master(gcfg, http)
+    assert len(http.calls) == 3 and all("gemini-flash-latest" in c[0] for c in http.calls)
+
+
+def test_gemini_falls_back_to_next_model_when_first_stays_busy(gcfg):
+    http = FakeGemini(script=[(503, {})] * 4 + [(200, gemini_ok(json.dumps(MASTER)))])
+    agent.generate_master(gcfg, http)
+    assert "gemini-flash-latest" in http.calls[0][0] and "gemini-flash-lite-latest" in http.calls[-1][0]
+
+
+def test_gemini_unknown_primary_model_uses_fallback(gcfg):
+    http = FakeGemini(script=[(404, {}), (200, gemini_ok(json.dumps(MASTER)))])
+    agent.generate_master(gcfg, http)
+    assert len(http.calls) == 2
+
+
+@pytest.mark.parametrize("status,expect", [(503, "overloaded"), (429, "free-tier limit"), (404, "does not know the model")])
+def test_gemini_gives_up_with_plain_message(gcfg, status, expect):
     with pytest.raises(RuntimeError, match=expect):
-        agent.generate_master(gcfg, FakeGemini(status=status, body={"error": text}))
+        agent.generate_master(gcfg, FakeGemini(status=status, body={"error": "x"}))
+
+
+def test_gemini_bad_key_fails_immediately_without_retrying(gcfg):
+    http = FakeGemini(status=400, body={"error": "API key not valid"})
+    with pytest.raises(RuntimeError, match="rejected the API key"):
+        agent.generate_master(gcfg, http)
+    assert len(http.calls) == 1
 
 
 def test_gemini_empty_answer_is_reported(gcfg):
