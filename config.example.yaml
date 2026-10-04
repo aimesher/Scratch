@@ -1,0 +1,21 @@
+# Copy to config.yaml and edit. Every field under `brand` feeds the prompt agent.
+brand:
+  niche: "3D architectural visualization and BIM workflows, plus electronics tinkering"   # EDIT
+  audience: "Architecture students, junior visualizers, makers"                          # EDIT
+  voice: "Calm, precise, dry humour. Shows the work, explains the why in one sentence."  # EDIT
+  visual_style: "Photoreal, natural light, shallow depth of field, slow camera moves"    # EDIT
+  recurring_subjects: "A minimalist timber-and-glass house; a workbench with a soldering station"  # EDIT
+  avoid: "Cartoon looks, text in frame, hands with extra fingers, brand logos"           # EDIT
+
+video:
+  min_seconds: 10
+  max_seconds: 12
+  allowed_clip_seconds: [4, 6, 8]   # clip lengths your Flow plan produces
+  music_volume: 0.25
+
+agent:
+  model: claude-opus-5-5
+  effort: medium
+
+instagram:
+  max_per_day: 3
