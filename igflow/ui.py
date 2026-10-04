@@ -28,12 +28,17 @@ STATIC = Path(__file__).parent / "static"
 MAX_UPLOAD = 2 * 1024**3
 KEYS = ("GEMINI_API_KEY", "ANTHROPIC_API_KEY", "IG_USER_ID", "IG_ACCESS_TOKEN")
 PROVIDER_KEY = {"gemini": "GEMINI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
+PROVIDERS = ("gemini", "anthropic", "manual")
 
 
 class ApiError(Exception):
     def __init__(self, message: str, status: int = 400):
         super().__init__(message)
         self.status = status
+
+
+class _Handled(Exception):
+    """The handler already wrote its response."""
 
 
 class App:
@@ -67,7 +72,7 @@ class App:
     # ----- views -----
 
     def provider(self) -> str:
-        return self.cfg["agent"]["provider"] if self.cfg["agent"]["provider"] in PROVIDER_KEY else "anthropic"
+        return self.cfg["agent"]["provider"] if self.cfg["agent"]["provider"] in PROVIDERS else "anthropic"
 
     def master_path(self) -> Path:
         return self.cfg.path("data") / "master_prompt.md"
@@ -93,6 +98,13 @@ class App:
             "drop_folder": str(drop),
         }
 
+    def ai_check(self) -> dict:
+        p = self.provider()
+        if p == "manual":
+            return {"id": "ai", "label": "Prompt writer: copy and paste (no key needed)", "ok": True, "go": None}
+        name = "Gemini" if p == "gemini" else "Claude"
+        return {"id": "ai", "label": f"Prompt writer connected ({name})", "ok": bool(os.environ.get(PROVIDER_KEY[p])), "go": "settings"}
+
     def health(self) -> dict:
         brand = self.cfg["brand"]
         ig_ready = bool(os.environ.get("IG_USER_ID") and os.environ.get("IG_ACCESS_TOKEN"))
@@ -100,7 +112,7 @@ class App:
             "checks": [
                 {"id": "ffmpeg", "label": "Video tools (ffmpeg) installed", "ok": bool(shutil.which("ffmpeg") and shutil.which("ffprobe")), "go": None},
                 {"id": "brand", "label": "Account profile filled in", "ok": bool(brand.get("niche") and brand.get("voice")), "go": "settings"},
-                {"id": "ai", "label": f"Prompt writer connected ({'Gemini' if self.provider() == 'gemini' else 'Claude'})", "ok": bool(os.environ.get(PROVIDER_KEY[self.provider()])), "go": "settings"},
+                self.ai_check(),
                 {"id": "master", "label": "Master prompt created", "ok": self.master_path().exists(), "go": "create"},
                 {"id": "instagram", "label": "Instagram connected", "ok": ig_ready, "go": "settings"},
             ]
@@ -133,8 +145,8 @@ class App:
         file_raw.setdefault("video", {}).update({"min_seconds": lo, "max_seconds": hi})
         file_raw.setdefault("instagram", {})["max_per_day"] = per_day
         provider = (data.get("agent") or {}).get("provider", self.provider())
-        if provider not in PROVIDER_KEY:
-            raise ApiError("Choose Gemini or Claude as the prompt writer.")
+        if provider not in PROVIDERS:
+            raise ApiError("Choose Gemini, Claude or copy and paste as the prompt writer.")
         file_raw.setdefault("agent", {})["provider"] = provider
         self.config_path.write_text(yaml.safe_dump(file_raw, sort_keys=False, allow_unicode=True))
         keys = {k: str(v).strip() for k, v in (data.get("keys") or {}).items() if k in KEYS and str(v).strip()}
@@ -143,6 +155,8 @@ class App:
         self.cfg = Config(file_raw, self.config_path.parent)
 
     def require_key(self) -> None:
+        if self.provider() == "manual":
+            raise ApiError("Copy-and-paste mode is on. Use the Copy request button, then paste the reply.")
         if not os.environ.get(PROVIDER_KEY[self.provider()]):
             raise ApiError("Add your Gemini API key in Settings first." if self.provider() == "gemini" else "Add your Claude API key in Settings first.")
 
@@ -234,6 +248,8 @@ def make_handler(app: App):
                 if not url.path.startswith("/api/"):
                     raise ApiError("Not found", 404)
                 self._json(self._api(method, url.path[5:], parse_qs(url.query)))
+            except _Handled:
+                pass
             except ApiError as e:
                 self._json({"error": str(e)}, e.status)
             except KeyError:
@@ -356,6 +372,9 @@ def make_handler(app: App):
                 app.say(f"Planned {len(ids)} {fmt}(s)")
                 return {"ids": ids}
 
+            if route.startswith("manual/"):
+                return self._manual(method, route[7:])
+
             if (method, route) == ("GET", "posts"):
                 store = app.store()
                 try:
@@ -369,6 +388,46 @@ def make_handler(app: App):
                 try:
                     post = store.get(post_id)
                     return self._post_action(store, post, method, action, query)
+                finally:
+                    store.close()
+            raise ApiError("Not found", 404)
+
+        def _manual(self, method: str, route: str):
+            """Copy-and-paste mode: build the request text, then validate the pasted reply."""
+            if method != "POST":
+                raise ApiError("Not found", 404)
+            body = self._body()
+            if route == "master/request":
+                return {"text": agent.as_chat_message(*agent.master_request(app.cfg, str(body.get("notes", ""))))}
+            if route == "master/submit":
+                if app.master_path().exists() and not body.get("force"):
+                    raise ApiError("A master prompt already exists.")
+                try:
+                    app.master_path().write_text(agent.master_from_reply(str(body.get("reply", ""))))
+                except agent.ReplyError as e:
+                    raise ApiError(" ".join(e.problems))
+                app.say("Master prompt created from a pasted reply")
+                return {"ok": True}
+            if route in ("plan/request", "plan/submit"):
+                if not app.master_path().exists():
+                    raise ApiError("Create your master prompt first.")
+                fmt = body.get("format", "reel")
+                if fmt not in ("reel", "story"):
+                    raise ApiError("Format must be reel or story.")
+                count = max(1, min(int(body.get("count", 3)), 5))
+                master_md = app.master_path().read_text()
+                store = app.store()
+                try:
+                    if route == "plan/request":
+                        return {"text": agent.as_chat_message(*agent.plan_request(app.cfg, store, master_md, count, fmt, str(body.get("theme", ""))))}
+                    try:
+                        ids = agent.plan_from_reply(app.cfg, store, master_md, str(body.get("reply", "")), count, fmt)
+                    except agent.ReplyError as e:
+                        self._json({"error": "That reply could not be used: " + " ".join(e.problems), "problems": e.problems,
+                                    "fix_request": agent.fix_note(e.problems)}, 400)
+                        raise _Handled
+                    app.say(f"Planned {len(ids)} {fmt}(s) from a pasted reply")
+                    return {"ids": ids}
                 finally:
                     store.close()
             raise ApiError("Not found", 404)

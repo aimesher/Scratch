@@ -290,3 +290,38 @@ def test_gemini_bad_key_fails_immediately_without_retrying(gcfg):
 def test_gemini_empty_answer_is_reported(gcfg):
     with pytest.raises(RuntimeError, match="no answer"):
         agent.generate_master(gcfg, FakeGemini(body={"promptFeedback": {"blockReason": "SAFETY"}}))
+
+
+# ---------- copy-and-paste mode: request text and pasted replies ----------
+
+def test_chat_message_wraps_role_and_task(cfg):
+    text = agent.as_chat_message(*agent.master_request(cfg, "warm light"))
+    assert "ONLY the JSON" in text and "=== ROLE ===" in text and "warm light" in text and "archviz" in text
+
+
+def test_master_from_reply_accepts_chat_style_answers(cfg):
+    fenced = "Sure! Here is your master prompt:\n```json\n" + json.dumps(MASTER) + "\n```\nLet me know if you want changes."
+    assert agent.parse_master(agent.master_from_reply(fenced))["AVOID"] == "text, logos"
+
+
+@pytest.mark.parametrize("reply,expect", [
+    ("I cannot help with that.", "JSON"),
+    (json.dumps({"style_block": "x"}), "missing"),
+    ("[1, 2, 3]", "JSON"),
+])
+def test_master_from_reply_explains_what_is_wrong(reply, expect):
+    with pytest.raises(agent.ReplyError) as e:
+        agent.master_from_reply(reply)
+    assert expect in " ".join(e.value.problems)
+
+
+def test_plan_from_reply_lists_problems_and_builds_a_fix_note(cfg):
+    store = Store(cfg.path("data") / "q.db")
+    md = agent.render_master(MASTER)
+    bad = json.dumps({"posts": [post(seconds=(8, 8))]})
+    with pytest.raises(agent.ReplyError) as e:
+        agent.plan_from_reply(cfg, store, md, "Here you go:\n" + bad, 1)
+    note = agent.fix_note(e.value.problems)
+    assert "16s" in note and "rejected" in note and store.list() == []
+    ids = agent.plan_from_reply(cfg, store, md, "```json\n" + json.dumps({"posts": [post()]}) + "\n```", 1)
+    assert store.get(ids[0])["brief"]["shots"][0]["flow_prompt"].count("Photoreal") == 1

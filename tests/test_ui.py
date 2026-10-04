@@ -171,3 +171,53 @@ def test_choosing_gemini_changes_which_key_is_required(server):
     call(base, "/api/settings", dict(payload, keys={"GEMINI_API_KEY": "g-123456789"}), "PUT")
     assert next(c for c in call(base, "/api/health")[1]["checks"] if c["id"] == "ai")["ok"]
     assert call(base, "/api/settings", dict(payload, agent={"provider": "bogus"}), "PUT")[0] == 400
+
+
+# ---------- copy-and-paste mode ----------
+
+@pytest.fixture
+def manual_server(server):
+    app, base = server
+    payload = {"brand": {"niche": "archviz", "voice": "calm"}, "video": {"min_seconds": 10, "max_seconds": 12},
+               "instagram": {"max_per_day": 3}, "agent": {"provider": "manual"}}
+    assert call(base, "/api/settings", payload, "PUT")[0] == 200
+    return app, base
+
+
+def test_manual_mode_needs_no_key_and_blocks_automatic_calls(manual_server):
+    _, base = manual_server
+    ai = next(c for c in call(base, "/api/health")[1]["checks"] if c["id"] == "ai")
+    assert ai["ok"] and "copy and paste" in ai["label"]
+    code, body, _ = call(base, "/api/master/generate", {})
+    assert code == 400 and "Copy-and-paste" in body["error"]
+
+
+def test_manual_master_roundtrip(manual_server):
+    app, base = manual_server
+    code, body, _ = call(base, "/api/manual/master/request", {"notes": "golden hour"})
+    assert code == 200 and "golden hour" in body["text"] and "ONLY the JSON" in body["text"]
+    assert call(base, "/api/manual/master/submit", {"reply": "no json here"})[0] == 400
+    reply = "Here you go\n```json\n" + json.dumps(MASTER) + "\n```"
+    assert call(base, "/api/manual/master/submit", {"reply": reply})[0] == 200
+    assert call(base, "/api/master")[1]["exists"]
+    assert call(base, "/api/manual/master/submit", {"reply": reply})[0] == 400  # exists, needs force
+    assert call(base, "/api/manual/master/submit", {"reply": reply, "force": True})[0] == 200
+
+
+def test_manual_plan_roundtrip_with_fix_request(manual_server):
+    app, base = manual_server
+    assert call(base, "/api/manual/plan/request", {"count": 1})[0] == 400  # no master yet
+    app.master_path().write_text(agent.render_master(MASTER))
+    code, body, _ = call(base, "/api/manual/plan/request", {"format": "reel", "count": 2, "theme": "lighting"})
+    assert code == 200 and "Plan 2 Instagram reels" in body["text"] and "lighting" in body["text"]
+
+    bad = json.dumps({"posts": [post(seconds=(8, 8))]})
+    code, body, _ = call(base, "/api/manual/plan/submit", {"reply": bad, "format": "reel", "count": 1})
+    assert code == 400 and any("16s" in p for p in body["problems"]) and "rejected" in body["fix_request"]
+    assert call(base, "/api/posts")[1]["posts"] == []
+
+    good = "Sure!\n" + json.dumps({"posts": [post()]})
+    code, body, _ = call(base, "/api/manual/plan/submit", {"reply": good, "format": "reel", "count": 1})
+    assert code == 200 and len(body["ids"]) == 1
+    posts = call(base, "/api/posts")[1]["posts"]
+    assert posts[0]["status"] == "briefed" and "Photoreal" in posts[0]["brief"]["shots"][0]["flow_prompt"]

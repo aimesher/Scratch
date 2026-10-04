@@ -22,9 +22,13 @@ Your files stay on your computer. The dashboard only listens on `127.0.0.1`, so 
 
 ## First-time setup (in the dashboard)
 
-1. **Settings**: describe your account. Under Connections, pick who writes your prompts. **Google Gemini** has a free tier: get a key at aistudio.google.com/apikey and paste it. Claude is the paid alternative. Then Save.
+1. **Settings**: describe your account. Under Connections, pick who writes your prompts. **Google Gemini** has a free tier: get a key at aistudio.google.com/apikey and paste it. Claude is the paid alternative. **Copy and paste** needs no key at all: the dashboard gives you a request to paste into the Gemini or Claude app, and you paste the answer back. Then Save.
 2. **Create**: press *Create my master prompt*. Read it, edit anything, Save.
 3. **Create**: choose Reel or Story, how many, an optional theme, press *Generate prompts*.
+
+## Copy-and-paste mode (no API key)
+
+In **Create**, each step shows three boxes: **Copy request**, open Gemini or Claude and paste it into a new chat, then paste the whole answer back and press **Use this answer**. If the answer breaks a rule (for example the shots add up to 16 seconds), the dashboard lists what is wrong and gives you a correction request to paste into the same chat.
 
 ## Making a post
 

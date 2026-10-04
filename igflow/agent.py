@@ -128,6 +128,8 @@ def _ask_gemini(cfg: Config, http, system: str, user: str) -> str:
 
 def _ask(cfg: Config, client, system: str, user: str) -> str:
     """`client` is an injected Anthropic client or HTTP session (used by tests); None uses the real one."""
+    if cfg["agent"]["provider"] == "manual":
+        raise RuntimeError("Copy-and-paste mode is on, so the dashboard does not call an AI by itself.")
     if cfg["agent"]["provider"] == "gemini":
         return _ask_gemini(cfg, client, system, user)
     return _ask_claude(cfg, client, system, user)
@@ -140,10 +142,28 @@ def _brand_block(cfg: Config) -> str:
 
 # ---------- master prompt ----------
 
-def generate_master(cfg: Config, client=None, notes: str = "") -> str:
-    system = (
-        "You are a creative director who builds reusable prompt systems for AI video.\n\n" + FLOW_CRAFT
+class ReplyError(ValueError):
+    """An answer could not be used. `problems` lists why, in plain words."""
+
+    def __init__(self, problems: list[str]):
+        super().__init__("; ".join(problems))
+        self.problems = problems
+
+
+MASTER_KEYS = ("style_block", "subject_bible", "audio_style", "avoid", "reference_image_prompt")
+
+
+def as_chat_message(system: str, user: str) -> str:
+    """One block of text to paste into any chat assistant (Gemini app, Claude app, ChatGPT)."""
+    return (
+        "Act as the role below and complete the task. Reply with ONLY the JSON object requested. "
+        "No explanation before or after it.\n\n"
+        f"=== ROLE ===\n{system}\n\n=== TASK ===\n{user}\n"
     )
+
+
+def master_request(cfg: Config, notes: str = "") -> tuple[str, str]:
+    system = "You are a creative director who builds reusable prompt systems for AI video.\n\n" + FLOW_CRAFT
     user = f"""Build the master prompt for this Instagram account. It is written once and attached to every
 shot prompt, so it must be reusable across any topic and short enough to paste (STYLE BLOCK <= 90 words).
 
@@ -159,11 +179,25 @@ Return one JSON object, no prose, with exactly these string keys:
 - "avoid": comma-separated list of things to exclude in every prompt.
 - "reference_image_prompt": one image prompt to generate a reference frame that locks the look (used as Flow ingredient or start frame).
 """
-    data = _extract_json(_ask(cfg, client, system, user))
-    missing = [k for k in ("style_block", "subject_bible", "audio_style", "avoid", "reference_image_prompt") if not data.get(k)]
+    return system, user
+
+
+def master_from_reply(reply: str) -> str:
+    try:
+        data = _extract_json(reply)
+    except ValueError:
+        raise ReplyError(["The answer did not contain a JSON object. Copy the whole reply, including the curly brackets."])
+    if not isinstance(data, dict):
+        raise ReplyError(["The answer was not a JSON object."])
+    missing = [k for k in MASTER_KEYS if not str(data.get(k) or "").strip()]
     if missing:
-        raise ValueError(f"master prompt missing {missing}")
-    return render_master(data)
+        raise ReplyError([f"The answer is missing: {', '.join(missing)}."])
+    return render_master({k: str(data[k]) for k in MASTER_KEYS})
+
+
+def generate_master(cfg: Config, client=None, notes: str = "") -> str:
+    system, user = master_request(cfg, notes)
+    return master_from_reply(_ask(cfg, client, system, user))
 
 
 def render_master(data: dict) -> str:
@@ -237,17 +271,7 @@ def compose_shot_prompt(shot: dict, master: dict[str, str]) -> str:
     )
 
 
-def plan_posts(
-    cfg: Config,
-    store: Store,
-    master_md: str,
-    count: int,
-    fmt: str = "reel",
-    theme: str = "",
-    client=None,
-    now: datetime | None = None,
-) -> list[str]:
-    master = parse_master(master_md)
+def plan_request(cfg: Config, store: Store, master_md: str, count: int, fmt: str = "reel", theme: str = "") -> tuple[str, str]:
     system = "You are a short-form video producer for Instagram.\n\n" + FLOW_CRAFT + "\n\nMASTER PROMPT\n" + master_md
     v = cfg["video"]
     history = [f"- {b.get('title')}: {b.get('hook')}" for b in store.recent_briefs(20)]
@@ -284,22 +308,26 @@ Return one JSON object, no prose:
   "hashtags": ["without the # symbol"],
   "music_note": "optional trending-audio or music direction, or empty"
 }}]}}"""
+    return system, user
 
-    raw = _ask(cfg, client, system, user)
-    data, errors = None, []
+
+def fix_note(problems: list[str]) -> str:
+    """Appended to a request (or sent as a follow-up in the same chat) after a rejected answer."""
+    return "Your previous attempt was rejected:\n- " + "\n- ".join(problems) + "\nFix these and return the complete JSON again, nothing else."
+
+
+def plan_from_reply(
+    cfg: Config, store: Store, master_md: str, reply: str, count: int, fmt: str = "reel", now: datetime | None = None
+) -> list[str]:
+    """Validate an answer and create the posts. Raises ReplyError with plain-language problems."""
+    master = parse_master(master_md)
     try:
-        data = _extract_json(raw)
-        errors = validate_posts(data, cfg, fmt)
-    except (ValueError, json.JSONDecodeError) as e:
-        errors = [f"output was not valid JSON: {e}"]
-    if errors:
-        # One corrective retry as a fresh single-turn request.
-        retry = user + "\n\nYour previous attempt was rejected:\n- " + "\n- ".join(errors) + "\nFix these and return the full JSON again."
-        raw = _ask(cfg, client, system, retry)
-        data = _extract_json(raw)
-        errors = validate_posts(data, cfg, fmt)
-        if errors:
-            raise ValueError("brief failed validation twice:\n- " + "\n- ".join(errors))
+        data = _extract_json(reply)
+    except ValueError as e:
+        raise ReplyError([f"The answer was not valid JSON ({e}). Copy the whole reply, from the first {{ to the last }}."])
+    problems = validate_posts(data, cfg, fmt) if isinstance(data, dict) else ["The answer was not a JSON object."]
+    if problems:
+        raise ReplyError(problems)
 
     stamp = (now or datetime.now()).strftime("%Y%m%d-%H%M")
     ids = []
@@ -315,6 +343,28 @@ Return one JSON object, no prose:
         (brief_dir / f"{post_id}.md").write_text(render_brief(post_id, post, master))
         ids.append(post_id)
     return ids
+
+
+def plan_posts(
+    cfg: Config,
+    store: Store,
+    master_md: str,
+    count: int,
+    fmt: str = "reel",
+    theme: str = "",
+    client=None,
+    now: datetime | None = None,
+) -> list[str]:
+    system, user = plan_request(cfg, store, master_md, count, fmt, theme)
+    try:
+        return plan_from_reply(cfg, store, master_md, _ask(cfg, client, system, user), count, fmt, now)
+    except ReplyError as first:
+        # One corrective retry as a fresh single-turn request.
+        retry = user + "\n\n" + fix_note(first.problems)
+        try:
+            return plan_from_reply(cfg, store, master_md, _ask(cfg, client, system, retry), count, fmt, now)
+        except ReplyError as second:
+            raise ValueError("brief failed validation twice:\n- " + "\n- ".join(second.problems))
 
 
 def render_brief(post_id: str, post: dict, master: dict[str, str]) -> str:

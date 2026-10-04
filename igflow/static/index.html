@@ -161,6 +161,15 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
 .log div { display: flex; gap: 14px; padding: 6px 0; border-top: 1px solid var(--border); }
 .log div:first-child { border-top: 0; }
 .log time { color: var(--muted); flex: none; }
+.manual { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); padding: 6px 18px; }
+.mstep { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.mstep:first-child { border-top: 0; }
+.mstep > em { font-style: normal; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+.mstep > div { flex: 1; min-width: 200px; }
+.mstep > div > b { display: block; }
+.mstep > div > span { color: var(--muted); font-size: 13.5px; }
+.mstep a.btn { text-decoration: none; color: inherit; }
+.mstep textarea { margin-top: 8px; min-height: 110px; background: var(--surface); }
 details.help { margin-top: 6px; font-size: 14px; color: var(--muted); }
 details.help summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 details.help ol { padding-left: 20px; margin: 8px 0 0; }
@@ -243,14 +252,14 @@ const FILTERS = [
   ['published', 'Published', p => p.status === 'published'], ['problems', 'Needs attention', p => ['failed', 'rejected'].includes(p.status)],
 ];
 
-const S = { page: 'overview', posts: [], master: null, settings: null, health: null, log: [], filter: 'all', open: {}, prompts: {}, plan: { format: 'reel', count: 3 }, sig: '' };
+const S = { page: 'overview', posts: [], master: null, settings: null, health: null, log: [], filter: 'all', open: {}, prompts: {}, plan: { format: 'reel', count: 3, theme: '' }, manual: { regen: false, reply: {}, problems: {}, fix: {}, text: {} }, sig: '' };
 
 async function api(path, opts = {}) {
   const o = { method: opts.method || 'GET', headers: { 'X-IGFlow': '1' } };
   if (opts.json !== undefined) { o.body = JSON.stringify(opts.json); o.headers['Content-Type'] = 'application/json'; if (!opts.method) o.method = 'POST'; }
   const r = await fetch('/api/' + path, o);
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.error || `Request failed (${r.status})`);
+  if (!r.ok) { const err = new Error(d.error || `Request failed (${r.status})`); err.data = d; throw err; }
   return d;
 }
 function toast(msg, err) {
@@ -276,7 +285,7 @@ async function load(what) {
     log: () => api('log').then(d => S.log = d.events) };
   await Promise.all(what.map(k => jobs[k]()));
 }
-const PAGE_DATA = { overview: ['posts', 'health', 'log'], create: ['master', 'health'], posts: ['posts', 'master'], activity: ['log'], settings: ['settings'] };
+const PAGE_DATA = { overview: ['posts', 'health', 'log'], create: ['master', 'health', 'settings'], posts: ['posts', 'master'], activity: ['log'], settings: ['settings'] };
 
 async function go(page) {
   S.page = page; location.hash = page;
@@ -331,17 +340,20 @@ const VIEWS = {
 
   create() {
     const m = S.master, ok = m && m.exists;
-    const noKey = S.health && !S.health.find(x => x.id === 'ai').ok;
+    const manual = S.settings?.agent.provider === 'manual';
+    const ai = S.health && S.health.find(x => x.id === 'ai');
+    const showForm = !ok || S.manual.regen;
     return `
-    ${noKey ? `<div class="note amber">${ic('alert')}<div>The prompt writer is not connected yet. <a style="color:inherit;font-weight:700;cursor:pointer" data-go="settings">Add your key in Settings</a> to generate prompts.</div></div>` : ''}
+    ${ai && !ai.ok ? `<div class="note amber">${ic('alert')}<div>The prompt writer is not connected yet. <a style="color:inherit;font-weight:700;cursor:pointer" data-go="settings">Add your key in Settings</a>, or switch to copy and paste there (no key needed).</div></div>` : ''}
     <div class="card"><h2>1. Master prompt</h2>
       <p class="sub">Your style guide: look, recurring subjects, sound and things to avoid. It is attached to every shot prompt, so all your posts match.</p>
-      ${ok ? `
+      ${ok && !S.manual.regen ? `
         <label class="f"><span>Edit it freely. Keep the five headings that start with ##.</span><textarea id="master-text" style="min-height:360px;font:13px/1.55 ui-monospace,Menlo,Consolas,monospace">${esc(m.text)}</textarea></label>
         <div class="row"><button class="btn primary" data-act="save-master">Save changes</button>
           <button class="btn" data-act="regen-master">${ic('refresh')}Start again with the agent</button></div>`
-      : `<label class="f"><span>Anything the agent should know? (optional)</span><textarea id="master-notes" placeholder="Example: I want a warm, cinematic look like golden-hour architecture photography."></textarea></label>
-        <button class="btn primary" data-act="gen-master">${ic('sparkles')}Create my master prompt</button>`}
+      : `<label class="f"><span>Anything the agent should know? (optional)</span><textarea id="master-notes" placeholder="Example: I want a warm, cinematic look like golden-hour architecture photography.">${esc(S.manual.notes || '')}</textarea></label>
+        ${manual ? manualPanel('master') : `<button class="btn primary" data-act="gen-master">${ic('sparkles')}Create my master prompt</button>`}
+        ${S.manual.regen ? `<div style="margin-top:12px"><button class="btn sm ghost" data-act="manual-cancel">Cancel and keep my current one</button></div>` : ''}`}
     </div>
     <div class="card"><h2>2. Plan new posts</h2>
       <p class="sub">The agent writes the idea, a Flow prompt for every shot, the caption and hashtags.</p>
@@ -351,9 +363,10 @@ const VIEWS = {
         <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">How many</div>
           <div class="stepper-num"><button data-cnt="-1">−</button><span>${S.plan.count}</span><button data-cnt="1">+</button></div></div>
       </div>
-      <label class="f"><span>Theme (optional)</span><input type="text" id="plan-theme" placeholder="Example: behind the scenes of a lighting setup"></label>
-      <button class="btn primary" data-act="plan" ${ok ? '' : 'disabled'}>${ic('sparkles')}Generate prompts</button>
-      ${ok ? '<small style="color:var(--muted);margin-left:10px">Takes about a minute.</small>' : '<small style="color:var(--muted);margin-left:10px">Create your master prompt first.</small>'}
+      <label class="f"><span>Theme (optional)</span><input type="text" id="plan-theme" value="${esc(S.plan.theme)}" placeholder="Example: behind the scenes of a lighting setup"></label>
+      ${!ok ? '<small style="color:var(--muted)">Create your master prompt first.</small>'
+        : manual ? manualPanel('plan')
+        : `<button class="btn primary" data-act="plan">${ic('sparkles')}Generate prompts</button><small style="color:var(--muted);margin-left:10px">Takes about a minute.</small>`}
     </div>`;
   },
 
@@ -393,8 +406,9 @@ const VIEWS = {
           <label class="f"><span>Who writes your prompts?</span>
             <select id="provider" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
               <option value="gemini" ${s.agent.provider === 'gemini' ? 'selected' : ''}>Google Gemini (free tier available)</option>
-              <option value="anthropic" ${s.agent.provider === 'anthropic' ? 'selected' : ''}>Claude (paid API)</option></select>
-            <small>Only the one you pick is used. You do not need both keys.</small></label>
+              <option value="anthropic" ${s.agent.provider === 'anthropic' ? 'selected' : ''}>Claude (paid API)</option>
+              <option value="manual" ${s.agent.provider === 'manual' ? 'selected' : ''}>Copy and paste (no key needed)</option></select>
+            <small>Copy and paste means you take the request to the Gemini or Claude app yourself and paste the answer back. Only the option you pick is used.</small></label>
           ${key('GEMINI_API_KEY', 'Gemini API key', 'password', 'Free at aistudio.google.com/apikey. The free tier has rate limits and Google may use free-tier content to improve its products.')}
           ${key('ANTHROPIC_API_KEY', 'Claude API key', 'password', 'Paid. Get one at console.anthropic.com.')}
           ${key('IG_USER_ID', 'Instagram user ID', 'text', 'A number from your Meta developer app.')}
@@ -408,6 +422,23 @@ const VIEWS = {
     </div>`;
   },
 };
+
+function manualPanel(kind) {
+  const M = S.manual, probs = M.problems[kind];
+  return `<div class="manual">
+    <div class="mstep"><em>1</em><div><b>Copy the request</b><span>It holds everything the assistant needs.</span></div>
+      <button class="btn primary sm" data-act="manual-copy" data-kind="${kind}">${ic('copy')}Copy request</button></div>
+    ${M.text[kind] ? `<div class="mstep"><div style="flex:1"><span>Your browser blocked automatic copying. Select all of this and copy it:</span><textarea readonly onfocus="this.select()">${esc(M.text[kind])}</textarea></div></div>` : ''}
+    <div class="mstep"><em>2</em><div><b>Paste it into an assistant and wait for the answer</b><span>Any chat works. Use a new chat each time.</span></div>
+      <a class="btn sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Open Gemini</a>
+      <a class="btn sm" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude</a></div>
+    <div class="mstep"><em>3</em><div><b>Paste the whole answer here</b>
+      <textarea id="reply-${kind}" placeholder="Paste the reply here">${esc(M.reply[kind] || '')}</textarea>
+      ${probs ? `<div class="note red" style="margin-top:10px">${ic('alert')}<div><b>That answer could not be used:</b><ul style="margin:6px 0 0;padding-left:18px">${probs.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        ${M.fix[kind] ? `<div style="margin-top:10px">Paste a correction request into the <b>same chat</b>, then paste the new answer above. <button class="btn sm" data-act="manual-copy-fix" data-kind="${kind}">${ic('copy')}Copy correction request</button></div>` : ''}</div></div>` : ''}
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-act="manual-submit" data-kind="${kind}">Use this answer</button></div></div></div>
+  </div>`;
+}
 
 function postCard(p) {
   const [label, cls] = ST[p.status], b = p.brief, open = S.open[p.id];
@@ -498,7 +529,40 @@ document.addEventListener('click', async e => {
   if (act === 'toggle-prompts') { S.prompts[id] = !(S.prompts[id] ?? S.posts.find(p => p.id === id).status === 'briefed'); return render(); }
   if (act === 'folder') { const r = await api(`posts/${id}/folder`, { json: {} }).catch(err => toast(err.message, true)); if (r) toast(r.opened ? 'Opening the folder…' : 'Folder: ' + r.path); return; }
 
+  if (act === 'manual-copy') {
+    const kind = btn.dataset.kind;
+    const body = kind === 'master' ? { notes: $('#master-notes')?.value || '' } : { format: S.plan.format, count: S.plan.count, theme: S.plan.theme };
+    if (kind === 'master') S.manual.notes = body.notes;
+    return busy(btn, async () => {
+      const r = await api(`manual/${kind}/request`, { json: body });
+      try { await copyText(r.text); S.manual.text[kind] = ''; toast('Copied. Now paste it into Gemini or Claude.'); }
+      catch { S.manual.text[kind] = r.text; keepInputs(render); }
+    });
+  }
+  if (act === 'manual-copy-fix') { await copyText(S.manual.fix[btn.dataset.kind]); return toast('Copied. Paste it into the same chat.'); }
+  if (act === 'manual-cancel') { S.manual.regen = false; return render(); }
+  if (act === 'manual-submit') {
+    const kind = btn.dataset.kind, reply = $('#reply-' + kind).value;
+    if (!reply.trim()) return toast('Paste the assistant\'s answer first.', true);
+    S.manual.reply[kind] = reply;
+    return busy(btn, async () => {
+      try {
+        if (kind === 'master') {
+          await api('manual/master/submit', { json: { reply, force: S.manual.regen } });
+          S.manual.regen = false; S.manual.reply.master = ''; toast('Master prompt created. Read it and edit anything you like.'); await refresh(['master', 'health']);
+        } else {
+          const r = await api('manual/plan/submit', { json: { reply, format: S.plan.format, count: S.plan.count } });
+          S.manual.reply.plan = ''; S.manual.problems.plan = null; toast(`${r.ids.length} post${r.ids.length > 1 ? 's' : ''} planned`);
+          S.filter = 'need'; r.ids.forEach(i => S.open[i] = r.ids.length === 1); await go('posts');
+        }
+      } catch (e) {
+        S.manual.problems[kind] = e.data?.problems || [e.message]; S.manual.fix[kind] = e.data?.fix_request || '';
+        render(); throw e;
+      }
+    });
+  }
   if (act === 'gen-master') return busy(btn, async () => { await api('master/generate', { json: { notes: $('#master-notes').value } }); toast('Master prompt created. Read it and edit anything you like.'); await refresh(['master', 'health']); });
+  if (act === 'regen-master' && S.settings?.agent.provider === 'manual') { S.manual.regen = true; return render(); }
   if (act === 'regen-master') { if (!confirm('This replaces your master prompt, including your edits. Continue?')) return; return busy(btn, async () => { await api('master/generate', { json: { force: true } }); toast('New master prompt created'); await refresh(['master', 'health']); }); }
   if (act === 'save-master') return busy(btn, async () => { await api('master', { method: 'PUT', json: { text: $('#master-text').value } }); toast('Saved'); await refresh(['master']); });
   if (act === 'plan') return busy(btn, async () => { const r = await api('plan', { json: { format: S.plan.format, count: S.plan.count, theme: $('#plan-theme').value } }); toast(`${r.ids.length} post${r.ids.length > 1 ? 's' : ''} planned`); S.filter = 'need'; r.ids.forEach(i => S.open[i] = r.ids.length === 1); await go('posts'); });
@@ -516,6 +580,7 @@ document.addEventListener('click', async e => {
     toast('Settings saved'); await load(['settings', 'health']); render();
   });
 });
+document.addEventListener('input', e => { if (e.target.id === 'plan-theme') S.plan.theme = e.target.value; });
 const keepInputs = fn => { const th = $('#plan-theme')?.value; fn(); if (th) $('#plan-theme').value = th; };
 
 async function saveCaption(id, quiet) {
