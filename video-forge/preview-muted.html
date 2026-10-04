@@ -218,7 +218,7 @@ body {
 .stat-val.c { color: var(--coral); }
 .bar-wrap { margin-top: 10px; }
 .bar-labels { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-3); margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
-.bar { height: 5px; background: #1a1d22; border-radius: 3px; overflow: hidden; }
+.bar { height: 5px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
 
 /* ── Pipeline ── */
@@ -1059,7 +1059,7 @@ async function callGemini(prompt, opts) {
   const data = await res.json()
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
   const usage = data.usageMetadata || {}
-  bumpStats(1, (usage.totalTokenCount || usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0))
+  bumpStats(1, usage.totalTokenCount || ((usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0)))
   return text
 }
 
@@ -1103,7 +1103,7 @@ async function startResearch() {
 
   try {
     const topicInfo = state.topic + (state.desc ? ' — ' + state.desc : '')
-    const formatLabel = state.format === 'short' ? '60-second short-form' : state.format === 'medium' ? '3-5 minute medium' : '10+ minute long-form'
+    const formatLabel = state.format === 'short' ? '60-second short-form' : state.format === 'standard' ? '2-5 minute standard' : '10+ minute long-form'
     const prompt = 'You are a video production researcher. Research the following topic for a ' + formatLabel + ' ' + state.style + ' video.\n\nTopic: ' + topicInfo + '\n\nReturn a JSON array of exactly 4 research sections. Each object must have "title" (string) and "text" (string, 2-3 sentences of substantive findings). Sections should cover:\n1. Core concept overview with specific facts and data\n2. Target audience insights with demographics\n3. Visual style references for ' + state.style + ' cinematography\n4. Narrative structure adapted for ' + formatLabel + ' format\n\nReturn ONLY the JSON array, no other text.'
 
     addLog('info', 'Querying ' + rName + ' for topic analysis...'); render()

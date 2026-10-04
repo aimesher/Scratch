@@ -1,17 +1,14 @@
-<title>VideoForge Muted</title>
-<meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap">
-
-<style>
-/* ── Dark theme (default) ── */
-:root {
-  --bg-0: #101214;
-  --bg-1: #161819;
-  --bg-2: #1c1e20;
-  --bg-3: #232527;
-  --bg-input: #131516;
-  --border: #2a2c2e;
-  --border-hover: #3a3c3e;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101214">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>VideoForge Muted</title>
 <meta name="color-scheme" content="dark light">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -232,7 +229,7 @@ body {
 .stat-val.c { color: var(--coral); }
 .bar-wrap { margin-top: 10px; }
 .bar-labels { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-3); margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
-.bar { height: 5px; background: #1a1d22; border-radius: 3px; overflow: hidden; }
+.bar { height: 5px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
 
 /* ── Pipeline ── */
@@ -536,6 +533,8 @@ body {
   .pipeline { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
 }
 </style>
+</head>
+<body>
 
 <div class="app">
   <!-- Mobile header -->
@@ -1073,7 +1072,7 @@ async function callGemini(prompt, opts) {
   const data = await res.json()
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
   const usage = data.usageMetadata || {}
-  bumpStats(1, (usage.totalTokenCount || usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0))
+  bumpStats(1, usage.totalTokenCount || ((usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0)))
   return text
 }
 
@@ -1117,7 +1116,7 @@ async function startResearch() {
 
   try {
     const topicInfo = state.topic + (state.desc ? ' — ' + state.desc : '')
-    const formatLabel = state.format === 'short' ? '60-second short-form' : state.format === 'medium' ? '3-5 minute medium' : '10+ minute long-form'
+    const formatLabel = state.format === 'short' ? '60-second short-form' : state.format === 'standard' ? '2-5 minute standard' : '10+ minute long-form'
     const prompt = 'You are a video production researcher. Research the following topic for a ' + formatLabel + ' ' + state.style + ' video.\n\nTopic: ' + topicInfo + '\n\nReturn a JSON array of exactly 4 research sections. Each object must have "title" (string) and "text" (string, 2-3 sentences of substantive findings). Sections should cover:\n1. Core concept overview with specific facts and data\n2. Target audience insights with demographics\n3. Visual style references for ' + state.style + ' cinematography\n4. Narrative structure adapted for ' + formatLabel + ' format\n\nReturn ONLY the JSON array, no other text.'
 
     addLog('info', 'Querying ' + rName + ' for topic analysis...'); render()
@@ -1551,7 +1550,7 @@ render()
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js?v=7').catch(function(){});
+  navigator.serviceWorker.register('sw.js?v=8').catch(function(){});
 }
 </script>
 </body>
