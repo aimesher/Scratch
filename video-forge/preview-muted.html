@@ -1374,9 +1374,14 @@ function render() {
           <div class="fg"><label>Visual Style</label><div class="style-grid">
             ${['Cinematic','Documentary','Animated','Editorial','Surreal','Minimal'].map(s=>`<button class="style-btn ${state.style===s.toLowerCase()?'on':''}" onclick="state.style='${s.toLowerCase()}';render()">${s}</button>`).join('')}
           </div></div>
-          <button class="btn-start" onclick="startResearch()" ${!state.topic.trim()||state.generating?'disabled':''}>
-            ${state.generating?'<div class="spinner"></div> Processing...':'Start Research →'}
-          </button>
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <button class="btn-start" style="flex:1" onclick="startResearch()" ${!state.topic.trim()||state.generating?'disabled':''}>
+              ${state.generating?'<div class="spinner"></div> Processing...':'Start Research →'}
+            </button>
+            <button class="btn-start" style="flex:0 0 auto;background:var(--bg-3);color:var(--text-1);border:1px solid var(--border)" onclick="if(state.projectName||state.topic){if(!state.projectName)state.projectName=state.topic.slice(0,60);saveCurrentProject();addLog('success','Project saved: '+state.projectName);render()}" ${!state.topic.trim()&&!state.projectName?'disabled':''}>
+              Save Draft
+            </button>
+          </div>
         </div>
       </div>
     `
