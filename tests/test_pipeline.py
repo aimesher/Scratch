@@ -214,3 +214,46 @@ def test_publish_due_honours_schedule_and_daily_limit(cfg, tmp_path):
     assert publish_due(cfg, store, ig, log=lambda m: None) == 1
     assert store.get("a")["status"] == "published" and store.get("a")["ig_media_id"] == "M1"
     assert store.get("b")["status"] == "approved"
+
+
+# ---------- Gemini provider ----------
+
+class FakeGemini:
+    def __init__(self, text=None, status=200, body=None):
+        self.calls, self.status = [], status
+        self.body = body if body is not None else {"candidates": [{"content": {"parts": [{"text": text}]}, "finishReason": "STOP"}]}
+
+    def post(self, url, **kw):
+        self.calls.append((url, kw))
+        return SimpleNamespace(status_code=self.status, json=lambda: self.body, text=json.dumps(self.body))
+
+
+@pytest.fixture
+def gcfg(tmp_path, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "g-key")
+    return Config({"agent": {"provider": "gemini"}, "brand": {"niche": "archviz"}}, tmp_path)
+
+
+def test_gemini_master_and_plan_use_json_mode_and_key_header(gcfg):
+    http = FakeGemini(json.dumps(MASTER))
+    md = agent.generate_master(gcfg, http)
+    assert agent.parse_master(md)["STYLE BLOCK"] == MASTER["style_block"]
+    url, kw = http.calls[0]
+    assert "gemini-flash-latest:generateContent" in url and kw["headers"] == {"x-goog-api-key": "g-key"}
+    assert kw["json"]["generationConfig"]["responseMimeType"] == "application/json"
+
+    store = Store(gcfg.path("data") / "q.db")
+    ids = agent.plan_posts(gcfg, store, md, 1, client=FakeGemini(json.dumps({"posts": [post()]})))
+    assert store.get(ids[0])["status"] == "briefed"
+
+
+@pytest.mark.parametrize("status,text,expect", [
+    (429, "quota", "rate-limited"), (400, "API key not valid", "rejected the API key"), (404, "nope", "does not know the model")])
+def test_gemini_errors_are_readable(gcfg, status, text, expect):
+    with pytest.raises(RuntimeError, match=expect):
+        agent.generate_master(gcfg, FakeGemini(status=status, body={"error": text}))
+
+
+def test_gemini_empty_answer_is_reported(gcfg):
+    with pytest.raises(RuntimeError, match="no answer"):
+        agent.generate_master(gcfg, FakeGemini(body={"promptFeedback": {"blockReason": "SAFETY"}}))

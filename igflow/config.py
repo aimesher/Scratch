@@ -26,7 +26,7 @@ DEFAULTS: dict = {
         "allowed_clip_seconds": [4, 6, 8],
         "music_volume": 0.25,
     },
-    "agent": {"model": "claude-opus-5-5", "effort": "medium"},
+    "agent": {"provider": "anthropic", "model": "claude-opus-5-5", "effort": "medium", "gemini_model": "gemini-flash-latest"},
     "watcher": {"poll_seconds": 5, "stable_seconds": 4},
     "instagram": {"api_version": "v23.0", "max_per_day": 3, "status_timeout_seconds": 300},
 }

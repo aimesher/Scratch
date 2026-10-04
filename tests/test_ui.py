@@ -157,3 +157,17 @@ def test_installer_points_at_real_files_and_this_branch():
         assert needed in ps1 and (ROOT / needed).exists()
     assert "setup.ps1" in bat and 'BRANCH=claude/instagram-agentic-google-flow-9pjpec"' in bat
     assert "%~dp0." in bat  # a trailing backslash before a closing quote would break the argument
+
+
+def test_choosing_gemini_changes_which_key_is_required(server):
+    app, base = server
+    payload = {"brand": {}, "video": {"min_seconds": 10, "max_seconds": 12}, "instagram": {"max_per_day": 3}, "agent": {"provider": "gemini"}}
+    assert call(base, "/api/settings", payload, "PUT")[0] == 200
+    assert call(base, "/api/settings")[1]["agent"]["provider"] == "gemini"
+    code, body, _ = call(base, "/api/master/generate", {})
+    assert code == 400 and "Gemini" in body["error"]
+    ai = next(c for c in call(base, "/api/health")[1]["checks"] if c["id"] == "ai")
+    assert not ai["ok"] and "Gemini" in ai["label"]
+    call(base, "/api/settings", dict(payload, keys={"GEMINI_API_KEY": "g-123456789"}), "PUT")
+    assert next(c for c in call(base, "/api/health")[1]["checks"] if c["id"] == "ai")["ok"]
+    assert call(base, "/api/settings", dict(payload, agent={"provider": "bogus"}), "PUT")[0] == 400

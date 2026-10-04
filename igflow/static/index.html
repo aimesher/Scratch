@@ -301,13 +301,13 @@ const VIEWS = {
       sched: count(p => p.status === 'approved'), live: count(p => p.status === 'published'), bad: count(p => p.status === 'failed') };
     const todo = [];
     const h = Object.fromEntries((S.health || []).map(x => [x.id, x.ok]));
-    if (!h.brand || !h.claude) todo.push(['sliders', 'Finish setup', 'Fill in your account profile and connect Claude.', 'Open settings', 'settings']);
+    if (!h.brand || !h.ai) todo.push(['sliders', 'Finish setup', 'Fill in your account profile and add your prompt-writer key.', 'Open settings', 'settings']);
     else if (!h.master) todo.push(['sparkles', 'Create your master prompt', 'This locks in your look and sound for every post.', 'Create it', 'create']);
     if (c.bad) todo.push(['alert', `${c.bad} post${c.bad > 1 ? 's need' : ' needs'} attention`, 'Something went wrong while processing or publishing.', 'See posts', 'posts', 'problems']);
     if (c.review) todo.push(['eye', `${c.review} video${c.review > 1 ? 's' : ''} ready for review`, 'Watch, edit the caption and approve.', 'Review now', 'posts', 'review']);
     if (c.need) todo.push(['upload', `${c.need} post${c.need > 1 ? 's' : ''} waiting for clips`, 'Copy the prompts into Flow, then upload the clips here.', 'Add clips', 'posts', 'need']);
     if (h.master && !c.need && !c.review) todo.push(['sparkles', 'Plan your next posts', 'Ask the agent for fresh ideas and prompts.', 'Plan posts', 'create']);
-    if (h.claude && h.master && !h.instagram) todo.push(['send', 'Connect Instagram', 'Needed before anything can go live.', 'Connect', 'settings']);
+    if (h.ai && h.master && !h.instagram) todo.push(['send', 'Connect Instagram', 'Needed before anything can go live.', 'Connect', 'settings']);
     return `
     <div class="grid g5" style="margin-bottom:18px">
       ${[['Need clips', c.need, 'need'], ['Ready for review', c.review, 'review'], ['Scheduled', c.sched, 'scheduled'], ['Published', c.live, 'published'], ['Needs attention', c.bad, 'problems']]
@@ -331,9 +331,9 @@ const VIEWS = {
 
   create() {
     const m = S.master, ok = m && m.exists;
-    const noKey = S.health && !S.health.find(x => x.id === 'claude').ok;
+    const noKey = S.health && !S.health.find(x => x.id === 'ai').ok;
     return `
-    ${noKey ? `<div class="note amber">${ic('alert')}<div>Claude is not connected yet. <a style="color:inherit;font-weight:700;cursor:pointer" data-go="settings">Add your API key in Settings</a> to generate prompts.</div></div>` : ''}
+    ${noKey ? `<div class="note amber">${ic('alert')}<div>The prompt writer is not connected yet. <a style="color:inherit;font-weight:700;cursor:pointer" data-go="settings">Add your key in Settings</a> to generate prompts.</div></div>` : ''}
     <div class="card"><h2>1. Master prompt</h2>
       <p class="sub">Your style guide: look, recurring subjects, sound and things to avoid. It is attached to every shot prompt, so all your posts match.</p>
       ${ok ? `
@@ -390,7 +390,13 @@ const VIEWS = {
       </div>
       <div>
         <div class="card"><h2>Connections</h2><p class="sub">Stored only on this computer, in a file called .env.</p>
-          ${key('ANTHROPIC_API_KEY', 'Claude API key', 'password', 'Used to write your prompts. Get one at console.anthropic.com.')}
+          <label class="f"><span>Who writes your prompts?</span>
+            <select id="provider" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+              <option value="gemini" ${s.agent.provider === 'gemini' ? 'selected' : ''}>Google Gemini (free tier available)</option>
+              <option value="anthropic" ${s.agent.provider === 'anthropic' ? 'selected' : ''}>Claude (paid API)</option></select>
+            <small>Only the one you pick is used. You do not need both keys.</small></label>
+          ${key('GEMINI_API_KEY', 'Gemini API key', 'password', 'Free at aistudio.google.com/apikey. The free tier has rate limits and Google may use free-tier content to improve its products.')}
+          ${key('ANTHROPIC_API_KEY', 'Claude API key', 'password', 'Paid. Get one at console.anthropic.com.')}
           ${key('IG_USER_ID', 'Instagram user ID', 'text', 'A number from your Meta developer app.')}
           ${key('IG_ACCESS_TOKEN', 'Instagram access token', 'password', 'Expires after 60 days. Paste a fresh one here when it does.')}
           <details class="help"><summary>How do I get the Instagram details?</summary><ol>
@@ -506,7 +512,7 @@ document.addEventListener('click', async e => {
     const brand = {}, keys = {};
     document.querySelectorAll('[data-brand]').forEach(el => brand[el.dataset.brand] = el.value);
     document.querySelectorAll('[data-key]').forEach(el => { if (el.value.trim()) keys[el.dataset.key] = el.value.trim(); });
-    await api('settings', { method: 'PUT', json: { brand, keys, video: { min_seconds: $('#min-s').value, max_seconds: $('#max-s').value }, instagram: { max_per_day: $('#per-day').value } } });
+    await api('settings', { method: 'PUT', json: { brand, keys, video: { min_seconds: $('#min-s').value, max_seconds: $('#max-s').value }, instagram: { max_per_day: $('#per-day').value }, agent: { provider: $('#provider').value } } });
     toast('Settings saved'); await load(['settings', 'health']); render();
   });
 });

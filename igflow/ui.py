@@ -26,7 +26,8 @@ from .watcher import AUDIO_EXT, VIDEO_EXT, process_drops
 
 STATIC = Path(__file__).parent / "static"
 MAX_UPLOAD = 2 * 1024**3
-KEYS = ("ANTHROPIC_API_KEY", "IG_USER_ID", "IG_ACCESS_TOKEN")
+KEYS = ("GEMINI_API_KEY", "ANTHROPIC_API_KEY", "IG_USER_ID", "IG_ACCESS_TOKEN")
+PROVIDER_KEY = {"gemini": "GEMINI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
 
 
 class ApiError(Exception):
@@ -65,6 +66,9 @@ class App:
 
     # ----- views -----
 
+    def provider(self) -> str:
+        return self.cfg["agent"]["provider"] if self.cfg["agent"]["provider"] in PROVIDER_KEY else "anthropic"
+
     def master_path(self) -> Path:
         return self.cfg.path("data") / "master_prompt.md"
 
@@ -96,7 +100,7 @@ class App:
             "checks": [
                 {"id": "ffmpeg", "label": "Video tools (ffmpeg) installed", "ok": bool(shutil.which("ffmpeg") and shutil.which("ffprobe")), "go": None},
                 {"id": "brand", "label": "Account profile filled in", "ok": bool(brand.get("niche") and brand.get("voice")), "go": "settings"},
-                {"id": "claude", "label": "Claude connected", "ok": bool(os.environ.get("ANTHROPIC_API_KEY")), "go": "settings"},
+                {"id": "ai", "label": f"Prompt writer connected ({'Gemini' if self.provider() == 'gemini' else 'Claude'})", "ok": bool(os.environ.get(PROVIDER_KEY[self.provider()])), "go": "settings"},
                 {"id": "master", "label": "Master prompt created", "ok": self.master_path().exists(), "go": "create"},
                 {"id": "instagram", "label": "Instagram connected", "ok": ig_ready, "go": "settings"},
             ]
@@ -108,6 +112,7 @@ class App:
             "brand": raw["brand"],
             "video": {"min_seconds": raw["video"]["min_seconds"], "max_seconds": raw["video"]["max_seconds"]},
             "instagram": {"max_per_day": raw["instagram"]["max_per_day"]},
+            "agent": {"provider": self.provider()},
             "keys": {k: {"set": bool(os.environ.get(k)), "hint": mask(os.environ.get(k)) if k != "IG_USER_ID" else (os.environ.get(k) or "")} for k in KEYS},
         }
 
@@ -127,6 +132,10 @@ class App:
             raise ApiError("Posts per day must be between 1 and 25.")
         file_raw.setdefault("video", {}).update({"min_seconds": lo, "max_seconds": hi})
         file_raw.setdefault("instagram", {})["max_per_day"] = per_day
+        provider = (data.get("agent") or {}).get("provider", self.provider())
+        if provider not in PROVIDER_KEY:
+            raise ApiError("Choose Gemini or Claude as the prompt writer.")
+        file_raw.setdefault("agent", {})["provider"] = provider
         self.config_path.write_text(yaml.safe_dump(file_raw, sort_keys=False, allow_unicode=True))
         keys = {k: str(v).strip() for k, v in (data.get("keys") or {}).items() if k in KEYS and str(v).strip()}
         if keys:
@@ -134,8 +143,8 @@ class App:
         self.cfg = Config(file_raw, self.config_path.parent)
 
     def require_key(self) -> None:
-        if not os.environ.get("ANTHROPIC_API_KEY"):
-            raise ApiError("Add your Anthropic API key in Settings first.")
+        if not os.environ.get(PROVIDER_KEY[self.provider()]):
+            raise ApiError("Add your Gemini API key in Settings first." if self.provider() == "gemini" else "Add your Claude API key in Settings first.")
 
     def save_upload(self, post: dict, slot: str, ext: str, length: int, rfile) -> str:
         if not re.fullmatch(r"shot[1-3]|music", slot):

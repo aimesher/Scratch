@@ -6,11 +6,13 @@ prompt by code, so the model cannot drift away from your look.
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
 
 import anthropic
+import requests
 
 from .config import Config
 from .db import Store
@@ -51,8 +53,8 @@ def _extract_json(text: str) -> dict:
     return json.loads(text[start : end + 1])
 
 
-def _ask(cfg: Config, client, system: str, user: str) -> str:
-    resp = client.messages.create(
+def _ask_claude(cfg: Config, client, system: str, user: str) -> str:
+    resp = _client(client).messages.create(
         model=cfg["agent"]["model"],
         max_tokens=16000,
         system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
@@ -60,6 +62,48 @@ def _ask(cfg: Config, client, system: str, user: str) -> str:
         output_config={"effort": cfg["agent"]["effort"]},
     )
     return _text(resp)
+
+
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+
+def _ask_gemini(cfg: Config, http, system: str, user: str) -> str:
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        raise RuntimeError("GEMINI_API_KEY is not set.")
+    r = (http or requests).post(
+        GEMINI_URL.format(model=cfg["agent"]["gemini_model"]),
+        headers={"x-goog-api-key": key},
+        json={
+            "systemInstruction": {"parts": [{"text": system}]},
+            "contents": [{"role": "user", "parts": [{"text": user}]}],
+            "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000},
+        },
+        timeout=180,
+    )
+    if r.status_code == 429:
+        raise RuntimeError("Gemini's free tier is rate-limited. Wait a minute and try again.")
+    if r.status_code in (400, 403) and "API key" in r.text:
+        raise RuntimeError("Gemini rejected the API key. Check it in Settings.")
+    if r.status_code == 404:
+        raise RuntimeError(f"Gemini does not know the model '{cfg['agent']['gemini_model']}'. Change gemini_model in config.yaml.")
+    if r.status_code >= 400:
+        raise RuntimeError(f"Gemini error {r.status_code}: {r.text[:300]}")
+    data = r.json()
+    candidates = data.get("candidates") or []
+    if not candidates:
+        raise RuntimeError(f"Gemini returned no answer: {data.get('promptFeedback')}")
+    text = "".join(p.get("text", "") for p in candidates[0].get("content", {}).get("parts", []))
+    if not text:
+        raise RuntimeError(f"Gemini returned an empty answer (finish reason: {candidates[0].get('finishReason')}).")
+    return text
+
+
+def _ask(cfg: Config, client, system: str, user: str) -> str:
+    """`client` is an injected Anthropic client or HTTP session (used by tests); None uses the real one."""
+    if cfg["agent"]["provider"] == "gemini":
+        return _ask_gemini(cfg, client, system, user)
+    return _ask_claude(cfg, client, system, user)
 
 
 def _brand_block(cfg: Config) -> str:
@@ -70,7 +114,6 @@ def _brand_block(cfg: Config) -> str:
 # ---------- master prompt ----------
 
 def generate_master(cfg: Config, client=None, notes: str = "") -> str:
-    client = _client(client)
     system = (
         "You are a creative director who builds reusable prompt systems for AI video.\n\n" + FLOW_CRAFT
     )
@@ -177,7 +220,6 @@ def plan_posts(
     client=None,
     now: datetime | None = None,
 ) -> list[str]:
-    client = _client(client)
     master = parse_master(master_md)
     system = "You are a short-form video producer for Instagram.\n\n" + FLOW_CRAFT + "\n\nMASTER PROMPT\n" + master_md
     v = cfg["video"]

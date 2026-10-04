@@ -22,7 +22,7 @@ Your files stay on your computer. The dashboard only listens on `127.0.0.1`, so 
 
 ## First-time setup (in the dashboard)
 
-1. **Settings**: describe your account, paste a Claude API key (console.anthropic.com), then Save.
+1. **Settings**: describe your account. Under Connections, pick who writes your prompts. **Google Gemini** has a free tier: get a key at aistudio.google.com/apikey and paste it. Claude is the paid alternative. Then Save.
 2. **Create**: press *Create my master prompt*. Read it, edit anything, Save.
 3. **Create**: choose Reel or Story, how many, an optional theme, press *Generate prompts*.
 
