@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reel Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234f46e5'/%3E%3Cpath d='M12 9l11 7-11 7z' fill='white'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f6f7fb; --surface: #ffffff; --surface-2: #f1f3f9; --border: #e4e7ef; --text: #161a2b; --muted: #636b83;
+  --accent: #4f46e5; --accent-hover: #4338ca; --accent-soft: #eceafd; --on-accent: #ffffff;
+  --green: #12805c; --green-soft: #e0f5ec; --amber: #a15c07; --amber-soft: #fdf1d9; --blue: #1d5fc4; --blue-soft: #e3eefc;
+  --violet: #6d3fd1; --violet-soft: #f0e9fc; --red: #b4262e; --red-soft: #fce6e8; --gray-soft: #eceef4;
+  --shadow: 0 1px 2px rgba(20,24,45,.05), 0 4px 16px rgba(20,24,45,.05); --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1020; --surface: #171a2e; --surface-2: #1e2238; --border: #2a2f4b; --text: #eceefa; --muted: #9aa2c0;
+    --accent: #7c74ff; --accent-hover: #918bff; --accent-soft: #25264d; --on-accent: #0e1020;
+    --green: #4bd6a0; --green-soft: #12332a; --amber: #f2b84b; --amber-soft: #3a2c10; --blue: #6fa8ff; --blue-soft: #14284a;
+    --violet: #b394ff; --violet-soft: #2a2050; --red: #ff7a85; --red-soft: #411a1f; --gray-soft: #262a42;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+button, input, textarea, select { font: inherit; color: inherit; }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.side { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 6px; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 18px; font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
+.logo { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #6d5dfc, #3b82f6); display: grid; place-items: center; color: #fff; }
+.nav button { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 0; background: transparent; border-radius: 10px; color: var(--muted); cursor: pointer; font-weight: 500; text-align: left; }
+.nav button:hover { background: var(--surface-2); color: var(--text); }
+.nav button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav .count { margin-left: auto; background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 600; min-width: 20px; height: 20px; border-radius: 10px; display: grid; place-items: center; padding: 0 6px; }
+.side-foot { margin-top: auto; padding: 12px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); }
+
+.main { min-width: 0; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 32px; }
+.top h1 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+.top p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.switch { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px 6px 8px; cursor: pointer; user-select: none; }
+.switch .track { width: 36px; height: 20px; border-radius: 999px; background: var(--border); position: relative; transition: background .15s; }
+.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .15s; }
+.switch.on .track { background: var(--green); }
+.switch.on .track::after { transform: translateX(16px); }
+#view { padding: 0 32px 48px; max-width: 1120px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; margin-bottom: 18px; }
+.card h2 { margin: 0 0 4px; font-size: 16px; letter-spacing: -.01em; }
+.card .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+.grid { display: grid; gap: 16px; }
+.g5 { grid-template-columns: repeat(5, 1fr); }
+.g2 { grid-template-columns: 1.3fr 1fr; align-items: start; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; cursor: pointer; text-align: left; }
+.stat:hover { border-color: var(--accent); }
+.stat .n { font-size: 30px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; }
+.stat .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-weight: 600; font-size: 14px; white-space: nowrap; transition: background .12s, border-color .12s; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.danger { color: var(--red); }
+.btn.sm { padding: 6px 11px; font-size: 13px; border-radius: 8px; }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.loading::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+label.f { display: block; margin-bottom: 14px; }
+label.f > span { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+label.f small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 5px; font-weight: 400; }
+input[type=text], input[type=password], input[type=number], input[type=datetime-local], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); outline: none; }
+input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+.seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+.seg button { border: 0; background: transparent; padding: 7px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--muted); cursor: pointer; }
+.seg button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.stepper-num { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.stepper-num button { width: 36px; height: 38px; border: 0; background: var(--surface-2); cursor: pointer; font-size: 18px; }
+.stepper-num span { min-width: 40px; text-align: center; font-weight: 600; }
+
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.badge.amber { background: var(--amber-soft); color: var(--amber); }
+.badge.blue { background: var(--blue-soft); color: var(--blue); }
+.badge.violet { background: var(--violet-soft); color: var(--violet); }
+.badge.green { background: var(--green-soft); color: var(--green); }
+.badge.green-solid { background: var(--green); color: var(--surface); }
+.badge.red { background: var(--red-soft); color: var(--red); }
+.badge.gray { background: var(--gray-soft); color: var(--muted); }
+.tag { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--surface-2); padding: 3px 8px; border-radius: 6px; }
+
+.todo { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--border); }
+.todo:first-of-type { border-top: 0; padding-top: 0; }
+.todo .ic { width: 38px; height: 38px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: none; }
+.todo b { display: block; }
+.todo span { color: var(--muted); font-size: 13.5px; }
+.check { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 14px; }
+.check .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--gray-soft); color: var(--muted); flex: none; }
+.check.ok .dot { background: var(--green-soft); color: var(--green); }
+.check .dot svg { width: 13px; height: 13px; stroke-width: 3; }
+.check a { margin-left: auto; color: var(--accent); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.chip.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+.post { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 14px; overflow: hidden; }
+.post-head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; }
+.post-head:hover { background: var(--surface-2); }
+.post-head .t { min-width: 0; flex: 1; }
+.post-head .t b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post-head .t span { color: var(--muted); font-size: 13.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chev { transition: transform .15s; color: var(--muted); }
+.post.open .chev { transform: rotate(180deg); }
+.post-body { border-top: 1px solid var(--border); padding: 20px; display: none; }
+.post.open .post-body { display: block; }
+.steps { display: flex; gap: 6px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+.step { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); font-weight: 500; }
+.step i { width: 20px; height: 20px; border-radius: 50%; background: var(--gray-soft); display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 700; }
+.step.done i { background: var(--green); color: var(--surface); }
+.step.now i { background: var(--accent); color: var(--on-accent); }
+.step.now { color: var(--text); font-weight: 600; }
+.step + .step::before { content: ""; width: 22px; height: 2px; background: var(--border); border-radius: 2px; margin-right: 1px; }
+.sec { margin-top: 22px; }
+.sec:first-child { margin-top: 0; }
+.sec h3 { margin: 0 0 4px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+.sec h3 em { font-style: normal; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 12px; }
+.sec .sub { margin: 0 0 12px 30px; color: var(--muted); font-size: 13.5px; }
+.prompt { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; background: var(--surface-2); overflow: hidden; }
+.prompt-head { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; font-size: 13px; font-weight: 600; }
+.prompt-head small { color: var(--muted); font-weight: 500; }
+.prompt pre { margin: 0; padding: 0 14px 14px; white-space: pre-wrap; font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; max-height: 260px; overflow: auto; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.slot { border: 2px dashed var(--border); border-radius: 12px; padding: 16px 12px; text-align: center; cursor: pointer; transition: border-color .12s, background .12s; position: relative; overflow: hidden; }
+.slot:hover, .slot.drag { border-color: var(--accent); background: var(--accent-soft); }
+.slot.has { border-style: solid; border-color: var(--green); background: var(--green-soft); }
+.slot.locked { cursor: default; }
+.slot.locked:hover { border-color: var(--border); background: transparent; }
+.slot.has.locked:hover { border-color: var(--green); background: var(--green-soft); }
+.slot b { display: block; font-size: 14px; }
+.slot span { color: var(--muted); font-size: 12.5px; }
+.slot .bar { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--accent); width: 0; transition: width .1s; }
+.slot input { display: none; }
+.review { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: start; }
+.phone { aspect-ratio: 9/16; background: #000; border-radius: 22px; overflow: hidden; border: 6px solid #1c1f33; box-shadow: var(--shadow); }
+.phone video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.note { display: flex; gap: 10px; padding: 12px 14px; border-radius: 10px; font-size: 14px; margin-bottom: 14px; align-items: flex-start; }
+.note.red { background: var(--red-soft); color: var(--red); }
+.note.blue { background: var(--blue-soft); color: var(--blue); }
+.note.amber { background: var(--amber-soft); color: var(--amber); }
+.note.green { background: var(--green-soft); color: var(--green); }
+.empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+.empty h3 { color: var(--text); margin: 12px 0 6px; font-size: 17px; }
+.log { font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.log div { display: flex; gap: 14px; padding: 6px 0; border-top: 1px solid var(--border); }
+.log div:first-child { border-top: 0; }
+.log time { color: var(--muted); flex: none; }
+details.help { margin-top: 6px; font-size: 14px; color: var(--muted); }
+details.help summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+details.help ol { padding-left: 20px; margin: 8px 0 0; }
+.path { font: 12.5px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); word-break: break-all; }
+#toasts { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 50; }
+.toast { background: var(--text); color: var(--bg); padding: 12px 16px; border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.28); max-width: 380px; font-size: 14px; animation: pop .18s ease-out; }
+.toast.err { background: var(--red); color: #fff; }
+@keyframes pop { from { transform: translateY(8px); opacity: 0; } }
+
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; flex-direction: row; align-items: center; overflow-x: auto; padding: 10px 12px; gap: 4px; }
+  .brand { padding: 0 8px 0 4px; } .brand span { display: none; }
+  .nav { display: flex; gap: 4px; } .nav button { width: auto; white-space: nowrap; padding: 8px 12px; }
+  .side-foot { display: none; }
+  .top { padding: 16px; flex-wrap: wrap; } #view { padding: 0 16px 40px; }
+  .g5 { grid-template-columns: repeat(2, 1fr); } .g2 { grid-template-columns: 1fr; }
+  .review { grid-template-columns: 1fr; } .phone { max-width: 240px; }
+  .post-head { flex-wrap: wrap; gap: 8px 10px; } .post-head .t { flex-basis: 100%; order: -1; } .post-head .chev { margin-left: auto; }
+  .post-head .t b, .post-head .t span { white-space: normal; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9z"/></svg></div><span>Reel Studio</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">Runs on your computer.<br>Nothing is posted until you approve it.</div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <div><h1 id="title"></h1><p id="subtitle"></p></div>
+      <div class="switch on" id="auto" role="switch" aria-checked="true" tabindex="0" title="When off, approved posts wait instead of going live"><div class="track"></div>Auto-publish</div>
+    </header>
+    <div id="view"></div>
+  </main>
+</div>
+<div id="toasts"></div>
+
+<script>
+const ICON = {
+  home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+  sparkles: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+  film: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
+  upload: '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  folder: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+  x: '<path d="M18 6L6 18M6 6l12 12"/>',
+  refresh: '<path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.5 17.5A2 2 0 004.2 20.5h15.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>',
+  chevron: '<path d="M6 9l6 6 6-6"/>',
+  send: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
+  eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
+};
+const ic = n => `<svg class="i" viewBox="0 0 24 24">${ICON[n]}</svg>`;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, el = document) => el.querySelector(s);
+
+const PAGES = {
+  overview: ['Overview', 'Where everything stands right now', 'home'],
+  create: ['Create', 'Write your master prompt and plan new posts', 'sparkles'],
+  posts: ['Posts', 'Prompts, clips, review and scheduling', 'film'],
+  activity: ['Activity', 'What the studio has been doing', 'activity'],
+  settings: ['Settings', 'Your account, connections and limits', 'sliders'],
+};
+const ST = {
+  briefed: ['Needs clips', 'amber'], assembling: ['Processing', 'blue'], review: ['Ready for review', 'violet'],
+  approved: ['Scheduled', 'green'], published: ['Published', 'green-solid'], rejected: ['Rejected', 'gray'], failed: ['Needs attention', 'red'],
+};
+const STEPS = ['Brief', 'Clips', 'Review', 'Scheduled', 'Live'];
+const STAGE = { briefed: 1, assembling: 1, review: 2, approved: 3, published: 5 };
+const FILTERS = [
+  ['all', 'All', () => true], ['need', 'Need clips', p => ['briefed', 'assembling'].includes(p.status)],
+  ['review', 'Ready for review', p => p.status === 'review'], ['scheduled', 'Scheduled', p => p.status === 'approved'],
+  ['published', 'Published', p => p.status === 'published'], ['problems', 'Needs attention', p => ['failed', 'rejected'].includes(p.status)],
+];
+
+const S = { page: 'overview', posts: [], master: null, settings: null, health: null, log: [], filter: 'all', open: {}, prompts: {}, plan: { format: 'reel', count: 3 }, sig: '' };
+
+async function api(path, opts = {}) {
+  const o = { method: opts.method || 'GET', headers: { 'X-IGFlow': '1' } };
+  if (opts.json !== undefined) { o.body = JSON.stringify(opts.json); o.headers['Content-Type'] = 'application/json'; if (!opts.method) o.method = 'POST'; }
+  const r = await fetch('/api/' + path, o);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || `Request failed (${r.status})`);
+  return d;
+}
+function toast(msg, err) {
+  const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = msg;
+  $('#toasts').append(t); setTimeout(() => t.remove(), err ? 7000 : 3500);
+}
+async function busy(btn, fn) {
+  btn.disabled = true; btn.classList.add('loading');
+  try { return await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.classList.remove('loading'); }
+}
+function copyText(text) {
+  if (navigator.clipboard) return navigator.clipboard.writeText(text);
+  const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove();
+}
+const fmtTime = iso => iso ? new Date(iso).toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : fmtTime(iso); };
+const count = f => S.posts.filter(f).length;
+
+// ---------- data ----------
+async function load(what) {
+  const jobs = { posts: () => api('posts').then(d => S.posts = d.posts), health: () => api('health').then(d => S.health = d.checks),
+    master: () => api('master').then(d => S.master = d), settings: () => api('settings').then(d => S.settings = d),
+    log: () => api('log').then(d => S.log = d.events) };
+  await Promise.all(what.map(k => jobs[k]()));
+}
+const PAGE_DATA = { overview: ['posts', 'health', 'log'], create: ['master', 'health'], posts: ['posts', 'master'], activity: ['log'], settings: ['settings'] };
+
+async function go(page) {
+  S.page = page; location.hash = page;
+  try { await load(PAGE_DATA[page]); } catch (e) { toast(e.message, true); }
+  S.sig = sig(); render();
+}
+const sig = () => JSON.stringify([S.page, S.posts, S.log.slice(0, 5), S.health]);
+
+// ---------- render ----------
+function render() {
+  const [t, sub] = PAGES[S.page];
+  $('#title').textContent = t; $('#subtitle').textContent = sub;
+  const need = count(p => p.status === 'review');
+  $('#nav').innerHTML = Object.entries(PAGES).map(([k, [label, , icon]]) =>
+    `<button class="${k === S.page ? 'on' : ''}" data-go="${k}">${ic(icon)}${label}${k === 'posts' && need ? `<span class="count">${need}</span>` : ''}</button>`).join('');
+  $('#view').innerHTML = VIEWS[S.page]();
+}
+
+const VIEWS = {
+  overview() {
+    const c = { need: count(p => ['briefed', 'assembling'].includes(p.status)), review: count(p => p.status === 'review'),
+      sched: count(p => p.status === 'approved'), live: count(p => p.status === 'published'), bad: count(p => p.status === 'failed') };
+    const todo = [];
+    const h = Object.fromEntries((S.health || []).map(x => [x.id, x.ok]));
+    if (!h.brand || !h.claude) todo.push(['sliders', 'Finish setup', 'Fill in your account profile and connect Claude.', 'Open settings', 'settings']);
+    else if (!h.master) todo.push(['sparkles', 'Create your master prompt', 'This locks in your look and sound for every post.', 'Create it', 'create']);
+    if (c.bad) todo.push(['alert', `${c.bad} post${c.bad > 1 ? 's need' : ' needs'} attention`, 'Something went wrong while processing or publishing.', 'See posts', 'posts', 'problems']);
+    if (c.review) todo.push(['eye', `${c.review} video${c.review > 1 ? 's' : ''} ready for review`, 'Watch, edit the caption and approve.', 'Review now', 'posts', 'review']);
+    if (c.need) todo.push(['upload', `${c.need} post${c.need > 1 ? 's' : ''} waiting for clips`, 'Copy the prompts into Flow, then upload the clips here.', 'Add clips', 'posts', 'need']);
+    if (h.master && !c.need && !c.review) todo.push(['sparkles', 'Plan your next posts', 'Ask the agent for fresh ideas and prompts.', 'Plan posts', 'create']);
+    if (h.claude && h.master && !h.instagram) todo.push(['send', 'Connect Instagram', 'Needed before anything can go live.', 'Connect', 'settings']);
+    return `
+    <div class="grid g5" style="margin-bottom:18px">
+      ${[['Need clips', c.need, 'need'], ['Ready for review', c.review, 'review'], ['Scheduled', c.sched, 'scheduled'], ['Published', c.live, 'published'], ['Needs attention', c.bad, 'problems']]
+        .map(([l, n, f]) => `<button class="stat" data-go="posts" data-filter="${f}"><div class="n">${n}</div><div class="l">${l}</div></button>`).join('')}
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>What to do next</h2><p class="sub">The shortest path to your next post.</p>
+        ${todo.length ? todo.map(([i, t, s, b, go, f]) => `<div class="todo"><div class="ic">${ic(i)}</div><div><b>${t}</b><span>${s}</span></div><div class="spacer"></div><button class="btn sm primary" data-go="${go}" ${f ? `data-filter="${f}"` : ''}>${b}</button></div>`).join('')
+          : '<div class="empty" style="padding:20px">All caught up.</div>'}
+      </div>
+      <div>
+        <div class="card"><h2>Setup checklist</h2><p class="sub">Everything the studio needs.</p>
+          ${(S.health || []).map(x => `<div class="check ${x.ok ? 'ok' : ''}"><div class="dot">${x.ok ? ic('check') : ''}</div>${esc(x.label)}${!x.ok && x.go ? `<a data-go="${x.go}">Fix</a>` : ''}</div>`).join('')}
+        </div>
+        <div class="card"><h2>Latest activity</h2><p class="sub"></p>
+          <div class="log">${S.log.slice(0, 5).map(e => `<div><time>${ago(e.t)}</time><span>${esc(e.msg)}</span></div>`).join('') || '<span style="color:var(--muted)">Nothing yet.</span>'}</div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  create() {
+    const m = S.master, ok = m && m.exists;
+    const noKey = S.health && !S.health.find(x => x.id === 'claude').ok;
+    return `
+    ${noKey ? `<div class="note amber">${ic('alert')}<div>Claude is not connected yet. <a style="color:inherit;font-weight:700;cursor:pointer" data-go="settings">Add your API key in Settings</a> to generate prompts.</div></div>` : ''}
+    <div class="card"><h2>1. Master prompt</h2>
+      <p class="sub">Your style guide: look, recurring subjects, sound and things to avoid. It is attached to every shot prompt, so all your posts match.</p>
+      ${ok ? `
+        <label class="f"><span>Edit it freely. Keep the five headings that start with ##.</span><textarea id="master-text" style="min-height:360px;font:13px/1.55 ui-monospace,Menlo,Consolas,monospace">${esc(m.text)}</textarea></label>
+        <div class="row"><button class="btn primary" data-act="save-master">Save changes</button>
+          <button class="btn" data-act="regen-master">${ic('refresh')}Start again with the agent</button></div>`
+      : `<label class="f"><span>Anything the agent should know? (optional)</span><textarea id="master-notes" placeholder="Example: I want a warm, cinematic look like golden-hour architecture photography."></textarea></label>
+        <button class="btn primary" data-act="gen-master">${ic('sparkles')}Create my master prompt</button>`}
+    </div>
+    <div class="card"><h2>2. Plan new posts</h2>
+      <p class="sub">The agent writes the idea, a Flow prompt for every shot, the caption and hashtags.</p>
+      <div class="row" style="margin-bottom:16px">
+        <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">Type</div>
+          <div class="seg">${['reel', 'story'].map(f => `<button data-fmt="${f}" class="${S.plan.format === f ? 'on' : ''}">${f === 'reel' ? 'Reel' : 'Story'}</button>`).join('')}</div></div>
+        <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">How many</div>
+          <div class="stepper-num"><button data-cnt="-1">−</button><span>${S.plan.count}</span><button data-cnt="1">+</button></div></div>
+      </div>
+      <label class="f"><span>Theme (optional)</span><input type="text" id="plan-theme" placeholder="Example: behind the scenes of a lighting setup"></label>
+      <button class="btn primary" data-act="plan" ${ok ? '' : 'disabled'}>${ic('sparkles')}Generate prompts</button>
+      ${ok ? '<small style="color:var(--muted);margin-left:10px">Takes about a minute.</small>' : '<small style="color:var(--muted);margin-left:10px">Create your master prompt first.</small>'}
+    </div>`;
+  },
+
+  posts() {
+    const f = FILTERS.find(x => x[0] === S.filter) || FILTERS[0];
+    const list = S.posts.filter(f[2]);
+    return `
+    <div class="chips">${FILTERS.map(([k, l, fn]) => { const n = S.posts.filter(fn).length; return `<button class="chip ${k === S.filter ? 'on' : ''}" data-filter-set="${k}">${l}${n ? ` · ${n}` : ''}</button>`; }).join('')}</div>
+    ${list.length ? list.map(postCard).join('') : `<div class="card empty">${ic('film')}<h3>No posts here yet</h3><div>Plan some posts to get started.</div><div style="margin-top:16px"><button class="btn primary" data-go="create">Plan posts</button></div></div>`}`;
+  },
+
+  activity() {
+    return `<div class="card"><div class="log">${S.log.map(e => `<div><time>${fmtTime(e.t)}</time><span>${esc(e.msg)}</span></div>`).join('') || '<span style="color:var(--muted)">Nothing has happened yet.</span>'}</div></div>`;
+  },
+
+  settings() {
+    const s = S.settings; if (!s) return '';
+    const B = [['niche', 'What is your account about?', 'text'], ['audience', 'Who is it for?', 'text'], ['voice', 'How should it sound?', 'text'],
+      ['visual_style', 'How should it look?', 'text'], ['recurring_subjects', 'Recurring people, places or objects', 'text'], ['avoid', 'Things to avoid', 'text']];
+    const key = (k, label, type, help) => `<label class="f"><span>${label}</span><input type="${type}" data-key="${k}" autocomplete="off" placeholder="${s.keys[k].set ? (k === 'IG_USER_ID' ? esc(s.keys[k].hint) : s.keys[k].hint + '  (saved, leave blank to keep)') : ''}"><small>${help}</small></label>`;
+    return `
+    <div class="grid g2">
+      <div>
+        <div class="card"><h2>Your account</h2><p class="sub">The agent reads this before writing anything. Specific answers give better prompts.</p>
+          ${B.map(([k, l]) => `<label class="f"><span>${l}</span><textarea data-brand="${k}" style="min-height:64px">${esc(s.brand[k])}</textarea></label>`).join('')}
+        </div>
+        <div class="card"><h2>Video and posting</h2><p class="sub"></p>
+          <div class="row" style="align-items:flex-start">
+            <label class="f" style="flex:1"><span>Shortest video (seconds)</span><input type="number" min="1" max="60" id="min-s" value="${s.video.min_seconds}"></label>
+            <label class="f" style="flex:1"><span>Longest video (seconds)</span><input type="number" min="1" max="60" id="max-s" value="${s.video.max_seconds}"></label>
+            <label class="f" style="flex:1"><span>Max posts per day</span><input type="number" min="1" max="25" id="per-day" value="${s.instagram.max_per_day}"></label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card"><h2>Connections</h2><p class="sub">Stored only on this computer, in a file called .env.</p>
+          ${key('ANTHROPIC_API_KEY', 'Claude API key', 'password', 'Used to write your prompts. Get one at console.anthropic.com.')}
+          ${key('IG_USER_ID', 'Instagram user ID', 'text', 'A number from your Meta developer app.')}
+          ${key('IG_ACCESS_TOKEN', 'Instagram access token', 'password', 'Expires after 60 days. Paste a fresh one here when it does.')}
+          <details class="help"><summary>How do I get the Instagram details?</summary><ol>
+            <li>Switch your Instagram to a Business or Creator account.</li><li>Create an app at developers.facebook.com and add the Instagram API.</li>
+            <li>Add your own account as a tester and accept the invite in Instagram.</li><li>Generate a token with the content publishing permission.</li></ol></details>
+        </div>
+        <button class="btn primary" data-act="save-settings" style="width:100%">Save settings</button>
+      </div>
+    </div>`;
+  },
+};
+
+function postCard(p) {
+  const [label, cls] = ST[p.status], b = p.brief, open = S.open[p.id];
+  return `<div class="post ${open ? 'open' : ''}" data-id="${esc(p.id)}">
+    <div class="post-head" data-toggle="${esc(p.id)}">
+      <div class="t"><b>${esc(b.title)}</b><span>${esc(b.hook)}</span></div>
+      <span class="tag">${p.format}</span><span class="badge ${cls}">${label}</span><span class="chev">${ic('chevron')}</span>
+    </div>
+    <div class="post-body">${open ? postBody(p) : ''}</div></div>`;
+}
+
+function postBody(p) {
+  const b = p.brief, id = esc(p.id), st = p.status;
+  const cur = STAGE[st];
+  const steps = cur !== undefined ? `<div class="steps">${STEPS.map((s, i) => `<div class="step ${i < cur ? 'done' : i === cur ? 'now' : ''}"><i>${i < cur ? '✓' : i + 1}</i>${s}</div>`).join('')}</div>` : '';
+  let banner = '';
+  if (st === 'assembling') banner = `<div class="note blue">${ic('clock')}<div>Putting your clips together. This takes a few seconds.</div></div>`;
+  if (st === 'failed') banner = `<div class="note red">${ic('alert')}<div><b>Something went wrong.</b> ${esc(p.error || '')}<div style="margin-top:10px"><button class="btn sm" data-act="redo" data-id="${id}">Start over with new clips</button> ${p.has_video ? `<button class="btn sm primary" data-act="approve" data-id="${id}">Try publishing again</button>` : ''}</div></div></div>`;
+  if (st === 'rejected') banner = `<div class="note amber">${ic('x')}<div>You rejected this post. <button class="btn sm" data-act="redo" data-id="${id}">Start over with new clips</button></div></div>`;
+  if (st === 'published') banner = `<div class="note green">${ic('check')}<div>Published ${fmtTime(p.published_at)}. Instagram ID: ${esc(p.ig_media_id)}</div></div>`;
+  if (st === 'approved') banner = `<div class="note green">${ic('clock')}<div>Approved. Goes live ${p.scheduled_at && new Date(p.scheduled_at) > new Date() ? fmtTime(p.scheduled_at) : 'as soon as possible'}, as long as Auto-publish is on.</div></div>`;
+  if (p.error && st === 'review') banner = `<div class="note amber">${ic('alert')}<div>${esc(p.error)}</div></div>`;
+
+  const showPrompts = S.prompts[p.id] ?? st === 'briefed';
+  const prompts = `<div class="sec"><h3><em>1</em>Generate in Google Flow
+      <button class="btn sm ghost" data-act="toggle-prompts" data-id="${id}" style="margin-left:auto">${showPrompts ? 'Hide' : 'Show'} prompts</button></h3>
+    <p class="sub">Copy each prompt into Flow in order. For shots after the first, start from the last frame of the previous clip.</p>
+    ${showPrompts ? `
+      <div class="prompt"><div class="prompt-head">Reference image <small>generate once, use it to keep the look consistent</small><div class="spacer"></div><button class="btn sm" data-act="copy">${ic('copy')}Copy</button></div><pre>${esc(S.master?.reference_image_prompt || '(create your master prompt first)')}</pre></div>
+      ${b.shots.map((s, i) => `
+        ${s.start_frame_image_prompt ? `<div class="prompt"><div class="prompt-head">Shot ${i + 1} start frame <small>image prompt</small><div class="spacer"></div><button class="btn sm" data-act="copy">${ic('copy')}Copy</button></div><pre>${esc(s.start_frame_image_prompt)}</pre></div>` : ''}
+        <div class="prompt"><div class="prompt-head">Shot ${i + 1} <small>${s.seconds}s · ${s.mode === 'frames_to_video' ? 'Frames to video' : 'Text to video'}</small><div class="spacer"></div><button class="btn sm" data-act="copy">${ic('copy')}Copy</button></div><pre>${esc(s.flow_prompt)}</pre></div>`).join('')}
+      ${b.continuity_note ? `<div class="note blue">${ic('eye')}<div><b>Keep consistent:</b> ${esc(b.continuity_note)}</div></div>` : ''}` : ''}</div>`;
+
+  const locked = st !== 'briefed';
+  const slot = (key, title, subtitle) => {
+    const f = p.files[key];
+    return `<div class="slot ${f ? 'has' : ''} ${locked ? 'locked' : ''}" data-slot="${key}" data-id="${id}">
+      <input type="file" accept="${key === 'music' ? 'audio/*' : 'video/*'}">
+      <b>${f ? '✓ ' + esc(f) : title}</b><span>${f ? (locked ? subtitle : 'Click or drop to replace') : (locked ? 'Not provided' : 'Click or drop a file here')}</span><div class="bar"></div></div>`;
+  };
+  const clips = `<div class="sec"><h3><em>2</em>Add your clips
+      <button class="btn sm ghost" data-act="folder" data-id="${id}" style="margin-left:auto">${ic('folder')}Open folder</button></h3>
+    <p class="sub">${locked ? 'Clips are in.' : 'Upload each clip into its slot. No renaming needed. Processing starts by itself once all clips are in.'}</p>
+    <div class="slots">${b.shots.map((s, i) => slot('shot' + (i + 1), `Shot ${i + 1}`, `${s.seconds}s`)).join('')}${slot('music', 'Music (optional)', 'Background track')}</div></div>`;
+
+  let review = '';
+  if (p.has_video) {
+    const tags = (b.hashtags || []).map(t => '#' + t).join(' ');
+    const editable = ['review', 'failed'].includes(st);
+    review = `<div class="sec"><h3><em>3</em>${editable ? 'Review and approve' : 'Final video'}</h3><p class="sub">${editable ? 'Watch it with sound. Edit the caption if you like. Nothing posts until you approve.' : ''}</p>
+      <div class="review"><div class="phone"><video controls playsinline preload="metadata" poster="/media/${id}/final.jpg" src="/media/${id}/final.mp4"></video></div>
+      <div>
+        <label class="f"><span>Caption</span><textarea id="cap-${id}" ${editable ? '' : 'disabled'} style="min-height:130px">${esc(b.caption)}</textarea></label>
+        <label class="f"><span>Hashtags</span><input type="text" id="tags-${id}" value="${esc(tags)}" ${editable ? '' : 'disabled'}></label>
+        ${p.format === 'story' ? '<div class="note blue">' + ic('alert') + '<div>Stories do not carry captions through the API. Add polls, links and text in Instagram itself.</div></div>' : ''}
+        ${b.on_screen_text?.length ? `<div class="note blue">${ic('eye')}<div><b>Add these in Instagram's editor:</b><br>${b.on_screen_text.map(esc).join('<br>')}</div></div>` : ''}
+        ${editable ? `
+        <label class="f"><span>When should it go live?</span><input type="datetime-local" id="when-${id}"><small>Leave empty to publish as soon as possible.</small></label>
+        <div class="row"><button class="btn primary" data-act="approve" data-id="${id}">${ic('check')}Approve</button>
+          <button class="btn" data-act="save-caption" data-id="${id}">Save caption</button><div class="spacer"></div>
+          <button class="btn" data-act="redo" data-id="${id}">${ic('refresh')}New clips</button>
+          <button class="btn danger" data-act="reject" data-id="${id}">Reject</button></div>` : ''}
+      </div></div></div>`;
+  }
+  const idea = `<div class="sec" style="margin-top:0"><div class="note blue" style="margin:0">${ic('sparkles')}<div><b>Idea:</b> ${esc(b.concept)}<br><b>Caption:</b> ${esc(b.caption)}</div></div></div>`;
+  return steps + banner + (['briefed', 'assembling'].includes(st) ? idea : '') + prompts + clips + review;
+}
+
+// ---------- events ----------
+document.addEventListener('click', async e => {
+  const t = e.target;
+  const goBtn = t.closest('[data-go]');
+  if (goBtn) { if (goBtn.dataset.filter) S.filter = goBtn.dataset.filter; return go(goBtn.dataset.go); }
+  const fs = t.closest('[data-filter-set]'); if (fs) { S.filter = fs.dataset.filterSet; return render(); }
+  const tg = t.closest('[data-toggle]');
+  if (tg) { S.open[tg.dataset.toggle] = !S.open[tg.dataset.toggle]; return render(); }
+  const fmt = t.closest('[data-fmt]'); if (fmt) { S.plan.format = fmt.dataset.fmt; return keepInputs(render); }
+  const cnt = t.closest('[data-cnt]'); if (cnt) { S.plan.count = Math.min(5, Math.max(1, S.plan.count + +cnt.dataset.cnt)); return keepInputs(render); }
+
+  const slot = t.closest('.slot');
+  if (slot && !slot.classList.contains('locked')) { const inp = $('input', slot); if (t !== inp) inp.click(); return; }
+
+  const btn = t.closest('[data-act]'); if (!btn) return;
+  const id = btn.dataset.id, act = btn.dataset.act;
+  const refresh = async (what = ['posts']) => { await load(what); S.sig = sig(); render(); };
+  if (act === 'copy') { await copyText($('pre', btn.closest('.prompt')).textContent); return toast('Copied'); }
+  if (act === 'toggle-prompts') { S.prompts[id] = !(S.prompts[id] ?? S.posts.find(p => p.id === id).status === 'briefed'); return render(); }
+  if (act === 'folder') { const r = await api(`posts/${id}/folder`, { json: {} }).catch(err => toast(err.message, true)); if (r) toast(r.opened ? 'Opening the folder…' : 'Folder: ' + r.path); return; }
+
+  if (act === 'gen-master') return busy(btn, async () => { await api('master/generate', { json: { notes: $('#master-notes').value } }); toast('Master prompt created. Read it and edit anything you like.'); await refresh(['master', 'health']); });
+  if (act === 'regen-master') { if (!confirm('This replaces your master prompt, including your edits. Continue?')) return; return busy(btn, async () => { await api('master/generate', { json: { force: true } }); toast('New master prompt created'); await refresh(['master', 'health']); }); }
+  if (act === 'save-master') return busy(btn, async () => { await api('master', { method: 'PUT', json: { text: $('#master-text').value } }); toast('Saved'); await refresh(['master']); });
+  if (act === 'plan') return busy(btn, async () => { const r = await api('plan', { json: { format: S.plan.format, count: S.plan.count, theme: $('#plan-theme').value } }); toast(`${r.ids.length} post${r.ids.length > 1 ? 's' : ''} planned`); S.filter = 'need'; r.ids.forEach(i => S.open[i] = r.ids.length === 1); await go('posts'); });
+
+  if (act === 'approve') return busy(btn, async () => { const when = $('#when-' + id)?.value; await saveCaption(id, true); await api(`posts/${id}/approve`, { json: { at: when || null } }); toast('Approved'); await refresh(); });
+  if (act === 'save-caption') return busy(btn, async () => { await saveCaption(id); toast('Caption saved'); await refresh(); });
+  if (act === 'reject') { if (!confirm('Reject this post?')) return; return busy(btn, async () => { await api(`posts/${id}/reject`, { json: {} }); await refresh(); }); }
+  if (act === 'redo') { if (!confirm('This moves the current clips aside and waits for new ones. Continue?')) return; return busy(btn, async () => { await api(`posts/${id}/redo`, { json: {} }); S.prompts[id] = true; await refresh(); }); }
+
+  if (act === 'save-settings') return busy(btn, async () => {
+    const brand = {}, keys = {};
+    document.querySelectorAll('[data-brand]').forEach(el => brand[el.dataset.brand] = el.value);
+    document.querySelectorAll('[data-key]').forEach(el => { if (el.value.trim()) keys[el.dataset.key] = el.value.trim(); });
+    await api('settings', { method: 'PUT', json: { brand, keys, video: { min_seconds: $('#min-s').value, max_seconds: $('#max-s').value }, instagram: { max_per_day: $('#per-day').value } } });
+    toast('Settings saved'); await load(['settings', 'health']); render();
+  });
+});
+const keepInputs = fn => { const th = $('#plan-theme')?.value; fn(); if (th) $('#plan-theme').value = th; };
+
+async function saveCaption(id, quiet) {
+  const cap = $('#cap-' + id); if (!cap) return;
+  const tags = $('#tags-' + id).value.split(/[\s,]+/).map(t => t.replace(/^#/, '')).filter(Boolean);
+  await api(`posts/${id}/caption`, { json: { caption: cap.value, hashtags: tags } });
+}
+
+// uploads
+function upload(slotEl, file) {
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `/api/posts/${slotEl.dataset.id}/upload?slot=${slotEl.dataset.slot}&ext=${encodeURIComponent(ext)}`);
+  xhr.setRequestHeader('X-IGFlow', '1');
+  const bar = $('.bar', slotEl), label = $('span', slotEl);
+  xhr.upload.onprogress = e => { if (e.lengthComputable) { bar.style.width = (e.loaded / e.total * 100) + '%'; label.textContent = `Uploading… ${Math.round(e.loaded / e.total * 100)}%`; } };
+  xhr.onload = async () => {
+    let d = {}; try { d = JSON.parse(xhr.responseText); } catch {}
+    if (xhr.status >= 300) { toast(d.error || 'Upload failed', true); bar.style.width = 0; label.textContent = 'Click or drop a file here'; return; }
+    toast('Clip received'); await load(['posts']); S.sig = sig(); render();
+  };
+  xhr.onerror = () => toast('Upload failed. Is the studio still running?', true);
+  xhr.send(file);
+}
+document.addEventListener('change', e => { const s = e.target.closest('.slot'); if (s && e.target.files[0]) upload(s, e.target.files[0]); });
+document.addEventListener('dragover', e => { const s = e.target.closest('.slot'); if (s && !s.classList.contains('locked')) { e.preventDefault(); s.classList.add('drag'); } });
+document.addEventListener('dragleave', e => { const s = e.target.closest('.slot'); if (s) s.classList.remove('drag'); });
+document.addEventListener('drop', e => { const s = e.target.closest('.slot'); if (s && !s.classList.contains('locked')) { e.preventDefault(); s.classList.remove('drag'); if (e.dataTransfer.files[0]) upload(s, e.dataTransfer.files[0]); } });
+window.addEventListener('dragover', e => e.preventDefault()); window.addEventListener('drop', e => e.preventDefault());
+
+// auto-publish switch
+async function setAuto(on) { const d = await api('automation', { json: { publish: on } }); paintAuto(d.publish); }
+function paintAuto(on) { const el = $('#auto'); el.classList.toggle('on', on); el.setAttribute('aria-checked', on); }
+$('#auto').addEventListener('click', () => setAuto(!$('#auto').classList.contains('on')).catch(e => toast(e.message, true)));
+$('#auto').addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); $('#auto').click(); } });
+
+// live updates
+setInterval(async () => {
+  if (document.hidden) return;
+  const a = document.activeElement;
+  if (a && $('#view').contains(a) && a.matches('textarea,input')) return; // never wipe what the user is typing
+  try { await load(PAGE_DATA[S.page].filter(k => ['posts', 'log', 'health'].includes(k))); } catch { return; }
+  const n = sig(); if (n !== S.sig) { S.sig = n; render(); }
+}, 4000);
+
+window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (PAGES[p] && p !== S.page) go(p); });
+api('automation').then(d => paintAuto(d.publish)).catch(() => {});
+go(PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'overview');
+</script>
+</body>
+</html>

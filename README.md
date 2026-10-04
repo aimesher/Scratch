@@ -1,50 +1,42 @@
-# igflow
+# Reel Studio
 
-Agent-assisted Instagram pipeline for 10-12 second Reels and Stories. Generation stays manual in Google Flow (your plan credits). Everything around it is automated.
+A dashboard for planning, assembling and publishing 10-12 second Instagram Reels and Stories. You generate the clips in Google Flow with your own plan. Everything around that is handled here, and nothing is posted until you approve it.
 
 ```
-master  ->  plan  ->  [you generate in Flow]  ->  drop folder  ->  watch  ->  review  ->  approve  ->  publish
-Claude      Claude     paste prompts, download     auto-detected    ffmpeg    you        you         Instagram API
+Create (master prompt, plan)  ->  Flow (you)  ->  upload clips  ->  auto-assemble  ->  review  ->  approve  ->  publish
 ```
 
-## Setup
+## Start the dashboard
 
-```bash
-pip install -r requirements.txt        # also needs ffmpeg on PATH
-cp config.example.yaml config.yaml     # edit the brand section
-cat > .env <<'EOF'
-ANTHROPIC_API_KEY=...
-IG_USER_ID=...
-IG_ACCESS_TOKEN=...
-EOF
-```
+1. Install [Python 3](https://python.org) and ffmpeg (Mac: `brew install ffmpeg`, Windows: `winget install ffmpeg`).
+2. Double-click **Start Reel Studio.command** (Mac), **Start Reel Studio.bat** (Windows) or run `./start.sh` (Linux).
+3. Your browser opens the dashboard. Keep the black window open while you work.
 
-## Daily loop
+Your files stay on your computer. The dashboard only listens on `127.0.0.1`, so nobody else on your network can reach it.
 
-```bash
-python -m igflow master                 # once. Writes data/master_prompt.md. Read it and edit it.
-python -m igflow plan -n 3 --theme "..."  # briefs in data/briefs/<id>.md, drop folders in drop/<id>/
-python -m igflow run                    # leave running: assembles clips, publishes approved posts
-```
+## First-time setup (in the dashboard)
 
-1. Open `data/briefs/<id>.md`. It holds the reference image prompt, one copy-paste Flow prompt per shot, caption, hashtags and on-screen text.
-2. Generate each shot in Flow. For shot 2+, start from the last frame of the previous clip (frames-to-video) so the cut is continuous.
-3. Download the clips into `drop/<id>/` named `1.mp4`, `2.mp4` in shot order. Optional `music.mp3`. If the files are not numbered, download order is used.
-4. The watcher waits until every clip has arrived and stopped changing, then writes `out/<id>/final.mp4` (1080x1920, H.264/AAC, trimmed to 12s) and a `final.jpg` cover.
-5. `python -m igflow review`, watch the file, then `approve <id> --at "2026-10-05 18:30"` or `reject <id>` or `redo <id>`.
-6. `run` publishes approved posts when their time arrives, capped at `instagram.max_per_day`.
+1. **Settings**: describe your account, paste a Claude API key (console.anthropic.com), then Save.
+2. **Create**: press *Create my master prompt*. Read it, edit anything, Save.
+3. **Create**: choose Reel or Story, how many, an optional theme, press *Generate prompts*.
 
-Other commands: `status`, `watch --once`, `publish --dry-run`, `refresh-token` (Instagram tokens last 60 days).
+## Making a post
 
-## Instagram setup
+1. **Posts**: open a post. Copy each prompt into Flow, shot by shot. For shot 2 onward, start from the last frame of the previous clip.
+2. Download the clips from Flow, then drop each into its slot on the post. No renaming. Optional music slot.
+3. When every clip is in, the studio joins them to 1080x1920, trims to your maximum length and shows the result.
+4. Watch it, edit the caption, pick a time, press **Approve**.
+5. With **Auto-publish** on, approved posts go live at their time, up to your daily limit.
 
-You need a professional (Business or Creator) account, a Meta developer app with the Instagram API (Instagram Login) product, and your own account added as a tester. For a single account you can stay in development mode and skip app review. Generate a token with the `instagram_business_basic` and `instagram_business_content_publish` permissions.
+## Connecting Instagram
 
-`publish.py` uploads the file directly (resumable upload), so you do not need to host videos publicly. **I wrote these endpoints from memory; the build environment could not reach Meta's docs.** The first real post is the test. Use a throwaway Story first. Errors print Meta's response body verbatim.
+You need an Instagram Business or Creator account, a Meta developer app with the Instagram API (Instagram Login), your account added as a tester, and a token with content publishing permission. Paste the user ID and token in Settings. Tokens last 60 days.
+
+**The publishing calls were written from memory of Meta's docs and have not been run against Instagram.** Test with a throwaway Story first. If it fails, the post is marked *Needs attention* and Meta's own error message is shown.
 
 ## Notes
 
 - Stories cannot carry captions or stickers through the API. Add polls and links in the app.
-- Text on screen is not burned in. Add it in Instagram's editor so it uses native fonts and stays inside the safe zone.
-- The agent never sees your Flow account and never sends anything to Flow. Nothing is published without `approve`.
-- Tests: `python -m pytest` (uses real ffmpeg, no network).
+- Text on screen is not burned in. Add it in Instagram's editor so it stays inside the safe zone.
+- The command line still works: `python -m igflow --help`.
+- Developers: `pip install -r requirements-dev.txt && python -m pytest` (uses real ffmpeg, no network).

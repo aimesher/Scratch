@@ -17,8 +17,9 @@ def now_iso() -> str:
 
 class Store:
     def __init__(self, path: Path):
-        self.db = sqlite3.connect(path)
+        self.db = sqlite3.connect(path, timeout=10)
         self.db.row_factory = sqlite3.Row
+        self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute(
             """CREATE TABLE IF NOT EXISTS posts (
                 id TEXT PRIMARY KEY,
@@ -69,6 +70,13 @@ class Store:
             (*fields.values(), now_iso(), post_id),
         )
         self.db.commit()
+
+    def update_brief(self, post_id: str, brief: dict) -> None:
+        self.db.execute("UPDATE posts SET brief = ?, updated_at = ? WHERE id = ?", (json.dumps(brief), now_iso(), post_id))
+        self.db.commit()
+
+    def close(self) -> None:
+        self.db.close()
 
     def recent_briefs(self, n: int = 20) -> list[dict]:
         rows = self.db.execute("SELECT brief FROM posts ORDER BY created_at DESC LIMIT ?", (n,)).fetchall()

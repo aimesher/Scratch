@@ -74,3 +74,24 @@ class Config:
         p = self.base_dir / self.raw["paths"][name]
         p.mkdir(parents=True, exist_ok=True)
         return p
+
+
+def set_env_values(path: Path, values: dict[str, str]) -> None:
+    """Update or add KEY=value lines in a .env file, keeping everything else."""
+    lines = path.read_text().splitlines() if path.exists() else []
+    pending = dict(values)
+    for i, line in enumerate(lines):
+        key = line.split("=", 1)[0].strip()
+        if key in pending and "=" in line and not line.lstrip().startswith("#"):
+            lines[i] = f"{key}={pending.pop(key)}"
+    lines += [f"{k}={v}" for k, v in pending.items()]
+    path.write_text("\n".join(lines) + "\n")
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
+    os.environ.update(values)
+
+
+def mask(value: str | None) -> str:
+    return "" if not value else ("\u2022" * 8 + value[-4:] if len(value) > 8 else "\u2022" * 8)

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import shutil
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
-from . import agent
+from . import actions, agent
 from .config import Config
 from .db import Store
 from .publish import InstagramClient, publish_due
@@ -62,41 +61,23 @@ def cmd_review(cfg: Config, args) -> None:
             print(f"  note:    {p['error']}")
 
 
-def _parse_when(text: str | None) -> str:
-    if not text:
-        return datetime.now(timezone.utc).isoformat(timespec="seconds")
-    dt = datetime.fromisoformat(text)
-    if dt.tzinfo is None:
-        dt = dt.astimezone()  # interpret as local time
-    return dt.astimezone(timezone.utc).isoformat(timespec="seconds")
-
-
 def cmd_approve(cfg: Config, args) -> None:
-    store = _store(cfg)
-    post = store.get(args.id)
-    if post["status"] not in ("review", "failed"):
-        raise SystemExit(f"{args.id} is {post['status']}, only posts in review (or failed) can be approved.")
-    store.update(args.id, status="approved", scheduled_at=_parse_when(args.at), error=None)
+    try:
+        actions.approve(_store(cfg), args.id, args.at)
+    except ValueError as e:
+        raise SystemExit(str(e))
     log(f"approved {args.id}")
 
 
 def cmd_reject(cfg: Config, args) -> None:
-    _store(cfg).update(args.id, status="rejected", error=args.reason)
+    actions.reject(_store(cfg), args.id, args.reason)
     log(f"rejected {args.id}")
 
 
 def cmd_redo(cfg: Config, args) -> None:
     """Send a post back to 'briefed' so new clips can be dropped in."""
-    store = _store(cfg)
-    store.get(args.id)
-    drop = cfg.path("drop") / args.id
-    old = drop / "_old"
-    old.mkdir(parents=True, exist_ok=True)
-    for f in drop.iterdir():
-        if f.is_file():
-            shutil.move(str(f), old / f.name)
-    store.update(args.id, status="briefed", error=None, final_path=None)
-    log(f"{args.id} is back to briefed. Drop new clips in {drop}")
+    actions.redo(cfg, _store(cfg), args.id)
+    log(f"{args.id} is back to briefed. Drop new clips in {cfg.path('drop') / args.id}")
 
 
 def cmd_watch(cfg: Config, args) -> None:
@@ -123,6 +104,12 @@ def cmd_run(cfg: Config, args) -> None:
         except Exception as e:  # keep the daemon alive; the post itself is marked failed where relevant
             log(f"loop error: {e}")
         time.sleep(cfg["watcher"]["poll_seconds"])
+
+
+def cmd_ui(cfg_path: str, args) -> None:
+    from .ui import serve
+
+    serve(cfg_path, args.port, not args.no_browser)
 
 
 def cmd_refresh_token(cfg: Config, args) -> None:
@@ -176,9 +163,17 @@ def main(argv: list[str] | None = None) -> None:
     p.set_defaults(fn=cmd_publish)
 
     sub.add_parser("run", help="watch + publish loop").set_defaults(fn=cmd_run)
+    p = sub.add_parser("ui", help="open the dashboard in your browser")
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--no-browser", action="store_true")
+    p.set_defaults(fn=None)
+
     sub.add_parser("refresh-token", help="refresh the Instagram access token").set_defaults(fn=cmd_refresh_token)
 
     args = ap.parse_args(argv)
+    if args.cmd == "ui":  # creates config.yaml on first run, so it must not require one
+        cmd_ui(args.config, args)
+        return
     args.fn(Config.load(args.config), args)
 
 

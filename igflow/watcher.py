@@ -52,7 +52,8 @@ def process_drops(cfg: Config, store: Store, log=print) -> int:
         try:
             result = assemble(clips, music, out, cfg)
         except (AssembleError, OSError) as e:
-            store.update(post["id"], status="failed", error=str(e))
+            friendly = "One of the clips could not be read. It may still be downloading or be damaged. Start over with new clips."
+            store.update(post["id"], status="failed", error=friendly)
             log(f"[{post['id']}] assembly failed: {e}")
             continue
         note = "; ".join(result["warnings"])
