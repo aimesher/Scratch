@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, urlparse
 
 import yaml
 
-from . import actions, agent
+from . import actions, agent, instagram_auth
 from .config import DEFAULTS, Config, mask, set_env_values
 from .db import Store
 from .publish import publish_due
@@ -26,7 +26,8 @@ from .watcher import AUDIO_EXT, VIDEO_EXT, process_drops
 
 STATIC = Path(__file__).parent / "static"
 MAX_UPLOAD = 2 * 1024**3
-KEYS = ("GEMINI_API_KEY", "ANTHROPIC_API_KEY", "IG_USER_ID", "IG_ACCESS_TOKEN")
+KEYS = ("GEMINI_API_KEY", "ANTHROPIC_API_KEY", "IG_APP_ID", "IG_APP_SECRET", "IG_USER_ID", "IG_ACCESS_TOKEN")
+SHOWN_PLAIN = {"IG_USER_ID", "IG_APP_ID"}  # not secret, so shown in full
 PROVIDER_KEY = {"gemini": "GEMINI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
 PROVIDERS = ("gemini", "anthropic", "manual")
 
@@ -47,6 +48,12 @@ class App:
         self.events: deque = deque(maxlen=300)
         self.publish_enabled = True
         self.stop = threading.Event()
+        # Set by the online version (hosted.py); None when running on your own computer.
+        self.public_url: str | None = None
+        self.media_url_for = None
+        self.oauth = None
+        self.ig_redirect_uri: str | None = None
+        self._last_token_check = 0.0
 
     def store(self) -> Store:
         return Store(self.cfg.path("data") / "queue.db")
@@ -62,12 +69,34 @@ class App:
                 try:
                     process_drops(self.cfg, store, self.say)
                     if self.auto_publish_active():
-                        publish_due(self.cfg, store, log=self.say)
+                        self.refresh_instagram_token()
+                        publish_due(self.cfg, store, log=self.say, media_url_for=self.media_url_for)
                 finally:
                     store.close()
             except Exception as e:  # keep the loop alive
                 self.say(f"Background error: {e}")
             self.stop.wait(self.cfg["watcher"]["poll_seconds"])
+
+    def refresh_instagram_token(self) -> None:
+        """Keep the 60-day Instagram token alive. Checked at most once an hour."""
+        if time.time() - self._last_token_check < 3600:
+            return
+        self._last_token_check = time.time()
+        try:
+            values = instagram_auth.refresh_if_needed()
+        except Exception as e:
+            self.say(f"Could not refresh the Instagram token: {e}")
+            return
+        if values:
+            set_env_values(self.config_path.parent / ".env", values)
+            self.say("Instagram token refreshed for another 60 days")
+
+    def enable_instagram_api(self) -> None:
+        """After Connect Instagram: let the server post Instagram by itself."""
+        raw = yaml.safe_load(self.config_path.read_text()) or {}
+        raw.setdefault("publish", {})["method"] = "instagram_api"
+        self.config_path.write_text(yaml.safe_dump(raw, sort_keys=False, allow_unicode=True))
+        self.cfg = Config(raw, self.config_path.parent)
 
     def auto_publish_active(self) -> bool:
         return self.publish_enabled and self.cfg["publish"]["method"] == "instagram_api"
@@ -131,7 +160,16 @@ class App:
             "instagram": {"max_per_day": raw["instagram"]["max_per_day"]},
             "agent": {"provider": self.provider()},
             "publish": {"method": raw["publish"]["method"], "platforms": raw["publish"]["platforms"]},
-            "keys": {k: {"set": bool(os.environ.get(k)), "hint": mask(os.environ.get(k)) if k != "IG_USER_ID" else (os.environ.get(k) or "")} for k in KEYS},
+            "timezone": raw["timezone"],
+            "keys": {k: {"set": bool(os.environ.get(k)), "hint": (os.environ.get(k) or "") if k in SHOWN_PLAIN else mask(os.environ.get(k))} for k in KEYS},
+            "online": None if not self.public_url else {
+                "url": self.public_url,
+                "mcp_url": f"{self.public_url}/mcp",
+                "claude_connected": bool(self.oauth and self.oauth.connected()),
+                "ig_redirect_uri": self.ig_redirect_uri,
+                "ig_username": os.environ.get("IG_USERNAME", ""),
+                "ig_expires_at": int(float(os.environ.get("IG_TOKEN_EXPIRES_AT") or 0)) or None,
+            },
         }
 
     def save_settings(self, data: dict) -> None:
@@ -162,6 +200,13 @@ class App:
         if not isinstance(platforms, list) or not platforms or any(p not in actions.PLATFORMS for p in platforms):
             raise ApiError("Pick at least one place to post: Instagram or YouTube.")
         file_raw["publish"] = {"method": method, "platforms": [p for p in actions.PLATFORMS if p in platforms]}
+        tz = str(data.get("timezone", self.cfg["timezone"]) or "").strip()
+        if tz:
+            try:
+                tz = actions.normalize_tz(tz)
+            except ValueError as e:
+                raise ApiError(str(e))
+        file_raw["timezone"] = tz
         self.config_path.write_text(yaml.safe_dump(file_raw, sort_keys=False, allow_unicode=True))
         keys = {k: str(v).strip() for k, v in (data.get("keys") or {}).items() if k in KEYS and str(v).strip()}
         if keys:
@@ -340,6 +385,23 @@ def make_handler(app: App):
                 return {"ok": True}
             if (method, route) == ("GET", "log"):
                 return {"events": list(app.events)}
+            if (method, route) == ("POST", "timezone"):
+                # The browser reports its timezone once, so scheduled times mean what you typed.
+                tz = str(self._body().get("timezone", "")).strip()
+                if tz and not app.cfg["timezone"]:
+                    try:
+                        tz = actions.normalize_tz(tz)
+                    except ValueError as e:
+                        raise ApiError(str(e))
+                    raw = yaml.safe_load(app.config_path.read_text()) or {}
+                    raw["timezone"] = tz
+                    app.config_path.write_text(yaml.safe_dump(raw, sort_keys=False, allow_unicode=True))
+                    app.cfg = Config(raw, app.config_path.parent)
+                return {"timezone": app.cfg["timezone"]}
+            if (method, route) == ("POST", "claude/disconnect"):
+                n = app.oauth.disconnect_all() if app.oauth else 0
+                app.say("Claude was disconnected")
+                return {"signed_out": n}
             if (method, route) == ("GET", "automation"):
                 return {"publish": app.publish_enabled}
             if (method, route) == ("POST", "automation"):
@@ -458,7 +520,7 @@ def make_handler(app: App):
             body = self._body() if method != "GET" else {}
             try:
                 if action == "approve":
-                    actions.approve(store, pid, body.get("at") or None)
+                    actions.approve(store, pid, body.get("at") or None, app.cfg["timezone"])
                     app.say(f"Approved {pid}")
                 elif action == "reject":
                     actions.reject(store, pid, body.get("reason"))
@@ -487,13 +549,17 @@ def make_handler(app: App):
     return Handler
 
 
-def serve(config_path: str, port: int = 8765, open_browser: bool = True) -> None:
+def prepare_app(config_path: str) -> App:
     cp = Path(config_path).resolve()
+    cp.parent.mkdir(parents=True, exist_ok=True)
     if not cp.exists():
         example = Path(__file__).resolve().parent.parent / "config.example.yaml"
         shutil.copy(example, cp)
-    cfg = Config.load(cp)
-    app = App(cfg, cp)
+    return App(Config.load(cp), cp)
+
+
+def serve(config_path: str, port: int = 8765, open_browser: bool = True) -> None:
+    app = prepare_app(config_path)
     threading.Thread(target=app.background, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(app))
     url = f"http://127.0.0.1:{port}"

@@ -212,8 +212,35 @@ def test_publish_due_honours_schedule_and_daily_limit(cfg, tmp_path):
         store.update(pid, status="approved", scheduled_at=when, final_path=str(video))
     ig = InstagramClient("U1", "T", session=FakeHTTP(["FINISHED"]), sleep=lambda s: None)
     assert publish_due(cfg, store, ig, log=lambda m: None) == 1
-    assert store.get("a")["status"] == "published" and store.get("a")["ig_media_id"] == "M1"
+    a = store.get("a")
+    # YouTube is also selected by default, so the post waits for you to post the Short.
+    assert a["status"] == "approved" and a["ig_media_id"] == "M1" and "instagram" in a["brief"]["posted"]
     assert store.get("b")["status"] == "approved"
+    assert publish_due(cfg, store, ig, log=lambda m: None) == 0  # never posts the same video twice
+
+
+def test_publish_due_marks_published_when_instagram_is_the_only_platform(tmp_path):
+    cfg = Config({"publish": {"method": "instagram_api", "platforms": ["instagram"]}}, tmp_path)
+    store = Store(cfg.path("data") / "q.db")
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"1")
+    store.create("a", "reel", post())
+    store.update("a", status="approved", final_path=str(video))
+    http = FakeHTTP(["FINISHED"])
+    ig = InstagramClient("U1", "T", session=http, sleep=lambda s: None)
+    assert publish_due(cfg, store, ig, log=lambda m: None, media_url_for=lambda pid: f"https://x.example/m/{pid}.mp4") == 1
+    assert store.get("a")["status"] == "published"
+    create = http.calls[0][2]["data"]
+    assert create["video_url"] == "https://x.example/m/a.mp4" and "upload_type" not in create
+    assert not any("rupload" in c[1] for c in http.calls)  # public link: no byte upload
+
+
+def test_parse_when_uses_the_persons_timezone():
+    from igflow.actions import parse_when
+    assert parse_when("2026-10-07T10:00", "Asia/Kolkata") == "2026-10-07T04:30:00+00:00"
+    assert parse_when("2026-10-07T10:00+00:00", "Asia/Kolkata") == "2026-10-07T10:00:00+00:00"
+    with pytest.raises(ValueError, match="Could not read"):
+        parse_when("tomorrow at ten", "Asia/Kolkata")
 
 
 # ---------- Gemini provider ----------
@@ -325,3 +352,11 @@ def test_plan_from_reply_lists_problems_and_builds_a_fix_note(cfg):
     assert "16s" in note and "rejected" in note and store.list() == []
     ids = agent.plan_from_reply(cfg, store, md, "```json\n" + json.dumps({"posts": [post()]}) + "\n```", 1)
     assert store.get(ids[0])["brief"]["shots"][0]["flow_prompt"].count("Photoreal") == 1
+
+
+def test_old_timezone_names_from_browsers_are_accepted():
+    from igflow.actions import normalize_tz, parse_when
+    assert normalize_tz("Asia/Calcutta") == "Asia/Kolkata"
+    assert parse_when("2026-10-07T10:00", "Asia/Calcutta") == "2026-10-07T04:30:00+00:00"
+    with pytest.raises(ValueError, match="Unknown timezone"):
+        normalize_tz("Mars/Olympus")

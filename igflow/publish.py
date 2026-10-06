@@ -14,6 +14,7 @@ from pathlib import Path
 
 import requests
 
+from . import actions
 from .config import Config
 from .db import Store, now_iso
 
@@ -54,14 +55,30 @@ class InstagramClient:
             raise InstagramError(f"HTTP {resp.status_code}: {body}")
         return body
 
-    def publish(self, video: Path, fmt: str, caption: str) -> str:
-        params = {"media_type": MEDIA_TYPES[fmt], "upload_type": "resumable", "access_token": self.token}
+    def publish(self, video: Path, fmt: str, caption: str, video_url: str | None = None) -> str:
+        """With `video_url` (a public link to the file) Instagram fetches it; otherwise the bytes are uploaded."""
+        params = {"media_type": MEDIA_TYPES[fmt], "access_token": self.token}
+        if video_url:
+            params["video_url"] = video_url
+        else:
+            params["upload_type"] = "resumable"
         if fmt == "reel":
             params["caption"] = caption  # Stories do not take captions.
         container = self._check(
             self.http.post(f"{GRAPH}/{self.version}/{self.user_id}/media", data=params, timeout=60)
         )["id"]
+        if not video_url:
+            self._upload(container, video)
+        self._wait_finished(container)
+        return self._check(
+            self.http.post(
+                f"{GRAPH}/{self.version}/{self.user_id}/media_publish",
+                data={"creation_id": container, "access_token": self.token},
+                timeout=60,
+            )
+        )["id"]
 
+    def _upload(self, container: str, video: Path) -> None:
         with open(video, "rb") as f:
             self._check(
                 self.http.post(
@@ -75,15 +92,6 @@ class InstagramClient:
                     timeout=600,
                 )
             )
-
-        self._wait_finished(container)
-        return self._check(
-            self.http.post(
-                f"{GRAPH}/{self.version}/{self.user_id}/media_publish",
-                data={"creation_id": container, "access_token": self.token},
-                timeout=60,
-            )
-        )["id"]
 
     def _wait_finished(self, container: str) -> None:
         deadline = time.monotonic() + self.timeout_s
@@ -115,13 +123,30 @@ class InstagramClient:
         )
 
 
-def publish_due(cfg: Config, store: Store, client: InstagramClient | None = None, dry_run: bool = False, log=print) -> int:
-    """Publish approved posts whose scheduled time has passed, respecting max_per_day."""
+def publish_due(
+    cfg: Config,
+    store: Store,
+    client: InstagramClient | None = None,
+    dry_run: bool = False,
+    log=print,
+    media_url_for=None,
+) -> int:
+    """Post approved, due posts to Instagram, respecting max_per_day.
+
+    `media_url_for(post_id)` returns a public link to the video when the server is online,
+    which Instagram prefers over uploading the bytes. YouTube is left for you to post.
+    """
     now = datetime.now(timezone.utc)
     limit = cfg["instagram"]["max_per_day"]
-    posted = store.published_since((now - timedelta(hours=24)).isoformat(timespec="seconds"))
+    since = now - timedelta(hours=24)
+    posted = sum(
+        1 for p in store.list()
+        if (t := p["brief"].get("posted", {}).get("instagram")) and datetime.fromisoformat(t) >= since
+    )
     count = 0
     for post in store.list("approved"):
+        if "instagram" not in actions.platforms_for(cfg, post["format"]) or post["brief"].get("posted", {}).get("instagram"):
+            continue
         if post["scheduled_at"] and datetime.fromisoformat(post["scheduled_at"]) > now:
             continue
         if posted + count >= limit:
@@ -131,13 +156,15 @@ def publish_due(cfg: Config, store: Store, client: InstagramClient | None = None
             log(f"[dry-run] would publish {post['id']} ({post['format']}): {build_caption(post['brief'])[:60]}")
             continue
         client = client or InstagramClient.from_env(cfg)
+        url = media_url_for(post["id"]) if media_url_for else None
         try:
-            media_id = client.publish(Path(post["final_path"]), post["format"], build_caption(post["brief"]))
+            media_id = client.publish(Path(post["final_path"]), post["format"], build_caption(post["brief"]), video_url=url)
         except (InstagramError, requests.RequestException, OSError) as e:
-            store.update(post["id"], status="failed", error=str(e))
+            store.update(post["id"], status="failed", error=f"Instagram did not accept it: {e}")
             log(f"[{post['id']}] publish failed: {e}")
             continue
-        store.update(post["id"], status="published", ig_media_id=media_id, published_at=now_iso(), error=None)
-        log(f"[{post['id']}] published as {media_id}")
+        store.update(post["id"], ig_media_id=media_id, error=None)
+        remaining = actions.record_posted(cfg, store, store.get(post["id"]), "instagram")
+        log(f"[{post['id']}] published to Instagram as {media_id}" + (f"; still to post: {', '.join(remaining)}" if remaining else ""))
         count += 1
     return count

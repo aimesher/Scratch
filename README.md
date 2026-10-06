@@ -6,6 +6,10 @@ A dashboard for planning, assembling and publishing 10-12 second Instagram Reels
 Create (master prompt, plan)  ->  Flow (you)  ->  upload clips  ->  auto-assemble  ->  review  ->  approve  ->  post
 ```
 
+## Online version (tablet and phone, chat with Claude)
+
+Reel Studio can run online at your own private web address, with a Claude connector: you plan, write and schedule posts by chatting with Claude, approved videos post to Instagram through **your own** Meta app, and nothing goes through a third-party service. See **[DEPLOY.md](DEPLOY.md)** for the step-by-step setup.
+
 ## Install and start (Windows)
 
 1. Download **Install Reel Studio.bat** (or the whole repository as a ZIP) and double-click it. If Windows warns that it is from an unknown publisher, choose *More info*, then *Run anyway*.

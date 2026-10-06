@@ -321,7 +321,7 @@ def plan_from_reply(
     cfg: Config, store: Store, master_md: str, reply: str, count: int, fmt: str = "reel", now: datetime | None = None
 ) -> list[str]:
     """Validate an answer and create the posts. Raises ReplyError with plain-language problems."""
-    master = parse_master(master_md)
+    parse_master(master_md)  # fail early on a broken master prompt
     try:
         data = _extract_json(reply)
     except ValueError as e:
@@ -329,15 +329,40 @@ def plan_from_reply(
     problems = validate_posts(data, cfg, fmt) if isinstance(data, dict) else ["The answer was not a JSON object."]
     if problems:
         raise ReplyError(problems)
+    posts = data["posts"][:count]
+    for p in posts:
+        p["format"] = fmt
+    return create_posts(cfg, store, master_md, posts, now)
+
+
+def create_posts(cfg: Config, store: Store, master_md: str, posts: list[dict], now: datetime | None = None) -> list[str]:
+    """Validate post drafts (each with its own "format"), attach the master prompt and save them as briefs."""
+    master = parse_master(master_md)
+    problems = []
+    for i, p in enumerate(posts, 1):
+        fmt = p.get("format", "reel")
+        if fmt not in ("reel", "story"):
+            problems.append(f"post {i}: format must be reel or story")
+            continue
+        problems += [e.replace("post 1", f"post {i}", 1) for e in validate_posts({"posts": [p]}, cfg, fmt)]
+    if not posts:
+        problems.append("give at least one post")
+    if problems:
+        raise ReplyError(problems)
 
     stamp = (now or datetime.now()).strftime("%Y%m%d-%H%M")
     ids = []
-    for n, post in enumerate(data["posts"][:count], 1):
-        post["format"] = fmt
+    for n, post in enumerate(posts, 1):
         for s in post["shots"]:
             s["flow_prompt"] = compose_shot_prompt(s, master)
         post_id = f"{stamp}-{n}-{_slug(post['title'])}"
-        store.create(post_id, fmt, post)
+        while True:  # two batches in the same minute must not collide
+            try:
+                store.get(post_id)
+            except KeyError:
+                break
+            post_id += "x"
+        store.create(post_id, post["format"], post)
         (cfg.path("drop") / post_id).mkdir(parents=True, exist_ok=True)
         brief_dir = cfg.path("data") / "briefs"
         brief_dir.mkdir(exist_ok=True)

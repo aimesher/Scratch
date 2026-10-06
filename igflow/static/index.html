@@ -209,7 +209,10 @@ details.help ol { padding-left: 20px; margin: 8px 0 0; }
   <main class="main">
     <header class="top">
       <div><h1 id="title"></h1><p id="subtitle"></p></div>
-      <div class="switch on" id="auto" role="switch" aria-checked="true" tabindex="0" title="When off, approved posts wait instead of going live"><div class="track"></div>Auto-publish</div>
+      <div class="row" style="flex-wrap:nowrap">
+        <div class="switch on" id="auto" role="switch" aria-checked="true" tabindex="0" title="When off, approved posts wait instead of going live"><div class="track"></div>Auto-publish</div>
+        <a id="signout" class="btn sm ghost" href="/logout" hidden style="text-decoration:none">Sign out</a>
+      </div>
     </header>
     <div id="view"></div>
   </main>
@@ -323,9 +326,10 @@ const VIEWS = {
     if (c.review) todo.push(['eye', `${c.review} video${c.review > 1 ? 's' : ''} ready for review`, 'Watch, edit the caption and approve.', 'Review now', 'posts', 'review']);
     if (c.need) todo.push(['upload', `${c.need} post${c.need > 1 ? 's' : ''} waiting for clips`, 'Copy the prompts into Flow, then upload the clips here.', 'Add clips', 'posts', 'need']);
     if (h.master && !c.need && !c.review) todo.push(['sparkles', 'Plan your next posts', 'Ask the agent for fresh ideas and prompts.', 'Plan posts', 'create']);
-    const dueN = count(p => p.status === 'approved' && (!p.scheduled_at || new Date(p.scheduled_at) <= new Date()));
-    if (manualPublish() && dueN) todo.unshift(['send', `${dueN} post${dueN > 1 ? 's are' : ' is'} ready to post`, 'Download, copy the caption and post it. Takes a minute each.', 'Post now', 'posts', 'scheduled']);
-    if (!manualPublish() && h.ai && h.master && h.instagram === false) todo.push(['send', 'Connect Instagram', 'Needed before anything can go live.', 'Connect', 'settings']);
+    const dueN = count(p => p.status === 'approved' && manualPlatforms(p).some(x => !p.posted[x]) && (!p.scheduled_at || new Date(p.scheduled_at) <= new Date()));
+    if (dueN) todo.unshift(['send', `${dueN} post${dueN > 1 ? 's are' : ' is'} ready to post`, 'Download, copy the caption and post it. Takes a minute each.', 'Post now', 'posts', 'scheduled']);
+    if (online() && !online().ig_username) todo.push(['send', 'Connect Instagram', 'So approved videos post themselves. One-time setup in Settings.', 'Set up', 'settings']);
+    if (online() && !online().claude_connected) todo.push(['sparkles', 'Connect Claude', 'Then plan and schedule posts by chatting with Claude.', 'Set up', 'settings']);
     return `
     <div class="grid g5" style="margin-bottom:18px">
       ${[['Need clips', c.need, 'need'], ['Ready for review', c.review, 'review'], [manualPublish() ? 'Approved' : 'Scheduled', c.sched, 'scheduled'], ['Published', c.live, 'published'], ['Needs attention', c.bad, 'problems']]
@@ -419,21 +423,48 @@ const VIEWS = {
             <label class="f" style="flex:1"><span>Longest video (seconds)</span><input type="number" min="1" max="60" id="max-s" value="${s.video.max_seconds}"></label>
             <label class="f" style="flex:1"><span>Max posts per day</span><input type="number" min="1" max="25" id="per-day" value="${s.instagram.max_per_day}"></label>
           </div>
+          <label class="f"><span>Your timezone</span><input type="text" id="tz" value="${esc(s.timezone)}" placeholder="${esc(Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata')}"><small>Scheduled times are read in this timezone. Example: Asia/Kolkata, Europe/London.</small></label>
         </div>
       </div>
       <div>
-        <div class="card"><h2>Connections</h2><p class="sub">Stored only on this computer, in a file called .env.</p>
+        ${s.online ? `
+        <div class="card"><h2>Use with Claude</h2><p class="sub">${s.online.claude_connected ? '<span class="badge green">Connected</span> Claude can plan and schedule your posts.' : 'Chat with Claude to plan, write and schedule posts, from your tablet or phone too.'}</p>
+          <div class="prompt"><div class="prompt-head">Connector URL<div class="spacer"></div><button class="btn sm" data-act="copy">${ic('copy')}Copy</button></div><pre>${esc(s.online.mcp_url)}</pre></div>
+          <ol style="margin:4px 0 12px;padding-left:20px;color:var(--muted);font-size:14px">
+            <li>On claude.ai (or in the Claude app) open Settings, then Connectors, then <b>Add custom connector</b>.</li>
+            <li>Name it Reel Studio, paste the URL above, press Add, then Connect.</li>
+            <li>A Reel Studio page opens: type your password and press Allow.</li>
+            <li>In a chat, try: "Plan three reels for this week".</li></ol>
+          ${s.online.claude_connected ? `<button class="btn sm danger" data-act="claude-disconnect">Disconnect Claude</button>` : ''}
+        </div>
+        <div class="card"><h2>Instagram</h2><p class="sub">${s.online.ig_username ? `<span class="badge green">Connected</span> as <b>@${esc(s.online.ig_username)}</b>${s.online.ig_expires_at ? ', renews by itself before ' + fmtTime(new Date(s.online.ig_expires_at * 1000).toISOString()) : ''}.` : 'Uses your own Meta app, so your login never passes through anyone else.'}</p>
+          ${key('IG_APP_ID', 'Instagram App ID', 'text', 'From your Meta app: Instagram, then API setup with Instagram login.')}
+          ${key('IG_APP_SECRET', 'Instagram App Secret', 'password', 'Same page. Keep it private.')}
+          <div class="prompt"><div class="prompt-head">Redirect URL for your Meta app<div class="spacer"></div><button class="btn sm" data-act="copy">${ic('copy')}Copy</button></div><pre>${esc(s.online.ig_redirect_uri)}</pre></div>
+          <div class="row"><a class="btn primary" href="/oauth/instagram/start" style="text-decoration:none">${ic('send')}${s.online.ig_username ? 'Reconnect' : 'Connect'} Instagram</a><small style="color:var(--muted)">Save settings first if you just pasted the App ID.</small></div>
+          <details class="help"><summary>First time? Set up your Meta app (about 30 minutes)</summary><ol>
+            <li>In the Instagram app, switch to a <b>Business or Creator</b> account (Settings, then Account type and tools).</li>
+            <li>Go to <b>developers.facebook.com</b> and sign in or create a Meta account with your email. A Facebook account is not needed.</li>
+            <li>Create an app. Choose the option for managing content on Instagram, app type Business.</li>
+            <li>Open Instagram, then API setup with Instagram login. Copy the <b>Instagram App ID</b> and <b>Instagram App Secret</b> into the boxes above and save.</li>
+            <li>In Business login settings, add the <b>Redirect URL</b> above.</li>
+            <li>If Meta asks, add your Instagram account as an Instagram tester under App roles and accept the invite in Instagram.</li>
+            <li>Leave the app in development mode: it only needs to work for you, so no Meta review is needed.</li>
+            <li>Come back and press Connect Instagram.</li></ol>
+            <small>Meta renames menus now and then; if a name differs, look for the closest match.</small></details>
+        </div>` : ''}
+        <div class="card"><h2>Connections</h2><p class="sub">Stored only on ${s.online ? 'your server' : 'this computer'}, in a file called .env.</p>
           <label class="f"><span>Who writes your prompts?</span>
             <select id="provider" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
               <option value="gemini" ${s.agent.provider === 'gemini' ? 'selected' : ''}>Google Gemini (free tier available)</option>
               <option value="anthropic" ${s.agent.provider === 'anthropic' ? 'selected' : ''}>Claude (paid API)</option>
               <option value="manual" ${s.agent.provider === 'manual' ? 'selected' : ''}>Copy and paste (no key needed)</option></select>
-            <small>Copy and paste means you take the request to the Gemini or Claude app yourself and paste the answer back. Only the option you pick is used.</small></label>
+            <small>${s.online ? 'Only needed for the Create page. When you plan with Claude through the connector, no key is used. ' : ''}Copy and paste means you take the request to the Gemini or Claude app yourself and paste the answer back. Only the option you pick is used.</small></label>
           ${key('GEMINI_API_KEY', 'Gemini API key', 'password', 'Free at aistudio.google.com/apikey. The free tier has rate limits and Google may use free-tier content to improve its products.')}
           ${key('ANTHROPIC_API_KEY', 'Claude API key', 'password', 'Paid. Get one at console.anthropic.com.')}
-          ${key('IG_USER_ID', 'Instagram user ID', 'text', 'Only needed if Instagram API posts for you. A number from your Meta developer app.')}
-          ${key('IG_ACCESS_TOKEN', 'Instagram access token', 'password', 'Expires after 60 days. Paste a fresh one here when it does.')}
-          <details class="help"><summary>How do I get the Instagram details?</summary><ol>
+          ${s.online ? '' : `${key('IG_USER_ID', 'Instagram user ID', 'text', 'Only needed if Instagram API posts for you. A number from your Meta developer app.')}
+          ${key('IG_ACCESS_TOKEN', 'Instagram access token', 'password', 'Expires after 60 days. Paste a fresh one here when it does.')}`}
+          <details class="help" ${s.online ? 'hidden' : ''}><summary>How do I get the Instagram details?</summary><ol>
             <li>Switch your Instagram to a Business or Creator account.</li><li>Create an app at developers.facebook.com and add the Instagram API.</li>
             <li>Add your own account as a tester and accept the invite in Instagram.</li><li>Generate a token with the content publishing permission.</li></ol></details>
         </div>
@@ -443,7 +474,10 @@ const VIEWS = {
   },
 };
 
-const manualPublish = () => (S.settings?.publish.method || 'manual') === 'manual';
+const autoIG = () => S.settings?.publish.method === 'instagram_api';
+const manualPublish = () => !autoIG();
+const manualPlatforms = p => p.platforms.filter(x => !(x === 'instagram' && autoIG()));
+const online = () => S.settings?.online;
 const tagLine = b => (b.hashtags || []).map(t => '#' + t).join(' ');
 const COPY = {
   'ig-caption': b => `${b.caption}\n\n${tagLine(b)}`.trim(),
@@ -456,6 +490,13 @@ function postItSection(p) {
   const id = esc(p.id), b = p.brief, dl = `<a class="btn sm" href="/media/${id}/final.mp4?download=1" download>${ic('download')}Download video</a>`;
   const row = plat => {
     const done = p.posted[plat];
+    if (plat === 'instagram' && autoIG()) {
+      const kind = p.format === 'story' ? 'Story' : 'Reel';
+      const when = !p.scheduled_at || new Date(p.scheduled_at) <= new Date() ? 'as soon as possible' : fmtTime(p.scheduled_at);
+      return `<div class="platform ${done ? 'done' : ''}"><h4>Instagram ${kind}</h4>
+        <p>${done ? `Posted automatically ${fmtTime(done)}.` : p.status === 'approved' ? `Posts automatically ${when}, while Auto-publish is on.` : 'Posted automatically once approved.'}</p>
+        <div class="row">${dl}<div class="spacer"></div>${done ? `<span class="badge green">${ic('check')}Posted</span>` : `<span class="badge blue">${ic('clock')}Automatic</span>`}</div></div>`;
+    }
     const mark = done ? `<span class="badge green">${ic('check')}Posted ${fmtTime(done)}</span>` : `<button class="btn sm primary" data-act="posted" data-platform="${plat}" data-id="${id}">${ic('check')}I posted it</button>`;
     if (plat === 'instagram' && p.format === 'story') return `<div class="platform ${done ? 'done' : ''}"><h4>Instagram Story</h4>
       <p>Stories can only be posted from the Instagram phone app. Send the video to your phone (Google Drive, email or Nearby Share), then add it to your Story.</p>
@@ -470,7 +511,8 @@ function postItSection(p) {
         <button class="btn sm" data-act="copy-text" data-what="yt-desc" data-id="${id}">${ic('copy')}Copy description</button>
         <a class="btn sm" href="https://studio.youtube.com/" target="_blank" rel="noopener">Open YouTube Studio</a><div class="spacer"></div>${mark}</div></div>`;
   };
-  return `<div class="sec"><h3><em>${ic('send')}</em>Post it</h3><p class="sub">Download once, then follow each box. Press "I posted it" so the dashboard keeps track.</p>
+  const anyManual = manualPlatforms(p).length > 0;
+  return `<div class="sec"><h3><em>${ic('send')}</em>${anyManual ? 'Post it' : 'Where it goes'}</h3><p class="sub">${anyManual ? 'Download once, then follow each box. Press "I posted it" so the dashboard keeps track.' : 'Everything here is posted for you.'}</p>
     ${p.platforms.map(row).join('')}</div>`;
 }
 
@@ -511,9 +553,10 @@ function postBody(p) {
   if (st === 'rejected') banner = `<div class="note amber">${ic('x')}<div>You rejected this post. <button class="btn sm" data-act="redo" data-id="${id}">Start over with new clips</button></div></div>`;
   if (st === 'published') banner = `<div class="note green">${ic('check')}<div>Published ${fmtTime(p.published_at)}.${p.ig_media_id ? ' Instagram ID: ' + esc(p.ig_media_id) : ''}</div></div>`;
   const due = !p.scheduled_at || new Date(p.scheduled_at) <= new Date();
-  if (st === 'approved') banner = manualPublish()
-    ? `<div class="note green">${ic('clock')}<div>Approved. ${due ? '<b>Ready to post now.</b>' : 'Planned for ' + fmtTime(p.scheduled_at) + '.'} Post it with the boxes below.</div></div>`
-    : `<div class="note green">${ic('clock')}<div>Approved. Goes live ${due ? 'as soon as possible' : fmtTime(p.scheduled_at)}, as long as Auto-publish is on.</div></div>`;
+  const manualLeft = manualPlatforms(p).filter(x => !p.posted[x]);
+  if (st === 'approved') banner = !manualLeft.length
+    ? `<div class="note green">${ic('clock')}<div>Approved. Goes live ${due ? 'as soon as possible' : fmtTime(p.scheduled_at)}, as long as Auto-publish is on.</div></div>`
+    : `<div class="note green">${ic('clock')}<div>Approved. ${p.platforms.includes('instagram') && autoIG() ? 'Instagram goes out automatically. ' : ''}${due ? '<b>Ready for you to post' : '<b>Planned for ' + fmtTime(p.scheduled_at)}</b> on ${manualLeft.map(x => PLATFORM_NAME[x]).join(' and ')}: use the boxes below.</div></div>`;
   if (p.error && st === 'review') banner = `<div class="note amber">${ic('alert')}<div>${esc(p.error)}</div></div>`;
 
   const showPrompts = S.prompts[p.id] ?? st === 'briefed';
@@ -535,7 +578,7 @@ function postBody(p) {
       <b>${f ? '✓ ' + esc(f) : title}</b><span>${f ? (locked ? subtitle : 'Click or drop to replace') : (locked ? 'Not provided' : 'Click or drop a file here')}</span><div class="bar"></div></div>`;
   };
   const clips = `<div class="sec"><h3><em>2</em>Add your clips
-      <button class="btn sm ghost" data-act="folder" data-id="${id}" style="margin-left:auto">${ic('folder')}Open folder</button></h3>
+      ${online() ? '' : `<button class="btn sm ghost" data-act="folder" data-id="${id}" style="margin-left:auto">${ic('folder')}Open folder</button>`}</h3>
     <p class="sub">${locked ? 'Clips are in.' : 'Upload each clip into its slot. No renaming needed. Processing starts by itself once all clips are in.'}</p>
     <div class="slots">${b.shots.map((s, i) => slot('shot' + (i + 1), `Shot ${i + 1}`, `${s.seconds}s`)).join('')}${slot('music', 'Music (optional)', 'Background track')}</div></div>`;
 
@@ -551,7 +594,7 @@ function postBody(p) {
         ${p.format === 'story' ? '<div class="note blue">' + ic('alert') + '<div>Stories do not carry captions through the API. Add polls, links and text in Instagram itself.</div></div>' : ''}
         ${b.on_screen_text?.length ? `<div class="note blue">${ic('eye')}<div><b>Add these in Instagram's editor:</b><br>${b.on_screen_text.map(esc).join('<br>')}</div></div>` : ''}
         ${editable ? `
-        <label class="f"><span>${manualPublish() ? 'When do you plan to post it?' : 'When should it go live?'}</span><input type="datetime-local" id="when-${id}"><small>${manualPublish() ? 'Optional. The Overview page reminds you when it is due.' : 'Leave empty to publish as soon as possible.'}</small></label>
+        <label class="f"><span>When should it go out?</span><input type="datetime-local" id="when-${id}"><small>Your time${S.settings?.timezone ? ' (' + esc(S.settings.timezone) + ')' : ''}. Leave empty for as soon as possible.${manualPublish() ? ' The Overview page reminds you when it is due.' : ''}</small></label>
         <div class="row"><button class="btn primary" data-act="approve" data-id="${id}">${ic('check')}Approve</button>
           <button class="btn" data-act="save-caption" data-id="${id}">Save caption</button><div class="spacer"></div>
           <button class="btn" data-act="redo" data-id="${id}">${ic('refresh')}New clips</button>
@@ -559,7 +602,7 @@ function postBody(p) {
       </div></div></div>`;
   }
   const idea = `<div class="sec" style="margin-top:0"><div class="note blue" style="margin:0">${ic('sparkles')}<div><b>Idea:</b> ${esc(b.concept)}<br><b>Caption:</b> ${esc(b.caption)}</div></div></div>`;
-  const postIt = manualPublish() && p.has_video && ['approved', 'published'].includes(st) ? postItSection(p) : '';
+  const postIt = p.has_video && ['approved', 'published'].includes(st) ? postItSection(p) : '';
   return steps + banner + (['briefed', 'assembling'].includes(st) ? idea : '') + postIt + prompts + clips + review;
 }
 
@@ -600,6 +643,10 @@ document.addEventListener('click', async e => {
     toast(r.remaining.length ? `Marked. Still to post: ${r.remaining.map(x => PLATFORM_NAME[x]).join(', ')}` : 'All done. Marked as published.');
     await refresh();
   });
+  if (act === 'claude-disconnect') {
+    if (!confirm('Claude will lose access until you connect it again. Continue?')) return;
+    return busy(btn, async () => { await api('claude/disconnect', { json: {} }); toast('Claude disconnected'); await load(['settings']); render(); });
+  }
   if (act === 'manual-copy-fix') { await copyText(S.manual.fix[btn.dataset.kind]); return toast('Copied. Paste it into the same chat.'); }
   if (act === 'manual-cancel') { S.manual.regen = false; return render(); }
   if (act === 'manual-submit') {
@@ -638,6 +685,7 @@ document.addEventListener('click', async e => {
     document.querySelectorAll('[data-brand]').forEach(el => brand[el.dataset.brand] = el.value);
     document.querySelectorAll('[data-key]').forEach(el => { if (el.value.trim()) keys[el.dataset.key] = el.value.trim(); });
     await api('settings', { method: 'PUT', json: { brand, keys, video: { min_seconds: $('#min-s').value, max_seconds: $('#max-s').value }, instagram: { max_per_day: $('#per-day').value }, agent: { provider: $('#provider').value },
+      timezone: $('#tz').value.trim(),
       publish: { method: $('#pub-method').value, platforms: [...document.querySelectorAll('[data-platform-opt]:checked')].map(el => el.dataset.platformOpt) } } });
     toast('Settings saved'); await load(['settings', 'health']); paintMode(); render();
   });
@@ -675,7 +723,15 @@ window.addEventListener('dragover', e => e.preventDefault()); window.addEventLis
 
 // auto-publish switch
 async function setAuto(on) { const d = await api('automation', { json: { publish: on } }); paintAuto(d.publish); }
-function paintMode() { $('#auto').style.display = manualPublish() ? 'none' : ''; }
+function paintMode() {
+  $('#auto').style.display = manualPublish() ? 'none' : '';
+  $('#signout').hidden = !online();
+  $('.side-foot').innerHTML = online() ? 'Online. Nothing is posted without your approval.<br><a href="/logout" style="color:var(--accent);font-weight:600">Sign out</a>' : 'Runs on your computer.<br>Nothing is posted without you.';
+}
+async function reportTimezone() {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (S.settings && !S.settings.timezone && tz) { try { await api('timezone', { json: { timezone: tz } }); await load(['settings']); } catch {} }
+}
 function paintAuto(on) { const el = $('#auto'); el.classList.toggle('on', on); el.setAttribute('aria-checked', on); }
 $('#auto').addEventListener('click', () => setAuto(!$('#auto').classList.contains('on')).catch(e => toast(e.message, true)));
 $('#auto').addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); $('#auto').click(); } });
@@ -691,7 +747,7 @@ setInterval(async () => {
 
 window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (PAGES[p] && p !== S.page) go(p); });
 api('automation').then(d => paintAuto(d.publish)).catch(() => {});
-load(['settings']).catch(() => {}).finally(() => { paintMode(); go(PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'overview'); });
+load(['settings']).then(reportTimezone).catch(() => {}).finally(() => { paintMode(); go(PAGES[location.hash.slice(1)] ? location.hash.slice(1) : 'overview'); });
 </script>
 </body>
 </html>

@@ -32,6 +32,8 @@ DEFAULTS: dict = {
     "instagram": {"api_version": "v23.0", "max_per_day": 3, "status_timeout_seconds": 300},
     # manual: you post with the dashboard's help. instagram_api: the dashboard posts Reels/Stories itself.
     "publish": {"method": "manual", "platforms": ["instagram", "youtube"]},
+    # IANA name such as "Asia/Kolkata". Empty means this computer's local time.
+    "timezone": "",
 }
 
 
