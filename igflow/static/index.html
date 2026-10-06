@@ -428,6 +428,7 @@ const VIEWS = {
       </div>
       <div>
         ${s.online ? `
+        ${s.online.where === 'pc' ? `<div class="note blue">${ic('alert')}<div><b>Running on your PC.</b> Your tablet and Claude can reach it only while the PC is on and the Reel Studio Online window is open. Scheduled posts go out only then too.</div></div>` : ''}
         <div class="card"><h2>Use with Claude</h2><p class="sub">${s.online.claude_connected ? '<span class="badge green">Connected</span> Claude can plan and schedule your posts.' : 'Chat with Claude to plan, write and schedule posts, from your tablet or phone too.'}</p>
           <div class="prompt"><div class="prompt-head">Connector URL<div class="spacer"></div><button class="btn sm" data-act="copy">${ic('copy')}Copy</button></div><pre>${esc(s.online.mcp_url)}</pre></div>
           <ol style="margin:4px 0 12px;padding-left:20px;color:var(--muted);font-size:14px">
@@ -726,7 +727,9 @@ async function setAuto(on) { const d = await api('automation', { json: { publish
 function paintMode() {
   $('#auto').style.display = manualPublish() ? 'none' : '';
   $('#signout').hidden = !online();
-  $('.side-foot').innerHTML = online() ? 'Online. Nothing is posted without your approval.<br><a href="/logout" style="color:var(--accent);font-weight:600">Sign out</a>' : 'Runs on your computer.<br>Nothing is posted without you.';
+  $('.side-foot').innerHTML = !online() ? 'Runs on your computer.<br>Nothing is posted without you.'
+    : (online().where === 'pc' ? 'Online from your PC. Keep it on and the Reel Studio Online window open.' : 'Online. Nothing is posted without your approval.')
+      + '<br><a href="/logout" style="color:var(--accent);font-weight:600">Sign out</a>';
 }
 async function reportTimezone() {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;

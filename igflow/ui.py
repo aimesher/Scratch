@@ -53,6 +53,7 @@ class App:
         self.media_url_for = None
         self.oauth = None
         self.ig_redirect_uri: str | None = None
+        self.where = "cloud"  # or "pc" when the online version runs on your own computer
         self._last_token_check = 0.0
 
     def store(self) -> Store:
@@ -164,6 +165,7 @@ class App:
             "keys": {k: {"set": bool(os.environ.get(k)), "hint": (os.environ.get(k) or "") if k in SHOWN_PLAIN else mask(os.environ.get(k))} for k in KEYS},
             "online": None if not self.public_url else {
                 "url": self.public_url,
+                "where": self.where,
                 "mcp_url": f"{self.public_url}/mcp",
                 "claude_connected": bool(self.oauth and self.oauth.connected()),
                 "ig_redirect_uri": self.ig_redirect_uri,
@@ -559,7 +561,13 @@ def prepare_app(config_path: str) -> App:
 
 
 def serve(config_path: str, port: int = 8765, open_browser: bool = True) -> None:
+    from .runlock import AlreadyRunning, RunLock
+
     app = prepare_app(config_path)
+    try:
+        lock = RunLock(app.cfg.path("data")).acquire()
+    except AlreadyRunning as e:
+        raise SystemExit(str(e))
     threading.Thread(target=app.background, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(app))
     url = f"http://127.0.0.1:{port}"
@@ -573,3 +581,4 @@ def serve(config_path: str, port: int = 8765, open_browser: bool = True) -> None
     finally:
         app.stop.set()
         server.server_close()
+        lock.release()

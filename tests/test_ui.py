@@ -143,7 +143,7 @@ def test_auto_publish_toggle(server):
 ROOT = Path(__file__).resolve().parent.parent
 
 
-@pytest.mark.parametrize("name", ["Install Reel Studio.bat", "Start Reel Studio.bat", "setup.ps1"])
+@pytest.mark.parametrize("name", ["Install Reel Studio.bat", "Start Reel Studio.bat", "Start Reel Studio Online.bat", "setup.ps1"])
 def test_windows_scripts_are_ascii_and_crlf(name):
     raw = (ROOT / name).read_bytes()
     raw.decode("ascii")  # PowerShell 5 misreads UTF-8 without a BOM

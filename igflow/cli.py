@@ -126,7 +126,12 @@ def cmd_serve(cfg_path: str, args) -> None:
         raise SystemExit("Set PUBLIC_URL to this server's web address, e.g. https://reelstudio.up.railway.app")
     if len(password) < 10:
         raise SystemExit("Set DASHBOARD_PASSWORD to a password of at least 10 characters.")
-    serve(cfg_path, args.port, public, password)
+    from .runlock import AlreadyRunning
+
+    try:
+        serve(cfg_path, args.port, public, password)
+    except AlreadyRunning as e:
+        raise SystemExit(str(e))
 
 
 def cmd_refresh_token(cfg: Config, args) -> None:
@@ -180,6 +185,10 @@ def main(argv: list[str] | None = None) -> None:
     p.set_defaults(fn=cmd_publish)
 
     sub.add_parser("run", help="watch + publish loop").set_defaults(fn=cmd_run)
+    p = sub.add_parser("online", help="run the online version on this PC, reachable via Tailscale Funnel")
+    p.add_argument("--port", type=int, default=8790)
+    p.set_defaults(fn=None)
+
     p = sub.add_parser("serve", help="run the online version (dashboard + Claude connector)")
     p.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8080")))
     p.set_defaults(fn=None)
@@ -194,6 +203,11 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
     if args.cmd == "ui":  # creates config.yaml on first run, so it must not require one
         cmd_ui(args.config, args)
+        return
+    if args.cmd == "online":
+        from .pc_online import run
+
+        run(args.config, args.port)
         return
     if args.cmd == "serve":
         cmd_serve(os.environ.get("REELSTUDIO_CONFIG", args.config), args)

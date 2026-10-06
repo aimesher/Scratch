@@ -8,7 +8,10 @@ Create (master prompt, plan)  ->  Flow (you)  ->  upload clips  ->  auto-assembl
 
 ## Online version (tablet and phone, chat with Claude)
 
-Reel Studio can run online at your own private web address, with a Claude connector: you plan, write and schedule posts by chatting with Claude, approved videos post to Instagram through **your own** Meta app, and nothing goes through a third-party service. See **[DEPLOY.md](DEPLOY.md)** for the step-by-step setup.
+Reel Studio can run online at your own private web address, with a Claude connector: you plan, write and schedule posts by chatting with Claude, approved videos post to Instagram through **your own** Meta app, and nothing goes through a third-party service. Two ways to run it:
+
+- **On your own PC, free**: see **[PC-ONLINE.md](PC-ONLINE.md)**. Data stays on your computer; the PC must be on.
+- **On a hosting service** (about $5/month, always on): see **[DEPLOY.md](DEPLOY.md)**.
 
 ## Install and start (Windows)
 

@@ -258,20 +258,28 @@ def build(app, internal_port: int, public_url: str, password: str) -> object:
     return mcp.streamable_http_app()
 
 
-def serve(config_path: str, port: int, public_url: str, password: str) -> None:
+def serve(config_path: str, port: int, public_url: str, password: str, host: str = "0.0.0.0", where: str = "cloud") -> None:
+    """`where` is "cloud" for a hosting service or "pc" for your own computer behind a tunnel."""
     import logging
 
     import uvicorn
 
     logging.getLogger("httpx").setLevel(logging.WARNING)  # one line per proxied request is just noise
 
+    from .runlock import RunLock
     from .ui import App, make_handler, prepare_app
 
     app: App = prepare_app(config_path)
+    lock = RunLock(app.cfg.path("data")).acquire()
     app.public_url = public_url.rstrip("/")
+    app.where = where
     internal = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(app))
     threading.Thread(target=internal.serve_forever, daemon=True).start()
     asgi = build(app, internal.server_address[1], public_url, password)
     threading.Thread(target=app.background, daemon=True).start()
-    print(f"Reel Studio online at {public_url} (listening on port {port})", flush=True)
-    uvicorn.run(asgi, host="0.0.0.0", port=port, proxy_headers=True, forwarded_allow_ips="*", log_level="warning")
+    print(f"Reel Studio online at {public_url}", flush=True)
+    try:
+        uvicorn.run(asgi, host=host, port=port, proxy_headers=True, forwarded_allow_ips="*", log_level="warning")
+    finally:
+        app.stop.set()
+        lock.release()

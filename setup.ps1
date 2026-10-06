@@ -71,23 +71,44 @@ if ($LASTEXITCODE -ne 0) { Fail "The installed components did not load. Delete t
 Set-Content -Path (Join-Path $AppDir '.venv\.installed') -Value 'ok'
 Ok "Components installed"
 
-# 4. Desktop shortcut
-Say "Creating a desktop shortcut"
-try {
+# 4. Optional: Tailscale, for the online version (tablet, phone and Claude reach this PC)
+Say "Online version (optional)"
+Write-Host "    Reel Studio Online lets your tablet, phone and Claude reach this PC through a"
+Write-Host "    free, private Tailscale address. Your data stays on this computer."
+if ((Has 'tailscale') -or (Test-Path 'C:\Program Files\Tailscale\tailscale.exe')) {
+    Ok "Tailscale is already installed"
+} else {
+    $want = Read-Host "Install Tailscale now? (y/N)"
+    if ($want -match '^[Yy]') {
+        Install-WithWinget 'Tailscale.Tailscale' 'Tailscale'
+        Ok "Tailscale installed. Open it from the Start menu and sign in before using Reel Studio Online."
+    } else {
+        Write-Host "    Skipped. You can run this setup again later to add it." -ForegroundColor Yellow
+    }
+}
+
+# 5. Desktop shortcuts
+Say "Creating desktop shortcuts"
+function Add-Shortcut($name, $target, $description) {
     $shell = New-Object -ComObject WScript.Shell
-    $link = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Reel Studio.lnk'))
-    $link.TargetPath = Join-Path $AppDir 'Start Reel Studio.bat'
+    $link = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) "$name.lnk"))
+    $link.TargetPath = Join-Path $AppDir $target
     $link.WorkingDirectory = $AppDir
-    $link.Description = 'Open the Reel Studio dashboard'
+    $link.Description = $description
     $link.Save()
-    Ok "Shortcut 'Reel Studio' added to your desktop"
+}
+try {
+    Add-Shortcut 'Reel Studio' 'Start Reel Studio.bat' 'Open the Reel Studio dashboard on this PC'
+    Add-Shortcut 'Reel Studio Online' 'Start Reel Studio Online.bat' 'Run Reel Studio for your tablet, phone and Claude'
+    Ok "Shortcuts 'Reel Studio' and 'Reel Studio Online' added to your desktop"
 } catch {
-    Write-Host "    Could not create the shortcut. You can still open 'Start Reel Studio.bat' in $AppDir" -ForegroundColor Yellow
+    Write-Host "    Could not create the shortcuts. You can still open the Start files in $AppDir" -ForegroundColor Yellow
 }
 
 Write-Host ""
 Write-Host "All done." -ForegroundColor Green
 Write-Host "Next time, double-click 'Reel Studio' on your desktop."
+Write-Host "To use it from your tablet or with Claude, double-click 'Reel Studio Online' instead (not both at once)."
 Write-Host "The first screen of the dashboard will ask for your Claude API key."
 Write-Host ""
 $answer = Read-Host "Open Reel Studio now? (Y/n)"
